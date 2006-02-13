@@ -1,0 +1,138 @@
+*** System Installer Project ***
+
+SystemInstaller is a tool to install a system with any Linux distribution. 
+It works hand-in-hand with SystemImager and SystemConfigurator to build 
+a cluster.
+
+***********************************************************************
+
+Since version 1.04 the OSCAR project was the only active user and maintainer of
+SystemInstaller. Several extensions were added to version 1.04 and maintained
+as patches inside the OSCAR SRPM file. At the beginning of the year 2006 the OSCAR
+specific version of SystemInstaller was finally checked into the OSCAR group's
+SVN repository in order to facilitate development and the addition of OSCAR
+specific features.
+
+THIS BRANCH OF SYSTEMIMAGER MAKES SENSE ONLY WHEN USED WITH OSCAR!
+
+The integration with OSCAR can onlz be improved if unnecessary components
+of SystemImager don't need to be maintained any more. This version will be
+systematically stripped by not needed and obsolete components.
+
+Erich Focht, February 12, 2006.
+
+************************************************************************
+
+The original SystemInstaller README file is included below. Some info is
+obsolete.
+
+************************************************************************
+
+
+If you wish to help out in any way, please visit the 
+SystemInstaller home page (http://systeminstaller.sourceforge.net).
+
+*** NOTE ***
+
+System Installer is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License located in the COPYING file of this
+distribution for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+***************************************************************
+        Overview and quick tips
+***************************************************************
+
+For more detailed info on SIS in general, including step by step
+instructions, see the SIS manpage.
+
+SystemInstaller is a tool to build Linux OS images for use
+by SystemImager. It is designed to be distributions and
+architecture independent, although we aren't 100% there yet.
+After installing the systeminstaller package and optionally, 
+the systeminstaller-x11 package, you can get started.
+
+The easiest (and prettiest) way to go about your installation
+is to use the SystemInstaller gui, tksis which is in the 
+systeminstaller-x11 package (you did install that, didn't you?)
+Once you have launched tksis, you can use the panels there to add
+new images and clients. 
+
+Optionally there is a text based interactive interface for defining
+the necessary components. It is called buildimage and can be run
+directly from the command line. It will ask a bunch of questions,
+providing defaults where it makes sense. After buildimage completes
+you will have an image and clients defined.
+
+There is yet a third option. There is a command line interface for
+all the SystemInstaller functions. Briefly, these commands are:
+
+	-mksiimage	Creates a Linux OS image
+	-mksidisk	Creates a disk partition table
+	-mksirange	Creates a range of machines
+	-mksimachine	Edits machine definitions
+	-mkdhcpconf	Creates a dhcpd.conf file
+
+See the man pages for these commands for more detail.
+
+In order to actually install the clients, you will need to either
+make an autoinstall diskette or CD or setup network booting. See
+the SystemImager documentation for more details on this setup.
+
+***************************************************************
+        Prerequisites
+***************************************************************
+SystemInstaller is part of the System Installation Suite. As
+a result it has several prerequisites on other components of 
+SIS(SystemImager and System Configurator). Links to the 
+project pages and hence the downloads can be found at 
+sisuite.org.
+
+***************************************************************
+        Getting and giving help
+***************************************************************
+
+The SystemInstaller project is hosted on SourceForge. You can 
+view our web page at http://systeminstaller.sourceforge.net/.
+
+We have mailing lists for both users and developers. They can
+be reached at http://sourceforge.net/mail/?group_id=24005
+
+Please don't hesitate to contact the lists with any questions,
+comments, or suggestions.
+
+***************************************************************
+	A note about Debian support
+***************************************************************
+
+Debian support was added to SystemInstaller recently, but since
+we can't seem to get around the interactive questions that it insists
+on asking. So it hasn't been actively maintained, most notably,
+it hasn't been modded to support the new API spec. Hopefully the
+debconf in the next version of Debian will help with this situation.
+If you want to still use the Debian stuff, let us know and we'll 
+port it over to the new API.
+
+Here is the original text that was under this item.
+
+Support for .deb packages has recently been added to SystemInstaller,
+but only at a very minimal level.  Systeminstaller can create an image
+with the base system and any .deb packages which do not require
+interactive setup.  This means you must provide in your package list
+the base system tarball (base2_2.tgz for debian/stable).
+
+There is a solution to the packages that require interactive setup,
+and it is coming RSN.  The short term solution will force the
+interactive setup to use the defaults, and the
+less-short-term-but-not-far-away solution will allow for you to answer
+the questions as they are prompted by the debian setup.

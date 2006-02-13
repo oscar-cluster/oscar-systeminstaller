@@ -1,0 +1,23 @@
+# This is a sample disktable for SystemInstaller.
+#
+# There should be one line for each partition desired.
+# The columns are:
+#       Device: The partition device name, eg. /dev/hda1
+#               The type of device may be overridden by
+#               the --type flag on mksidisk
+#       Size    The size in megabytes of the partition.
+#               A value of "*" means to gro to fill
+#               the disk.
+#       type:   The type of filesystem, eg ext2, reiserfs.
+#       mount:  The directory to mount the filesystem over.
+#       option: A list of mount options.
+#       boot:   The word "bootable" if the partition should
+#               be marked bootable. Only 1 partition per
+#               disk can be bootable.
+#
+# Device   Size  type    mount    options boot
+
+/dev/hda1   24    ext2   /boot    defaults  bootable
+/dev/hda5   128   swap
+/dev/hda6   *  ext2   /        defaults
+homeserv:/home -  nfs    /home      rw

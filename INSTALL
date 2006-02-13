@@ -1,0 +1,35 @@
+***  System Installer Installation Guide ***
+
+Prerequisites
+------------------------------
+*  perl 5.005 (the whole thing is written in perl)
+*  AppConfig >= 1.52
+*  DBD::CSV >= 0.1027
+*  SQL::Statement >= 0.1020
+*  Text::CSV_XS >= 0.22
+
+The Perl modules, including AppConfig, can be found on CPAN (www.cpan.org).  
+For your convenience a libappconfig-perl rpm package is available on the
+System Configurator project page (http://sf.net/projects/systemconfig).  
+It should work on most Perl installs.
+
+You can also attempt to install AppConf via the CPAN module by 
+running 'perl -MCPAN -e shell' on the command line, and go from there.  
+(man CPAN for more info).
+
+The slightly harder way to get them is by downloading the following URLs:
+  * http://www.cpan.org/authors/id/ABW/AppConfig-1.52.tar.gz
+
+Installation
+------------------------------
+The following steps will install from the tar ball release
+
+  perl Makefile.PL
+  make manifest
+  make
+  make test
+  make install
+
+If you get any errors during 'make test' please report them, along with
+the output of 'perl -V' to systeminstaller-users@lists.sourceforge.net.
+

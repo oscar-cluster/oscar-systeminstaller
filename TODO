@@ -1,0 +1,5 @@
+- Remove need for distro-recognition [EF]
+- Remove distro specific stage files [EF]
+- Add direct access to OSCAR mysql database instead of SIS database [EF]
+- Add support for non-OSCAR machines served by dhcpd [EF]
+- 

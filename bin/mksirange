@@ -1,0 +1,314 @@
+#!/usr/bin/perl
+
+#   $Header: /cvsroot/systeminstaller/systeminstaller/bin/mksirange,v 1.18 2003/04/11 20:44:29 mchasal Exp $
+
+#   Copyright (c) 2001 International Business Machines
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+use strict;
+use vars qw($config $VERSION);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+use lib "/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl","/usr/lib/systeminstaller";
+use SIS::Client;
+use SIS::Adapter;
+use SIS::Image;
+use SIS::DB;
+use SystemInstaller::Env;
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
+use SystemInstaller::Machine qw(linkscript synchosts);
+use Util::IP;
+use POSIX;
+use Carp;
+use AppConfig qw(:argcount);
+use File::Copy;
+use Data::Dumper;
+
+#Set the path
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+
+my $clientdef;
+
+my $HOST = (uname)[1];
+my ($junk,$DOM)  = split(/\./,$HOST,2);
+
+$config->define(
+        Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"h"},
+        basename=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                DEFAULT=> "node",
+                ALIAS=>"b"},
+        ipstart=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                VALIDATE=> '\d+\.\d+\.\d+\.\d+',
+                ALIAS=>"i"},
+        start=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                DEFAULT=> "1",
+                ALIAS=>"s"},
+        count=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                ALIAS=>"c"},
+        domain=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                DEFAULT=> $DOM,
+                ALIAS=>"d"},
+        image=>{ ARGCOUNT=> ARGCOUNT_ONE,
+                ALIAS=>"n"},
+        gateway=>{ARGCOUNT=> ARGCOUNT_ONE,
+                ALIAS=>"g"},
+        pad=>{ARGCOUNT=> ARGCOUNT_ONE,
+                VALIDATE=> '\d+',
+                ALIAS=>"p"},
+        netmask=>{ARGCOUNT=> ARGCOUNT_ONE,
+                VALIDATE=> '\d+\.\d+\.\d+\.\d+',
+                ALIAS=>"m"},
+        version=>{ARGCOUNT=> ARGCOUNT_NONE},
+);
+
+unless ($config->getopt()){
+	&usage;
+	exit 1;
+}
+
+if ($config->version){
+        &print_version($0,$VERSION);
+        exit 0;
+}
+
+unless (&check_args) {
+	&usage;
+	exit 1;
+}
+
+if ($config->Help){
+	&usage;
+	exit 0;
+}
+
+&verbose("Generating IP list.");
+my $machfail=0;
+my @IPLIST=&ip_list($config->ipstart,$config->count);
+my %defclients;
+my %defip;
+
+&verbose("Getting existing definitions.");
+my @clist=list_client();
+foreach my $cobj (@clist) {
+        $defclients{$cobj->name}=1;
+}
+my @alist=list_adapter();
+foreach my $aobj (@alist) {
+        $defip{$aobj->ip}=1;
+}
+my $cnum=$config->start;
+if ($config->pad) {
+        my $pad=$config->pad;
+        $cnum=sprintf("%0$pad.d",$cnum);
+}
+&verbose("Checking for existing machine conflicts.");
+foreach my $ipaddr (@IPLIST) {
+        my $fullname=$config->basename.$cnum;
+	if ($defclients{$fullname}) {
+		carp("Machine exists: $fullname\n");
+                $machfail++;
+        }
+        if ($defip{$ipaddr}) {
+		carp("IP address $ipaddr is in use by another machine.\n");
+                $machfail++;
+        }
+
+        $cnum++;
+}
+
+if ($machfail) {
+        croak("New machines conflict with existing machines, exitting.\n");
+}
+my $cnum=$config->start;
+if ($config->pad) {
+        my $pad=$config->pad;
+        $cnum=sprintf("%0$pad.d",$cnum);
+}
+&verbose("Adding machines.");
+my @ALIST;
+foreach my $ipaddr (@IPLIST) {
+        &verbose("Defining objects.");
+	my $clientdef = new SIS::Client($config->basename.$cnum);
+        $clientdef->hostname($config->basename.$cnum.".".$config->domain);
+        $clientdef->domainname($config->domain);
+        $clientdef->imagename($config->image);
+        $clientdef->route($config->gateway);
+       
+        if (linkscript($clientdef)){
+                set_client($clientdef);
+        	my $adapdef = new SIS::Adapter("eth0");
+                $adapdef->client($config->basename.$cnum);
+                $adapdef->ip($ipaddr);
+                $adapdef->netmask($config->netmask);
+                push(@ALIST,$adapdef);
+        } else {
+	        carp("Client " . $config->basename.$cnum ." definition failed.\n");
+        }
+	$cnum++;
+}
+# The set_adapter is delayed for better scaling, the set_client can't be
+# because the validity check of the adapter needs the client to exist.
+set_adapter(@ALIST);
+synchosts();
+	
+exit 0; 
+
+sub check_args {
+
+	# Get verbose option
+	if ($config->verbose){
+		start_verbose;
+		logger_file(*STDOUT);
+	}
+	# Default to list
+	&verbose("Checking arguments.");
+
+	if ($config->image) {
+		my $image=exists_image($config->image);
+		unless ($image){
+			carp("Image ". $config->image . " does not exist.");
+			return 0;
+		}
+                my $aiscript=$config->AUTOINSTALL_SCRIPT_DIR . "/". $config->image .".master";
+                unless(-e $aiscript) {
+                        carp("The autoinstall script for image ". $config->image . " does not exist.");
+			return 0;
+		}
+	}
+	foreach my $opt ( qw(basename ipstart count image) ) {
+		if (! $config->$opt){
+			carp("$opt is a required parameter");
+			return 0;
+		}
+	}
+        unless ($config->start >= 0) {
+                carp("--start must be a positive integer.");
+                return 0;
+        }
+	return 1;
+
+}# check_args
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+usage: $progname <options>
+  options
+    -b, --basename <name>       machine name stub (default, node)
+    -i, --ipstart <ipaddress>   ip address of first node 
+    -s, --start <integer>       starting number of the first node (default, 1)
+    -c, --count <integer>       number of machines to create
+    -d, --domain <domain>       the domain of the machines (default, server domain)
+    -g, --gateway <host>        the default route for the machines
+    -m, --netmask <mask>        the netmask for the machines (default, 255.255.255.0)
+    -n, --image <image name>    the image to use for these machines
+    -p, --pad <integer>         pad the name indices to the size specified
+    -v, --verbose               massive verbose output
+    --version                   version information
+
+
+USAGE
+}
+__END__
+
+=head1 NAME
+
+mksirange - command shell to Add/Delete/List SIS machine definitions
+
+=head1 SYNOPSIS
+
+  mksirange 
+
+=head1 DESCRIPTION
+
+The mksirange command is used to add a range of machines.
+
+=head2 Syntax
+
+mksirange [ I<options> ]
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item -b, --basename
+
+The base name to use to derive machine names. 
+The default is "node".
+
+=item -i, --ipstart
+
+The ip address of the first machine. It will be incremented
+for each subsequent machine. 
+
+=item -s, --start
+
+The starting number for machine names. This value is appended
+to the basename to derive client names. The default is 1.
+
+=item -c, --count
+
+The number of machines to create.
+
+=item  -g, --gateway
+
+The default route for the machines.
+
+=item  -m, --netmask
+
+The netmask for the machines. The default is 255.255.255.0.
+
+=item  -d, --domain
+
+The domain name for the machines. The default is current machine's
+domain.
+
+=item -n --image
+
+The name of the image to use for these machines.
+
+=item -p --pad
+
+Pad the indices of the node names to the given size. For example,
+--pad 4 would result in node names like node0001 or node0512.
+
+=item -v, --verbose
+
+Lots of trace and debug output.
+
+=item --version
+
+Version information
+
+=back
+
+=head1 NOTES
+
+
+=head1 AUTHOR
+
+Michael Chase-Salerno, mchasal@users.sf.net
+
+=head1 SEE ALSO
+
+perl(1), mksiimage(1), mksidisk(1), mksimachine(1).
+
+=cut

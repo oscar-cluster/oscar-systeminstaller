@@ -1,0 +1,88 @@
+=head1 NAME
+
+SIS - The System Installation Suite
+
+=head1 DESCRIPTION
+
+The System Installation Suite (SIS) is a tool for remotely installing Linux
+on groups of machines over a network.
+
+=head1 Quick Install
+
+The following steps are required for installation:
+
+=over 4
+
+Install Linux on the install server from CDs or some other
+method
+
+Install SystemInstaller and its prerequisites on the server.
+The prereqs are:
+        systemimager-server
+        systemimager-common
+        perl-AppConfig
+        libdbdcsv
+        perl-DBI
+        perl-Tk (if using systeminstaller-x11)
+
+You can use http://prdownloads.sourceforge.net/sisuite/sis-installer.pl
+to download and install the SIS packages.
+
+Copy your desired distribution's package files to a directory
+on the server (default is /tftpboot/rpms).
+
+Also copy systemconfigurator and perl-AppConfig files to this
+directory.
+
+Create your image using one of these methods:
+tksis, buildimage, or mksiimage.
+Package list files can be found in /usr/share/systeminstaller/distinfo/.
+See mksiimage man page for package file format if creating your own. Make
+sure that systemconfigurator and perl-AppConfig are listed in the file. 
+
+Create your disk partition table using one of these methods:
+tksis, buildimage, or mksidisk.
+A sample disk partition file can be found in
+/usr/share/doc/systeminstaller-[version]/disktable. See mksidisk man page
+for disk partition file format if creating your own.
+
+At this point, run mkautoinstallscript if you have been using the
+mk* commands.
+
+Create your client machines using one of these methods:
+tksis, buildimage, or mksirange.
+
+If you need to use network boot, or need to have static dhcpd, collect and
+set the MAC address for your machines using mksimachine --Update
+
+Run mkdhcpconf --outfile /etc/dhcpd.conf +other options to create
+the dhcpd.conf file.
+
+Touch /var/lib/dhcp/dhcpd.leases to enable dhcpd.
+
+Restart the dhcpd, xinetd and systemimager services.
+
+Set up remote booting using either mkautoinstalldiskette,
+mkautoinstallcd, or mkbootserver (requires pxe package from your distro).
+An alternate way of setting up the network boot server requires the 
+syslinux package (available from your distro or syslinux.org):
+a. Copy /usr/share/syslinux/pxelinux.0 as /tftpboot/pxelinux.bin
+b. Create directory /tftpboot/pxelinux.cfg
+c. Copy /etc/systemimager/pxelinux.cfg/default to /tftpboot/pxelinux.cfg
+d. Copy kernel and initrd.img from /usr/share/systemimager/boot/i386/standard
+to /tftpboot (requires the systemimager-i386boot-standard package).
+
+Boot the remote machines using whichever method you
+set up in the previous step. If network booting, remember to set the bios start
+option of your machines accordingly.
+
+=back
+
+=head1 AUTHORS
+
+  Michael Chase-Salerno <mchasal@users.sf.net>
+
+=head1 SEE ALSO
+
+L<buildimage>, L<tksis>, L<mksirange>, L<mksimachine>, L<mksiimage>, L<mksidisk>, L<perl>
+

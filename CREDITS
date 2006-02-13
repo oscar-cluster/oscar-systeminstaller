@@ -1,0 +1,63 @@
+The original SystemInstaller project development stopped with version
+1.04 released in October 2003. Please see below the original CREDITS
+file with the contributors to that version. systeminstaller-oscar
+is built on top of that project and uses most of its infrastructure.
+
+Since version 1.04 the OSCAR project was the only active user and maintainer of
+SystemInstaller. Several extensions were added to version 1.04 and maintained
+as patches inside the SRPM file. At the beginning of the year 2006 the OSCAR
+specific version of SystemInstaller was finally checked into the OSCAR group's
+SVN repository in order to facilitate development and the addition of OSCAR
+specific features.
+
+THIS BRANCH OF SYSTEMIMAGER MAKES SENSE ONLY WHEN USED WITH OSCAR!
+
+The maintainer of systeminstaller-oscar (the OSCAR specific version of
+systeminstaller) is Erich Focht <efocht@hpce.nec.com>.
+
+Contributors to the OSCAR specific version:
+* David Lombard <david.n.lombard@intel.com>
+  - update-rpms module
+  - Tk interface improvements, progressbar
+  - bugfixes
+* Erich Focht <efocht@hpce.nec.com>
+  - rhel x86_64 and ia64 support
+  - support for software raid disks
+  - multiple arch support for dhcp
+  - mksiadapter and multiple nics support
+  - packman module support
+  - mdadm.conf generation for swraids
+  - devfs style disk devices
+  - forced architecture packages in rpmlists for x86_64
+  - bugfixes
+* Bernard Li <bli@bcgsc.ca>
+  - bugfixes
+* many others from the OSCAR Team
+
+========================================================================
+SystemInstaller Credits - Copyright 2001 International Business Machines
+
+SystemInstaller is Free Software, and is supported by a number of 
+individual contributors.
+
+The following people have contributed code, documentation or time 
+to SystemInstaller to make it what it is today (alphabetic order):
+
+* Michael Chase-Salerno <mchasal@users.sf.net>
+* Paul Bildzok <bildzok@us.ibm.com>             
+* Sean Dague <japh@us.ibm.com>               
+* Dann Frazier <dann@dannf.org>             
+* Greg Geiselhart <geiselha@us.ibm.com>    
+* Igor Grobman <ilgrobma@us.ibm.com>      
+* Vasilios Hoffman <greekboy@users.sf.net>
+* Renier Morales <renier@us.ibm.com>     
+* Amit Pabalkar <amit.p@californiadigital.com> 
+* Stacy Woods <spwoods@us.ibm.com>            
+
+
+We would also like to thank the following for additional assistance in
+several areas including design, inspiration, dope slaps and various 
+forms of verbal punishment.
+
+* Rich Ferri <rcferri@us.ibm.com>
+* Brian Finley <brian@systemimager.org>

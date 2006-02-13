@@ -1,0 +1,629 @@
+#!/usr/bin/perl
+
+#   $Header: /cvsroot/systeminstaller/systeminstaller/bin/mksiimage,v 1.53 2003/04/11 20:44:28 mchasal Exp $
+
+#   Copyright (c) 2001 International Business Machines
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Michael Chase-Salerno <mchasal@users.sf.net>
+#   Greg Geiselhart <geiselha@us.ibm.com>
+
+$SIG{INT}       = 'SigHandler';         # Catch signals
+$SIG{QUIT}      = 'SigHandler';
+$SIG{TERM}      = 'SigHandler';
+$SIG{KILL}      = 'SigHandler';
+
+#Set the path
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+
+use strict;
+use vars qw($config $VERSION);
+
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
+use SIS::DB;
+use SIS::Image;
+use SIS::Client;
+use SystemInstaller::Env;
+use SystemInstaller::Image;
+use SystemInstaller::Package;
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
+use SystemImager::Server;
+use Data::Dumper;
+use POSIX;
+use Carp;
+use AppConfig qw(:argcount);
+
+$config->define(
+        Add=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "a"},
+        Get=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "g"},
+        Delete=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "d"},
+        Copy=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "c"},
+        List=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "l"},
+        Update=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "u"},
+        Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "h"},
+        name=>{ARGCOUNT=> ARGCOUNT_ONE},
+        source=>{ARGCOUNT=> ARGCOUNT_ONE},
+        path=>{ARGCOUNT=> ARGCOUNT_ONE},
+        filename=>{ARGCOUNT=> ARGCOUNT_LIST},
+        location=>{ARGCOUNT=> ARGCOUNT_ONE},
+        host=>{ARGCOUNT=> ARGCOUNT_ONE},
+        arch=>{ARGCOUNT=> ARGCOUNT_ONE},
+        all=>{ARGCOUNT=> ARGCOUNT_NONE},
+        version=>{ARGCOUNT=> ARGCOUNT_NONE},
+        build=>{ARGCOUNT=> ARGCOUNT_NONE,
+                DEFAULT=>1},
+        client=>{ARGCOUNT=> ARGCOUNT_ONE},
+        user=>{ARGCOUNT=> ARGCOUNT_ONE},
+        parse=>{ARGCOUNT=>ARGCOUNT_NONE},
+
+);
+
+
+unless ($config->getopt()){
+        &usage;
+        exit 1;
+}
+
+if ($config->version){
+        &print_version($0,$VERSION);
+        exit 0;
+}
+unless (&check_args) {
+	&usage;
+	exit 1;
+}
+
+if ($config->Help){
+        &usage;
+        exit 0;
+}
+
+my $image;
+
+if ($config->Get) {
+    &verbose("Checking for existing image.");
+    if (exists_image($config->name)) {
+	my $iname = $config->name;
+	croak("Image $iname exists -- not added.\n");
+    }
+
+    $config->arch(''); # unset for now, would be nice to get from client
+
+    &verbose("Initiating image get");
+    my $user="";
+    if ($config->user) {
+            $user="-ssh-user ". $config->user;
+    }
+    my $CMD="/usr/sbin/si_getimage -quiet -golden-client " .
+	 $config->client." -image ".$config->name." $user -update-script YES";
+
+    &verbose("Getting image from $config->client.");
+    &verbose("$CMD");
+    if (system($CMD)) {
+            croak("Image get failed");
+    }
+
+    &verbose("Updating database.");
+    $image = new SIS::Image($config->name);
+    $image->location($config->path);
+    set_image($image);
+
+    exit 0;
+} 
+if ($config->Add) {
+    &verbose("Checking for existing image.");
+    if (exists_image($config->name)) {
+	my $iname = $config->name;
+	croak("Image $iname exists -- not added.\n");
+    }
+
+    if ($config->build) {
+        &verbose("Building image");
+        # Actually build the image
+        &verbose("Updating Rsyncd.conf");
+
+	SystemImager::Server->create_image_stub($config->rsync_stub_dir, $config->name, $config->path) or
+    		croak("Cannot create rsync stub entry.");
+
+	SystemImager::Server->gen_rsyncd_conf($config->rsync_stub_dir, $config->rsyncd_conf) or
+    		croak("Cannot generate rsyncd.conf file.");
+
+        &verbose("Updating flamethrower.conf");
+	# Add image entry to flamethrower.conf file
+	my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
+	if(-e $flamethrower_conf) {
+	    my $entry_name = $config->name;
+	    my $new_entry_data = "[$entry_name]\n  DIR = ".$config->path."\n";
+	    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+		croak "Cannot create entry in $flamethrower_conf";
+	      
+	    # Add override entry to flamethrower.conf file
+	    $entry_name = "override_" . $config->name;
+	    $new_entry_data = "[$entry_name]\n  DIR = ".
+		"/var/lib/systemimager/overrides/".$config->name."\n";
+	    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or 
+		croak "Cannot create entry in $flamethrower_conf";
+	}
+
+        &verbose("Initializing image directories.");
+        if (&init_image($config->path)) {
+	        &del_image($config->name);
+	        croak("Image initialization failed\n");
+        }
+        &verbose("Mounting /proc.");
+        my $procpath = $config->path."/proc";
+        if (system("mount -t proc proc $procpath")){
+    	        carp("Unable to mount /proc into the image.");
+        }
+
+        &verbose("Building image.");
+        unless (&pkg_install($config->location,$config->path,$config->arch,@{$config->filename})) {
+    	        &verbose("Unmounting /proc.");
+ 	        if (system("umount $procpath")){
+	   		carp("Unable to unmount /proc in the image.");
+	        }
+	        &del_image($config->name);
+	        carp("Package install failed\n");
+	        croak;
+        }
+
+        &verbose("Unmounting /proc.");
+        if (system("umount $procpath")){
+	    	carp("Unable to unmount /proc in the image.");
+        }
+
+    } else {
+       &verbose("Importing image.");
+       &verbose("Checking image existance.");
+       # This should be replaced with an exists function from
+       # SystemImager when it becomes available (2.3).
+       my $dir=$config->path;
+       unless ( -d $dir) {
+               croak("Image $dir doesn't exist.");
+       }
+    }
+
+    &verbose("Updating database.");
+    $image = new SIS::Image($config->name);
+    $image->location($config->path);
+    $image->arch($config->arch);
+    set_image($image);
+
+    exit 0;
+}
+
+
+if ($config->Copy) {
+	my $iname = $config->name;
+	&verbose("Checking for existing target image");
+	my $image = exists_image($config->name);
+	if ($image) {
+		croak("Image $iname already exists.\n");
+	}
+	my $siname = $config->source;
+	&verbose("Checking for existing source image");
+	my $simage = exists_image($config->source);
+	if (! $simage) {
+		croak("Source image $siname doesn't exist.\n");
+	}
+        my %vars = (
+                source => $config->source,
+                destination => $config->name,
+        );
+      	&verbose("Copying image.");
+ 	if (&cp_image(%vars)) {
+		carp("Image copy failed.\n");
+                exit 1;
+	}
+    	&verbose("Updating database.");
+        my @oldimage=list_image(name => $config->source);
+        $image = new SIS::Image($config->name);
+        $image->location($config->path);
+        $image->arch($oldimage[0]->arch);
+        set_image($image);
+
+        exit 0;
+}
+if ($config->Update) {
+	my $iname = $config->name;
+	&verbose("Checking for existing target image");
+	if (!exists_image($iname)) {
+		croak("Image $iname does not exist!\n");
+	}
+	unless($config->arch || $config->path) {
+	    croak("You should call --Update only if you want to change the path or the arch!\n");
+	}	    
+
+	&verbose("Getting old image data.");
+        my @oldimage=list_image(name => $iname);
+    	&verbose("Deleting image $iname from database.");
+        &SIS::DB::del_image($iname);
+
+        $image = new SIS::Image($iname);
+
+	if ($config->path && -d $config->path) {
+	    $image->location($config->path);
+	} else {
+	    $image->location($oldimage[0]->location);
+	}
+	if ($config->arch) {
+	    $image->arch($config->arch);
+	} else {
+	    $image->arch($oldimage[0]->arch);
+	}
+    	&verbose("Inserting image $iname into database.");
+        set_image($image);
+
+        exit 0;
+}
+if ($config->Delete) {
+    my @images;
+    if ($config->all) {
+	&verbose("Getting the list of images");
+	@images = &list_image;
+    } else {
+	&verbose("Checking for existing image");
+        @images=list_image(name => $config->name);
+    }
+    if (scalar(@images) == 0) {
+            croak("Requested images not found.\n");
+    }
+
+    &verbose("Checking for clients");
+    foreach my $image (@images) {
+            if (my @C=list_client(imagename => $image->name)) {
+                    my $iname=$image->name;
+                    carp("Image $iname is assigned to clients.\n");
+                    next;
+            }
+       	&verbose("Deleting image.");
+	if (&del_image($image->name)) {
+                my $iname=$image->name;
+		carp("Image deletion failed for image $iname.\n");
+	}
+    	&verbose("Updating database.");
+        &SIS::DB::del_image($image->name);
+    }
+    exit 0;
+}
+
+&verbose("Querying database.");
+my @images = &list_image;
+&verbose("Formatting output.");
+if ($config->parse){
+        print "#Name:Path:Arch\n";
+} else {
+        printf ("%-15.15s %-25.25s %-10.10s\n","Name","Path","Arch");
+        print "------------------------------------------------------------------------\n";
+}
+foreach $image (@images) {
+        if ($config->parse){
+	        print $image->name.":".$image->location.":".$image->arch."\n";
+        } else {
+	        printf ("%-15.15s %-25.25s %-10.10s\n",$image->name,$image->location,$image->arch);
+        }
+}
+exit 0;
+
+sub check_args{
+
+	# Get verbose option
+	if ($config->verbose) {
+		&start_verbose;
+		&logger_file(*STDOUT);
+	}
+	&verbose("Parsing options.");
+	$config->List(1) unless
+        $config->Add or $config->Delete or $config->Get or $config->Copy;
+	my $operation = 0;
+	foreach ( qw(Add Delete List Get Copy) ) {
+	    $operation++ if $config->$_;
+	}
+	if ($operation != 1) {
+	    carp("--Add, --Get, --List, --Copy, and --Delete, are mutually exclusive.\n");
+		    return 0;
+	}
+	if (!$config->location) {$config->location($config->pkgpath);} # Set the -location default.
+
+	if ($config->Get) {
+	        foreach my $opt ( qw(name client) ) {
+		        if (! $config->$opt) {
+		                carp("$opt is a required parameter\n");
+		                return 0;
+		        }
+    	        }
+	        foreach my $opt ( qw(all location arch) ) {
+		        if ($config->$opt) {
+		                carp("--$opt conflicts with --Get\n");
+		                return 0;
+		        }
+    	        }
+                if (scalar(@{$config->filename}) > 0 ) {
+                        carp("--filename conflicts with --Get\n");
+                        return 0;
+                }
+        }
+
+	if ($config->Add) {
+                unless ($config->build) {
+                        if (scalar(@{$config->filename}) != 0) {
+                                carp("--filename is not valid with --nobuild \n");
+                                return 0;
+    	                }
+                } else {
+	        foreach my $opt ( qw(name filename location) ) {
+		        if (! $config->$opt) {
+		                carp("$opt is a required parameter\n");
+		                return 0;
+		        }
+    	        }
+	        foreach my $opt ( qw(client user all) ) {
+		        if ($config->$opt) {
+		                carp("--$opt conflicts with --Add\n");
+		                return 0;
+		        }
+    	        }
+                }
+        }
+	if ($config->Delete) {
+                if (not $config->name and not $config->all) {
+                        carp("Either --name or --all must be specified with --Delete\n");
+                        return 0;
+                }
+        }
+	if ($config->Copy) {
+                if (not $config->name or not $config->source) {
+                        carp("Both --name and --source must be specified with --Copy\n");
+                        return 0;
+                }
+        }
+        if  ($config->parse) {
+                if (not $config->List) {
+                        carp("--List must be specified with --parse\n");
+                        return 0;
+                }
+        }
+
+        # The default architecture, grokked from uname
+        my $ARCH = (uname)[4];
+        my $HOST = (uname)[1];
+        if ($config->arch eq '') {
+            $config->arch($ARCH);
+        }
+        if ($config->path eq '') {
+            my $dir=$config->DEFAULT_IMAGE_DIR;
+            my $idir=$dir."/".$config->name;
+            $config->path($idir);
+        }
+        
+        $config->host($HOST);
+	return 1;
+
+}
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+usage: $progname [ operation ] <options>
+  operation
+    --Add, -a               add an image definition
+    --Get, -g               get an image from a running client
+    --Delete, -d            delete an image definition
+    --Copy, -c              copy an image
+    --List                  list all image definitions
+
+  options
+    --name <name>           image name
+    --path <path name>      fully qualified path name of the server image
+    --all                   apply to all images (valid for --Delete)
+    --filename <file name>  filename of the package list
+    --location <directory>  location of the packages
+    --arch <architecture>   architecture of the image
+    --client <name or ip>   the client to get the image from
+    --user <username>       the ssh user name for getting an image if needed
+    --source <image>        the image to make a copy of.
+    -v, --verbose           massive verbose output
+    --parse                 print colon-delimited output (valid with --List)
+
+
+USAGE
+}
+
+sub SigHandler {
+        my $signal=@_;
+        carp("Caught signal $signal");
+        if ($config->Add) {
+                my $procpath = $config->path."/proc";
+                system("umount $procpath");
+	        &del_image($config->name);
+        }
+        if ($config->Get) {
+	        &del_image($config->name);
+        }
+        exit;
+}
+
+
+
+__END__
+
+=head1 NAME
+
+mksiimage - command shell to manage SIS images
+
+=head1 SYNOPSIS
+
+  mksiimage --List
+  mksiimage --Add --name image1 --path /var/image/image1 --filename /var/image/minimal.pkg --location /var/RPMS --arch i686
+  mksiimage --Get --name image2 --client node1
+  mksiimage -D --name image1 
+
+=head1 DESCRIPTION
+
+The mksiimage command is used to add, get, delete, and list server images defined to SIS.
+
+=head2 Syntax
+
+mksiimage [ I<operation> ] [ I<options> ]
+
+=head2 Operations
+
+Recognized operations include:
+
+=over 4
+
+=item --Add
+
+Build an image using supplied options (B<--name> and B<--filename> are required).
+
+=item --Get
+
+Get an image from a running client (B<--client> and B<--name> are required).
+
+=item --Delete
+
+Delete an image.  Requires B<--all> or B<--name>.
+
+=item --List
+
+List all images (no options are expected).
+
+=item --Copy
+
+Makes a copy of an image
+
+=back
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item --name
+
+Name of the image.
+
+=item --path
+
+Fully qualified pathname of the image. This is optional, the
+default will be obtained from the /etc/systemimager/systemimager.conf
+file. Normally, /var/lib/systemimager/images/<image name>/
+
+=item --all
+
+Apply operation to all images, only valid with --Delete.
+
+=item --filename
+
+Fully qualified filename of the package list. May be 
+specified multiple times to include several lists.
+See the notes section for details.
+
+=item --location
+
+Location of the packages. This should specify a directory
+that contains the install packages (eg .rpm files). Default
+is /tftpboot/rpms.
+
+=item --arch
+
+The architecture of the image, defaults to the current machine's
+architecture.
+
+=item --nobuild
+
+Don't actually build the image. Used to define an existing image to the
+SIS database.
+
+=item --client
+
+The client name or ip address to get the image from, only valid and 
+required with the --Get option.
+
+=item --user
+
+The ssh user name to use when connecting to the client. Only valid 
+with the --Get option, and is optional.
+
+=item --source
+
+The source image to make a copy of. Only valide with --Copy.
+
+=item -v, --verbose
+
+Lots of trace and debug output.
+
+=item --parse
+
+Print output in a colon-delimited format for parsing. Only valid
+with the --List option.
+
+=back
+
+=head1 NOTES
+
+If no I<operation> is specified, B<--List> is assumed and all other parameters
+ignored.
+
+When using the --Get option, the client that the image is being fetched from must
+have the systemimager-client rpm installed and the prepare_client command must have
+been run on that machine.
+
+The package list specified with the B<--filename> option is a text file containing 
+a list of all package names that should be installed into the image. One package 
+should be listed per line. All prerequisites of the listed packages must also 
+be included or the image build will fail. The packages may be specified with just
+the package name, in which case the latest available version will be chosen, or 
+with the version included. For example:
+
+ basesystem
+ binutils
+ bash
+ ...
+ 
+ or
+ 
+ basesystem-9.0-1mdk
+ binutils-2.12.90.0.15-1mdk
+ bash-2.05b-6mdk
+ ...
+
+There are several samples shipped with SystemInstaller in /usr/share/systeminstaller/distinfo.
+They are indexed by distribution and version. A valid package list can also be created
+by running "rpm -qa >filename" on an already installed system, assuming that the requisites
+are properly installed on that system.
+
+=head1 AUTHOR
+
+Michael Chase-Salerno, mchasal@users.sf.net,
+Greg Geiselhart, geiselha@us.ibm.com
+
+=head1 SEE ALSO
+
+perl(1), mksimachine(1), mksidisk(1),  mkautoinstallscript(8).
+
+=cut

@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+use Tk;
+use Tk::Tree;
+use lib '../lib','/usr/lib/systeminstaller','/usr/lib/systemimager/perl';
+use strict;
+use SystemInstaller::Tk::Main;
+use SystemInstaller::Env;
+use vars qw($config);
+
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+
+my $imgdir = "/usr/share/systeminstaller/images";
+
+&img_window($imgdir);
+
+MainLoop;
+
+__END__
+
+=head1 NAME
+
+tksis - a Perl Tk user interface for System Installation Suite
+
+=head1 DESCRIPTION
+
+Tksis is part of the System Installer distribution.  It uses
+the bottom line System Installer commands (mksiimage, mksidisk,
+and mksimachine) to create and manipulate System Imager images
+and client definitions.
+
+In the current version it only supports some of the System Installer
+and System Imager commands.  In future versions it will support
+nearly everything that can be done within the System Imager framework.
+
+=head1 AUTHORS
+
+  Sean Dague <japh@us.ibm.com>
+
+=head1 COPYRIGHT
+
+Copyright 2001 International Business Machines
+
+This  is  free software; see the source for copying conditions.  
+There is NO warranty; not even for MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.
+
+

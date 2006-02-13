@@ -1,0 +1,375 @@
+#!/usr/bin/perl
+
+#   $Id$
+
+#   Copyright (c) 2001 International Business Machines
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   Stacy Woods <spwoods@us.ibm.com>
+#   Michael Chase-Salerno <mchasal@users.sf.net>
+
+use strict;
+use vars qw($config $VERSION);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use lib "/usr/lib/systeminstaller";
+use SIS::Image;
+use SIS::DB;
+use SystemInstaller::Partition;
+use SystemInstaller::Env;
+use SystemInstaller::Log qw(start_verbose verbose logger_file); 
+use Carp;
+use AppConfig qw(:argcount);
+use XML::Simple;
+use Data::Dumper;
+
+#Set the path
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+
+$config->define(
+        Add=>{ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"a"},
+        List=>{ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"l"},  
+        Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"h"}, 
+        name=>{ARGCOUNT=> ARGCOUNT_ONE},
+        type=>{ARGCOUNT=> ARGCOUNT_ONE},
+        file=>{ARGCOUNT=> ARGCOUNT_ONE},
+        version=>{ARGCOUNT=> ARGCOUNT_NONE},
+        parse=>{ARGCOUNT=> ARGCOUNT_NONE},
+        stdin=>{ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"s"},
+);
+
+unless ($config->getopt()){
+        &usage;
+        exit 1;
+}
+
+if ($config->version){
+        &print_version($0,$VERSION);
+        exit 0;
+}
+
+
+unless (&check_args) {
+        &usage;
+        exit 1;
+}
+
+if ($config->Help){
+        &usage;
+        exit 0;
+}
+
+&verbose("Checking for existing image.");
+my $image=list_image(name=>$config->name);
+unless ($image) {
+	my $iname = $config->name;
+	croak("Image $iname does not exist\n");
+}
+if ($config->Add) {
+    my $partfh;
+    my $partfn;
+    my %DISKS;
+    if ($config->get('file') ne '') {
+        # Read in the file if given
+        my $fn=$config->get('file');
+	&verbose("Opening partition file.");
+	unless (open(PARTITION_FILE, "<$fn")) {
+                croak("Partition file, $fn, not found!");
+        }
+        $partfh=*PARTITION_FILE;
+        $partfn=$ENV{PWD}."/".$fn;
+        
+    } else {
+        $partfh=*STDIN;
+        $partfn="STDIN";
+    }
+    &verbose("Parsing partition information.");
+    %DISKS=&read_partition_info($partfh,$partfn);
+    if ($config->get('file') ne '') {
+        close(PARTITION_FILE);
+    }
+    unless (%DISKS){
+            croak("Unable to parse partition info from input");
+    }
+
+    if ($config->type) {
+        %DISKS=&change_disk_type($config->type,%DISKS);
+    }
+
+    &verbose("Performing partition set up.");
+    if (&partition_setup($config->name,%DISKS)) {
+            croak("Partition setup failed!");
+    } else {
+            exit 0;
+    }
+} # Add
+
+if ($config->List) {
+    	&verbose("Listing partition information.");
+        if (! $config->name) {
+            carp("name is a required parameter\n");
+            &usage;
+        }
+        my $aiconffile=$image->location."/etc/systemimager/autoinstallscript.conf";
+        
+        my $aiconf = XMLin($aiconffile,  forcearray => 1 );
+	unless ($aiconf) {
+                 croak("Partition information not defined for $image->name image.\n");
+	}
+
+        if ($config->parse) {
+                print "#Partition/Disk information\n";
+        } else {
+                print "\nDisk and Partition information\n";
+        }
+        foreach my $disk (@{$aiconf->{disk}}) {
+                if ($config->parse) {
+                        print "#Device:Units:LabelType\n";
+                        print "$disk->{dev}:$disk->{unit_of_measurement}:$disk->{label_type}\n";
+                        print "#PartNum:Size:PartType\n";
+                } else {
+                        print "-------------------------------------------------------------\n";
+                        printf "Disk: %-15.15s Units: %-5.5s Label type: %-10.10s\n",$disk->{dev}, $disk->{unit_of_measurement},$disk->{label_type};
+                        print "-------------------------------------------------------------\n";
+                        print "Part Num   Size            Part Type\n";
+                        print "-------------------------------------------------------------\n";
+                }
+                foreach my $part (@{$disk->{part}}) {
+                        if ($config->parse) {
+                                print "$part->{num}:$part->{size}:$part->{p_type}\n";
+                        } else {
+                                printf "%-10.10s %-15.15s %-15.15s\n",$part->{num},$part->{size},$part->{p_type};
+                        }
+                }
+        }
+        if ($config->parse) {
+                print "#Filesystem information\n";
+                print "#Device:MountPoint:Type:Options:D:P\n";
+        } else {
+                print "-------------------------------------------------------------\n";
+                print "Filesystem information\n";
+                print "-------------------------------------------------------------\n";
+                print "Device               Mount Point      Type   Options      D P\n";
+                print "-------------------------------------------------------------\n";
+
+        }
+        foreach my $mount (@{$aiconf->{fsinfo}}) {
+                if ($config->parse) {
+                        my $mntdev=$mount->{real_dev};
+                        $mntdev=~s/:/#/;
+                        print "$mntdev:$mount->{mp}:$mount->{fs}:$mount->{options}:$mount->{dump}:$mount->{pass}\n";
+                } else {
+                        printf "%-20.20s %-16.16s %-6.6s %-12.12s %-1.1s %-1.1s\n",$mount->{real_dev},$mount->{mp},$mount->{fs},$mount->{options},$mount->{dump},$mount->{pass};
+                }
+        }
+
+        exit 0;
+}
+
+sub check_args{ 
+
+	if ($config->verbose) {
+    		&start_verbose();
+		&logger_file(*STDOUT);
+	}
+	&verbose("Parsing options.");
+	# make option List the default if no operation specified.
+	$config->List(1) unless $config->Add;
+	my $operation = 0;
+	foreach ( qw(Add List ) ) {
+    		$operation++ if $config->$_;
+	}
+	if ($operation != 1) {
+    		carp("--Add and --List are mutually exclusive.\n");
+    		return 0;
+	}
+	if (!$config->name && !$config->get('help')) {
+		carp("image name is a required parameter\n");
+		return 0;
+	}
+	if ($config->Add) {
+		if ( ($config->get('file') eq '') && (!$config->stdin) ) {
+			carp ("Either --stdin or --file is required\n");
+			return 0;
+		}
+		if ( ($config->get('file') ne '') && ($config->stdin) ) {
+                        carp("--stdin and --file are not compatible.\n");
+			return 0;
+		}
+	} 
+	if (($config->List)  && ($config->type || $config->file || $config->stdin )) {
+		if ($config->stdin) {
+			&verbose("stdin ignored when performing a List operation")
+		} 
+		if ($config->type) {
+			&verbose("type ignored when performing a List operation")
+		} 
+		if ($config->file) {
+			&verbose("file ignored when performing a List operation")
+		}
+	}
+	return 1;
+}
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+        $progname = $2;
+    }
+    print <<USAGE;
+usage: $progname [ operation ] <options> [ -f file | --stdin ]
+  operation
+    -A, --Add               	 add or update the partition information
+    -L, --List                   list the partition information
+
+  options
+    --name <name>        	 name of the image
+    --type <type>	         type of disk drive 
+    --file <file>	         partition file
+    --stdin                      read the partition from stdin
+    -v, --verbose		 verbose output
+    --parse                      print colon-delimited output (valid with --List)
+
+USAGE
+    exit 1;
+}
+
+=head1 NAME
+
+mksidisk - command shell to Add or List SystemInstaller Partition Information
+
+=head1 SYNOPSIS
+
+  mksidisk --List --name image1 
+  mksidisk -Add --name image1 --file partion1 
+
+=head1 DESCRIPTION
+
+The mksidisk command is used to add or list the partition information for
+a images defined by SystemInstaller.
+
+=head2 Syntax
+
+mksidisk [ I<operation> ] [ I<options> ]
+
+=head2 Operations
+
+Recognized operations include:
+
+=over 4
+
+=item -A, --Add
+
+Add or update partition information using supplied options (B<--name>, B<--type> and B<stdin>, or B<partition file> are required). The new partition information will replace the existing partition information stored in the image.
+
+=item -L, --List
+
+List partition information for image (B<--name> is required).
+
+=back
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item --name
+
+Name of the image.
+
+=item --type
+
+Type of disk drive, valid choices are B<scsi> | B<ide>.
+This option is used to override the disk type for B<ALL> disks 
+in the input.
+
+
+=item --file
+
+A file that contains the partition information.
+
+Sample file:
+  #These are optional, global parameters
+  # units=MB # this is the default, megabytes
+  # units=%  # Sizes are percent of disk
+  # label_type=msdos # this is the default
+  # label_type=gpt   # For Itanium
+  #Device      size   fs_type mount  options
+  /dev/sda1   30      ext2   /boot   defaults bootable
+  /dev/sda5   30      swap 
+  /dev/sda6   4000    ext2   /       defaults
+  #
+  # You can also include nfs mounts like this
+  fileserver:/home -  nfs    /home   rw
+  #
+  # And mix disk types also, but don't use the --type
+  # flag on mksidisk or it will change them all!
+  # An "*" in the size column indicated that the 
+  # partition should fill the remainder of the disk.
+  /dev/sda1   *    ext2   /opt    defaults
+  #
+  # There are defaults for /proc,/dev/pts & 
+  # /mnt/floppy,
+  # but if you want to change them, just add lines 
+  # here.
+  # The values here are the defaults.
+  #/dev/fd0   -       auto   /mnt/floppy noauto,owner
+  #/proc      -       proc   /proc   defaults
+  #/dev/pts   -       devpts /dev/pts mode=622
+ 
+Make sure there is only 1 filesystem marked as I<bootable> and
+that there is something in the size column even if its not a
+local partition, '-' is used in the above example.
+
+=item --stdin
+
+Accept the partition information from STDIN. The format
+is the same as the partition file above.
+
+=item --parse
+
+Print output in a colon-delimited format for parsing. Only valid
+with the --List option. Note that the ":" in the specification of
+an nfs remote mount point will be replaced with a "#".
+
+=back
+
+=head1 NOTES:
+
+  When the drive type, --type, is specified along with a partition
+  file, the drive type will override the drive types for B<ALL> drives 
+  in the partition input.
+
+  When running on an image that was created via the B<getimage> command,
+  the default boot kernel may be changed. Be sure to verify the settings
+  in the images B<etc/systemconfig/systemconfig.conf> file before using 
+  the image.
+ 
+=head1 AUTHOR
+
+Stacy Woods, spwoods@us.ibm.com,
+Michael Chase-Salerno, mchasal@users.sf.net
+
+=head1 SEE ALSO
+
+mksiimage(1).
+
+=cut
+

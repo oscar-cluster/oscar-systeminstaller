@@ -1,0 +1,150 @@
+=head1 NAME
+
+systeminstaller.conf - SystemInstaller configuration file
+
+=head1 DESCRIPTION
+
+This file, by default located in /etc/systeminstaller/systeminstaller.conf is used by
+the SystemInstaller programis to determine what configuration information
+should be applied to your system.
+
+The file looks something like the following:
+
+   # This is a comment
+   binpath=         /usr/local/sbin:/usr/bin
+   # The distinfo directory tree for SystemInstaller
+   distinfo=       /usr/lib/systeminstaller/SystemInstaller/distinfo
+   # The directory for package files
+   pkgpath=        /tftpboot/rpms
+
+   # SystemInstaller commands
+   simachine=      mksimachine
+   sidisk=         mksidisk
+   siimage=        mksiimage
+
+=head1 OPTIONS
+
+The following options are available within the config file
+
+=over 4
+
+=item B<binpath>
+
+The directories where the SIS executable files reside.
+This is appended to the PATH environment variable and should
+be a colon delimited list of path names.
+
+=item B<distinfo>
+
+The directory where the SystemInstaller distribution tree resides.
+
+=item B<pkgpath>
+
+The directory where the distribution installable packages reside.
+
+=item B<simachine>
+
+The name of the SystemInstaller command to define machines.
+
+=item B<siimage>
+
+The name of the SystemInstaller command to define images.
+
+=item B<sidisk>
+
+The name of the SystemInstaller command to define disk tables.
+
+=item B<mkaiscript>
+
+The name of the SystemImager command to create auto-install scripts.
+
+=item B<addclients>
+
+The name of the SystemImager command to define machines.
+
+=item B<delimage>
+
+The name of the SystemImager command to delete images.
+
+=item B<ipmeth>
+
+The default method for IP address assignment. Valid values are:
+
+=over 4
+
+=item B<static_dhcp> The same address will be assigned by DHCP at every boot.
+
+=item B<dynamic_dhcp> A different address may be assigned by DHCP at every boot.
+
+=item B<static> IP addresses are manually set.
+
+=item B<replicant> IP addresses are not set. This is used when backing up a machine.
+
+=back
+
+=item B<piaction>
+
+The default action to take after installation is complete. Valid values are:
+
+=over 4
+
+=item B<beep> Beep incessantly.
+
+=item B<reboot> Restart the machine.
+
+=item B<shutdown> Halt the machine.
+
+=back
+
+=item B<disktype>
+
+The default disk type. Valid values are: B<ide>, B<scsi>
+
+=item B<rpm>
+
+The command to use to install rpm packages. 
+
+=item B<rpmargs>
+
+Additional arguments to add to the rpm command during installation.
+With some distros (Mandrake, Suse) the I<--noscripts> option needs to be specified.
+
+=item B<rpmrc>
+
+The filename of the rpmrc file. This is used to determine architecture compatability.
+
+=item B<dpkg>
+
+The command to use to install Debian packages.
+
+=item B<verbose>
+
+Tells SystemInstaller commands to use verbose output. 0=no, 1=yes. Also settable with the I<--verbose> flag on individual comands.
+
+=item B<pkgcachefile>
+
+The filename to store the generated package cache in. A file with this name
+will be placed in any package directory when an image is built. If the value of
+this variable starts with a /. It will be considered an absolute path and the 
+file will be placed there.
+
+=item B<pkginstfail>
+
+Whether to fail the image build when package installation fails. 
+0=no, 1=yes.
+
+=item B<postinstfail>
+
+Whether to fail the image build when post-installation fails. 
+0=no, 1=yes.
+
+=back
+
+=head1 AUTHORS
+
+  Michael Chase-Salerno <mchasal@users.sf.net>
+
+=head1 SEE ALSO
+
+L<AppConfig>, L<perl>
+

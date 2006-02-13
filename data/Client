@@ -1,0 +1,2 @@
+node1:node1.local.domain:local.domain:192.168.0.1:install:eth0:RedHat-6.2
+node2:node2.local.domain:local.domain:192.168.0.1:install:eth0:RedHat-6.2

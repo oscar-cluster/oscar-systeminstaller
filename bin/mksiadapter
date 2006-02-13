@@ -1,0 +1,402 @@
+#!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+#   $Id$
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#
+#   Add/Delete/Modify adapter definitions to an existing host in
+#   the SIS database.
+#
+#   - derived from mksimachine:     Erich Focht, 2005
+
+use strict;
+use vars qw($config $VERSION);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use lib "/usr/lib/systeminstaller";
+use SIS::Client;
+use SIS::Adapter;
+use SIS::Image;
+use SIS::DB;
+use SystemInstaller::Env;
+use SystemInstaller::Machine qw(synchosts linkscript);
+use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
+use Util::IP;
+use POSIX;
+use Carp;
+use AppConfig qw(:argcount);
+use Data::Dumper;
+
+#Set the path
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+
+my $clientdef;
+my $operation;
+
+my $HOST = (uname)[1];
+my ($junk,$DOM)  = split(/\./,$HOST,2);
+
+$config->define(
+        Add=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "a"},
+        Delete=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS => "d"},
+        List=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"l"},
+        Update=>{ ARGCOUNT=> ARGCOUNT_NONE,
+                ALIAS=>"u"},
+        Help=>{ ARGCOUNT=> ARGCOUNT_NONE},
+        name=> {ARGCOUNT=> ARGCOUNT_ONE},
+        ipaddress=>{ ARGCOUNT=> ARGCOUNT_ONE},
+        all=> {ARGCOUNT=> ARGCOUNT_NONE},
+        devname=>{ARGCOUNT=> ARGCOUNT_ONE},
+        MACaddress=>{ARGCOUNT=> ARGCOUNT_ONE},
+        version=>{ARGCOUNT=> ARGCOUNT_NONE},
+        netmask=>{ARGCOUNT=> ARGCOUNT_ONE,
+                DEFAULT=>"255.255.255.0"},
+        parse=>{ARGCOUNT=>ARGCOUNT_NONE},
+);
+
+unless ($config->getopt()){
+	&usage;
+	exit 1;
+}
+
+if ($config->version){
+        &print_version($0,$VERSION);
+        exit 0;
+}
+
+unless (&check_args) {
+	&usage;
+	exit 1;
+}
+
+if ($config->Help){
+	&usage;
+	exit 0;
+}
+
+my @machinelist;
+unless ($config->Add){
+    &verbose("Resolving machine list.");
+    if ( $config->all ) {
+	@machinelist = list_client();
+    } elsif ($config->name) {
+	my @names=split(/,/,$config->name);
+	foreach my $name (@names){
+	    my @mach = list_client(name=>$name);
+	    if (scalar(@mach)) {
+		push(@machinelist,@mach);
+	    } else {
+		carp("Machine ".$name." does not exist.\n");
+	    }
+	}
+    }
+}
+
+#default adapter device name
+my $devname="eth0";
+if ($config->devname) {
+    $devname = $config->devname;
+}
+
+if ($config->Update) {
+    foreach my $mach (@machinelist) {
+	if (($config->ipaddress) || ($config->netmask) || ($config->MACaddress)) {
+	    &verbose("Updating adapter database");
+	    my @adap=list_adapter(devname=>$devname, client=>$mach->name);
+	    if ($config->ipaddress) {
+		$adap[0]->ip($config->ipaddress);
+	    }
+	    if ($config->netmask) {
+		$adap[0]->netmask($config->netmask);
+	    }
+	    if ($config->MACaddress) {
+		$adap[0]->mac($config->MACaddress);
+	    }
+	    set_adapter(@adap);
+	}
+    }
+    # Re-sync the /etc/hosts file
+    &synchosts;
+
+} elsif ($config->Delete) {
+    my @delhosts;
+    my @deladaps;
+    my %ADAPTERS;
+
+    &verbose("Getting adapters");
+    my @adaps=list_adapter(devname=>$devname);
+    foreach my $a (@adaps) {
+	my $c=$a->client;
+	push(@{$ADAPTERS{$c}},$a);
+    }
+    foreach my $mach (@machinelist) {
+	if ($ADAPTERS{$mach->name}) {
+	    my @adapters=@{$ADAPTERS{$mach->name}};
+	    push(@deladaps,@adapters);
+	}
+    }
+    &verbose("Deleting adapters");
+    my @keys=map{$_->primkey} @deladaps;
+    del_adapter(@keys);
+
+} elsif ($config->Add) {
+    if (!exists_client($config->name)) {
+	carp("Client " . $config->name ." does not exist. It should be added to the Client database first.\n");
+	exit 1;
+    }
+    if ($config->name=~/ /) {
+	carp("Client name is malformed.\n");
+	exit 1;
+    }
+    if (my @C=list_adapter(ip=>$config->ipaddress)) {
+	carp("IP address " . $config->ipaddress ." is assigned to another client.\n");
+	exit 1;
+    }
+    if (($config->MACaddress) && (my @C=list_adapter(mac=>$config->MACaddress)) ) {
+	carp("MAC address " . $config->MACaddress ." is assigned to another client.\n");
+	exit 1;
+    }
+
+    &verbose("Defining objects.");
+    
+    my $adapdef = new SIS::Adapter($devname);
+    $adapdef->client($config->name);
+    $adapdef->ip($config->ipaddress);
+    $adapdef->netmask($config->netmask);
+    $adapdef->mac($config->MACaddress);
+    set_adapter($adapdef);
+    &verbose("Syncing /etc/hosts");
+    synchosts();
+
+
+}else { #Must be list
+    &verbose("Listing machine data.");
+    my @machines = list_client();
+    my $mach;
+    my @adapters=list_adapter();
+    if (@adapters) {
+	if ($config->parse){
+	    print "#Adapter definitions\n";
+	    print "#Machine:Adap:IP address:Netmask:MAC\n";
+	} else {
+	    print "\nAdapter definitions.....\n";
+	    printf ("%-15.15s %-5.5s %-15.15s %-15.15s %-20.20s\n","Machine","Adap","IP address","Netmask","MAC");
+	    print "------------------------------------------------------------------------\n";
+	}
+    }
+    foreach my $adap (@adapters) {
+	if ($config->parse){
+	    my $cmac=$adap->mac;
+	    $cmac=~s/://g;
+	    print $adap->client.":".$adap->devname.":".$adap->ip.":".$adap->netmask.":".$cmac."\n";
+	} else {
+	    printf ("%-15.15s %-5.5s %-15.15s %-15.15s %-20.20s\n",$adap->client,$adap->devname,$adap->ip,$adap->netmask,$adap->mac);
+	}
+    }
+}
+
+exit 0; 
+
+
+sub check_args {
+
+	# Get verbose option
+	if ($config->verbose){
+		start_verbose;
+		logger_file(*STDOUT);
+	}
+	# Default to list
+	&verbose("Checking arguments.");
+	$config->List(1) unless
+                $config->Delete or $config->Update or $config->Add;
+
+	foreach ( qw(Delete Update List Add) ) {
+		$operation++ if $config->$_;
+		}
+	if ($operation != 1) {
+		carp("--Add, --List, --Update and --Delete are mutually exclusive.");
+		return 0;
+	}
+	if ($config->Update) {
+		&verbose("Checking --Update options.");
+		if ((! $config->name) && (!$config->all) && (!$config->devname)) {
+			carp("You must specify --name or --all and --devname with --Update.");
+			return 0;
+		}
+	} elsif ($config->Delete) {
+		&verbose("Checking --Delete options.");
+		if (! $config->all && ! $config->name && ! $config->devname) {
+			carp("The --Delete flag requires either --all or --name <name>");
+			return 0;
+		}
+	} elsif ($config->Add) {
+		&verbose("Checking --Add options.");
+                unless (($config->name) && ($config->ipaddress) && ($config->devname)) { 
+                        carp("You must specify --name, --ipaddress, & --devname with --Add.");
+                        return 0;
+                }
+                if ($config->name=~/,/) {
+                        carp("When used with --Add, --name must be a single name, not a list.");
+                        return 0;
+                }
+        }
+
+        if  ($config->parse) {
+                if (not $config->List) {
+                        carp("--List must be specified with --parse\n");
+                        return 0;
+                }
+        }
+
+	return 1;
+
+}# check_args
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+usage: $progname [ operation ] <options>
+  operation
+    -A, --Add               add an adapter to machine
+    -D, --Delete            delete adapter from machine
+    -U, --Update            update adapter info for machine
+    -L, --List              list all adapters for machine
+
+  options
+    --name <name>           machine name.
+    --all                   apply to all adapters (valid for --Delete)
+    --ipaddress <address>   the IP address of the adapter.
+    --MACaddress <MACaddress>   the MAC address of the adapter.
+    --devname <devname>     the adapter device name (default: sometimes eth0)
+    --netmask <mask>        the netmask for the interface (default, 255.255.255.0)
+    -v, --verbose           massive verbose output
+    --parse                 print colon-delimited output (valid with --List)
+
+
+
+USAGE
+}
+
+__END__
+
+=head1 NAME
+
+mksiadapter - command shell to Update, Delete, & List SIS adapter definitions
+
+=head1 SYNOPSIS
+
+  mksiadapter
+
+=head1 DESCRIPTION
+
+The mksiadapter command is used to update, delete, and list adapters defined to SIS.
+
+=head2 Syntax
+
+mksiadapter [ I<operation> ] [ I<options> ]
+
+=head2 Operations
+
+Recognized operations include:
+
+=over 4
+
+=item -A, --Add
+
+Defines a new adapter. Requires --name, --devname and --ipaddress.
+
+=item -D, --Delete
+
+Delete machine definitions. Requires --name and --devname.
+
+=item -L, --List
+
+List all machine definitions.
+
+=item -U, --Update
+
+Update machine adapter definitions. Requires --all or --name and --devname.
+
+=back
+
+=head2 Options
+
+Recognized options include:
+
+=over 4
+
+=item --name
+
+The name of the machine to operate on. Only
+valid with --Add, --Delete & --Update.  
+With --Delete & --Update, it can be a comma-delimited list
+of machine names. With --Add, it must be a single name.
+
+=item --all
+
+Apply operation to all machines, only valid with --Delete & --Update.
+
+=item --ipaddress
+
+The ip address to assign to the machine.
+
+=item --MACaddress
+
+The MAC address to assign to the machine.
+
+=item  --netmask
+
+The netmask for the machine. The default is 255.255.255.0.
+
+=item --image
+
+The name of the image to use for these machines.
+
+=item -v, --verbose
+
+Lots of trace and debug output.
+
+=item --parse
+
+Print output in a colon-delimited format for parsing. Only valid
+with the --List option.
+
+=back
+
+=head1 NOTES
+
+If no I<operation> is specified, B<--List> is assumed and all other parameters
+ignored.
+
+
+=head1 AUTHOR
+
+Michael Chase-Salerno, mchasal@users.sf.net (author of mksimachine)
+Erich Focht, efocht@users.sf.net
+
+=head1 SEE ALSO
+
+perl(1), mksimachine(1), mksiimage(1), mksidisk(1), mksirange(1).
+
+=cut
