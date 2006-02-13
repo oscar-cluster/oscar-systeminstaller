@@ -23,7 +23,7 @@ package SystemInstaller::Partition::IA;
 #   Erich Focht <efocht@hpce.nec.com>: Added RAID1 support. (c) 2005 NEC HPCE
 
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 use strict;
 use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);

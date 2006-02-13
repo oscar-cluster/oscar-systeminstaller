@@ -28,7 +28,7 @@ use Data::Dumper;
 use SystemInstaller::Log qw(:all);
 use vars qw($VERSION);
 my $DEBTARBALL;
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 ##TODO
 #

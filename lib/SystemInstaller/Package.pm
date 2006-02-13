@@ -31,7 +31,7 @@ use Cwd;
 @EXPORT = qw(pkg_install);
 @EXPORT_OK = qw(pkglist_read files_find files_install);
  
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 use SystemInstaller::Package::PackManSmart;
 use SystemInstaller::Package::Deb;

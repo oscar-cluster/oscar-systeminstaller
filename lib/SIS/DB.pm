@@ -101,7 +101,7 @@ use Fcntl;
 use base qw(Exporter);
 use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 @EXPORT = qw(exists_image list_image set_image del_image
              exists_client list_client set_client del_client

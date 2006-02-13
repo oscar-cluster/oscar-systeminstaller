@@ -396,8 +396,6 @@ sub add_image_build {
 	
     print "Executing command: $cmd";
 
-    my $totallines = 0;
-    my $lines_so_far = 0;
     my $value = 0;
     $SIG{PIPE} = 'IGNORE';
     my $pid = open( OUTPUT, "$cmd |" );
@@ -411,24 +409,14 @@ sub add_image_build {
 	    kill( "TERM", $pid );
 	    last;
 	}
-	# 
-	if ($line =~ /Setting up/) {
-	    $value = 2;
-	} elsif ($line =~ /Resolving Dependencies/) {
-	    $value = 6;
-	} elsif ($line =~ /Dependencies Resolved/) {
-	    $value = 15;
+	my $ovalue = $value;
+	if ($line =~ /\[progress: (\d+)\]/) {
+	    # progress is scaled to 90%
+	    $value = $1 * 0.9;
 	}
-	if ($line =~ /done (\d+)\/(\d+)[^\d]/) {
-	    $lines_so_far = $1;
-	    $totallines = $2;
+	if ($value != $ovalue) {
+	    &progress_update($value);
 	}
-	if($totallines) {
-	    $value = 15 + (90 - 15) * $lines_so_far / $totallines;
-	    $value = 90 if $value > 90;
-	    # print "$lines_so_far: $_";
-	}
-	&progress_update($value);
     }
     close(OUTPUT);
     return 0 unless progress_continue();

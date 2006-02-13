@@ -140,6 +140,7 @@ sub files_install {
     }
 
     $pm->chroot($imgpath);
+    $pm->progress(1);
 
     # for smart installs the stages is simply the package list
     my @pkglist = @stages;

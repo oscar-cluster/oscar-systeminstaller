@@ -33,7 +33,7 @@ use Carp;
 @EXPORT = qw(init_image del_image write_scconf cp_image split_version); 
 @EXPORT_OK = qw(init_image del_image write_scconf cp_image split_version); 
  
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
 use SystemInstaller::Image::Kernel_x86;

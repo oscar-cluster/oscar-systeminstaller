@@ -86,11 +86,14 @@ value.
 
 use strict;
 use Carp;
-use GDBM_File;
 use Data::Dumper;
+use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use base qw(Exporter);
 use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
+
+my $debug = 1;
+
 
 $VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
@@ -98,91 +101,145 @@ $VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
              exists_client list_client set_client del_client
              exists_adapter list_adapter set_adapter del_adapter);
 
-$DBPATH = $ENV{SIS_DBPATH} || "/var/lib/sis";
-if($ENV{SIS_DBTYPE} and ($ENV{SIS_DBTYPE} eq "Storable")) {
-    $MLDBM::Serializer = "Storable";
-}
+# $DBPATH = $ENV{SIS_DBPATH} || "/var/lib/sis";
+# if($ENV{SIS_DBTYPE} and ($ENV{SIS_DBTYPE} eq "Storable")) {
+#     $MLDBM::Serializer = "Storable";
+# }
+# 
+# $DBMAP = {
+#           'SIS::Client' => {
+#                             file => 'client',
+#                            },
+#           'SIS::Image' => {
+#                            file => 'image',
+#                           },
+#           'SIS::Adapter' => {
+#                              file => 'adapter',
+#                             },
+#           'SIS::Trigger' => {
+#                              file => 'trigger',
+#                             },
+#          };
+# 
+# # lisp has the tendency to us p as a typable replacement for ?
+# 
+# sub match_p {
+#     my ($obj, $criteria) = @_;
+#     foreach my $key (sort keys %$criteria) {
+#         unless($obj->get($key) eq $criteria->{$key}) {
+#             return undef;
+#         }
+#     }
+#     return 1;
+# }
 
-$DBMAP = {
-          'SIS::Client' => {
-                            file => 'client',
-                           },
-          'SIS::Image' => {
-                           file => 'image',
-                          },
-          'SIS::Adapter' => {
-                             file => 'adapter',
-                            },
-          'SIS::Trigger' => {
-                             file => 'trigger',
-                            },
-         };
-
-# lisp has the tendency to us p as a typable replacement for ?
-
-sub match_p {
-    my ($obj, $criteria) = @_;
-    foreach my $key (sort keys %$criteria) {
-        unless($obj->get($key) eq $criteria->{$key}) {
-            return undef;
-        }
-    }
-    return 1;
-}
-
-my $sis2oda = (
+my %sis2oda = (
 	       image => {
-		   arch => "architecture",
-		   name => "name",
-		   location => "path",
+		   arch => "Images.architecture",
+		   name => "Images.name",
+		   location => "Images.path",
 	       },
 	       adapter => {
-		   client  => "Nodes.name:Nodes.id=Nics.node_id",
-		   mac     => "mac",
-		   ip      => "ip",
-		   netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
-		   devname => "name" ,
+		   #client  => "Nodes.name:Nodes.id=Nics.node_id",
+		   mac     => "Nics.mac",
+		   ip      => "Nics.ip",
+		   #netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
+		   devname => "Nics.name" ,
 	       },
 	       client => {
-		   route => "",
-		   hostname => "hostname",
-		   domainname => "fqdn",
-		   arch => "",
-		   imagename => "",
-		   name => "name",
-		   proccount => "cpu_num",
+		   #EF: route is probably the Networks.gateway entry.
+		   #route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
+		   hostname => "Nodes.hostname",
+		   domainname => "Nodes.dns_domain",
+		   #arch => "Images.architecture:Nodes.image_id=Images.id",
+		   #imagename => "Images.name:Nodes.image_id=Images.id",
+		   name => "Nodes.name",
+		   proccount => "Nodes.cpu_num",
 	       },
 	       );
 
 
 
 sub list_image {
-    my %args = @_;
-    my $sql = "SELECT * FROM Images ";
-
-    &convert_sis2oda(\%args, "image");
-    my @where = map { "$_='".$args->{$_}."'" } keys(%{$args});
-    if (@where) {
-	$sql .= " WHERE " . join(" AND ", @where);
-    }
-
-    my @images;
-    die "$0:Failed to query values via << $sql >>"
-        if (!do_select($sql,\@images, $options_ref, $error_strings_ref));
-
-    print Dumper(@images);
-    &convert_results_oda2sis(\@images, "image");
-    return @images;
+    return list_common("image",@_);
+}
+sub list_adapter {
+    return list_common("adapter",@_);
+}
+sub list_client {
+    return list_common("client",@_);
 }
 
+sub list_common {
+    my ($table,%args) = @_;
+
+    my (%tables,@fields,%fields_as,@conditions);
+    for my $sisk (keys(%{$sis2oda{$table}})) {
+	my ($field,$condition) = split(":",$sis2oda{$table}->{$sisk});
+	my ($tab,$f) = split(/\./,$field);
+	if ($f) {
+	    my $as = lc($tab."__".$f);
+	    $fields_as{$as} = $field;
+	    push @fields, "$field AS $as";
+	} else {
+	    push @fields, $field;
+	}
+	$tables{$tab} = 1;
+	# check tables in conditions fields
+	my @conds = split(" AND ",$condition);
+	for my $c (@conds) {
+	    my ($f1,$f2) = split(/=/,$c);
+	    my ($tab1,$n1) = split(/\./,$f1);
+	    $tables{$tab1} = 1;
+	    my ($tab2,$n2) = split(/\./,$f2);
+	    $tables{$tab2} = 1;
+	    push @conditions, $c;
+	}
+    }
+	
+
+    my $sql = "SELECT ".join(", ",@fields)." FROM ".join(", ",keys(%tables));
+
+    &convert_sis2oda(\%args, $table);
+    my @where = map { "$_='".$args{$_}."'" } keys(%args);
+    if (@where || @conditions) {
+	$sql .= " WHERE " . join(" AND ", @where, @conditions);
+    }
+
+    my @result;
+    my (%options,@errors);
+    $options{debug}=1;
+    print "SQL query: $sql\n" if $debug;
+    die "$0:Failed to query values via << $sql >>"
+        if (!do_select($sql,\@result, \%options, @errors));
+
+    &convert_results_oda2sis(\@result, \%fields_as, $table);
+    return @result;
+}
+
+sub convert_fields_as {
+    my ($ref, $as) = @_;
+
+    for my $k (keys(%{$ref})) {
+	if (exists($as->{$k})) {
+	    my $o = $as->{$k};
+	    my $v = $ref->{$k};
+	    delete $ref->{$k};
+	    $ref->{$o} = $v;
+	}
+    }
+}
 
 
 sub convert_sis2oda {
     my ($args, $table) = @_;
-    my @where;
+    my $dummy;
     for my $k (keys(%{$args})) {
-	my $o = $sis2oda{$k};
-	my $v = $args->{$k}
+	my $o = $sis2oda{$table}->{$k};
+	if ($o =~ /:/) {
+	    ($o,$dummy) = split (/:/,$o);
+	}
+	my $v = $args->{$k};
 	delete $args->{$k};
 	$args->{$o} = $v;
     }
@@ -201,22 +258,21 @@ sub convert_oda2sis {
 
     for my $o (keys(%{$ref})) {
 	if (!exists($oda2sis{$o})) {
-	    print "Could not find key $o in oda2sis table!\n";
-	    print "Result hash:\n".Dumper($ref);
-	    print "oda2sis hash:\n".Dumper($oda2sis);
-	    exit;
+	    print "WARNING: Could not find key $o in oda2sis table!\n" if $debug;
+	    next;
 	}
 	my $k = $oda2sis{$o};
-	my $v = $ref->{$o}
+	my $v = $ref->{$o};
 	delete $ref->{$o};
 	$ref->{$k} = $v;
     }
 }
 
 sub convert_results_oda2sis {
-    my ($arr, $table) = @_;
+    my ($arr, $as, $table) = @_;
 
     for (my $i = 0; $i < scalar(@{$arr}); $i++) {
+	&convert_fields_as($$arr[$i], $as);
 	&convert_oda2sis($$arr[$i], $table);
     }
 }

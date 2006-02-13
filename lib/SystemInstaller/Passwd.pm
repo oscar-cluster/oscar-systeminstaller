@@ -25,7 +25,7 @@ use strict;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK  %EXPORT_TAGS);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 @EXPORT_OK = qw(update_user);
 
