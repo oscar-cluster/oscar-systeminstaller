@@ -125,6 +125,12 @@ fi
 %changelog
 * Sun Feb 12 2006 Erich Focht
 - Removed stuff which is either obsolete or not used with OSCAR.
+- Removed distinfo and need for distro detection.
+- Improved progress bar code.
+
+* Sat Feb 11 2006 Bernard Li <bli@bcgsc.ca>
+- Fix tksis bug (patch by Steven A. DuChene)
+- Fix for OSCAR bug #1343429 - "Use of uninitialized value in hash element"
 
 * Fri Jan 13 2006 Erich Focht
 - bug fix for better detection of nodev filesystems in disktab files
