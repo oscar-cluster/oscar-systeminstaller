@@ -394,7 +394,7 @@ sub add_image_build {
 	"--path $$vars{imgpath}/$$vars{imgname} " .
 	"--verbose $$vars{extraflags}";
 	
-    print "Executing command: $cmd";
+    print "Executing command: $cmd\n";
 
     my $value = 0;
     $SIG{PIPE} = 'IGNORE';
