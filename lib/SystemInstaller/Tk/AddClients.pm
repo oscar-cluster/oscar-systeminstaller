@@ -138,7 +138,7 @@ sub addclients_window {
                                             );
 
     my $activate_button = $addclient_window->Button(
-                                                -text => "Addclients",
+                                                -text => "Add Clients",
                                                 -command => [\&run_addclients, $addclient_window, $imagebox, $numentry, \%vars],
                                                 -pady => 8,
                                                 -padx => 8,
@@ -223,7 +223,7 @@ sub run_addclients {
                                                  return 0);
     }
 
-    done_window($window, "Successfully created clients for image $$vars{imgname}");
+    done_window($window, "Successfully created clients for image \"$imagename\"");
 
     $$vars{startinghostnum} = nexthostnum( $$vars{basename} ) || $$vars{startinghostnum};
     $$vars{startip} = nextip() || $$vars{startip};
