@@ -4,7 +4,7 @@
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: 2.1
+Version: 2.1.2
 Release: 1
 License: GPL
 URL: http://systeminstaller.sourceforge.net

@@ -27,6 +27,7 @@ use POSIX;
 use Tk;
 use Tk::ProgressBar;
 use Tk::FileSelect;
+use SystemInstaller::Log qw (verbose get_verbose);
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Passwd qw(update_user);
@@ -386,13 +387,15 @@ sub add_image {
 sub add_image_build {
     my $vars = shift;
     my $window = shift;
+    my $verbose = &get_verbose();
+    $verbose = 1 if (!$verbose && $ENV{OSCAR_VERBOSE});
 
     my $cmd = "mksiimage -A --name $$vars{imgname} " .
 	"--location " . join(",",$$vars{pkgpath}) . " " .
 	"--filename $$vars{pkgfile} " .
 	"--arch $$vars{arch} " . 
 	"--path $$vars{imgpath}/$$vars{imgname} " .
-	"--verbose $$vars{extraflags}";
+	($verbose?"--verbose":"") . "$$vars{extraflags}";
 	
     print "Executing command: $cmd\n";
 
@@ -409,14 +412,13 @@ sub add_image_build {
 	    kill( "TERM", $pid );
 	    last;
 	}
+	print "$line" if ($verbose);
 	my $ovalue = $value;
 	if ($line =~ /\[progress: (\d+)\]/) {
 	    # progress is scaled to 90%
 	    $value = $1 * 0.9;
 	}
-	if ($value != $ovalue) {
-	    &progress_update($value);
-	}
+	&progress_update($value);
     }
     close(OUTPUT);
     return 0 unless progress_continue();
