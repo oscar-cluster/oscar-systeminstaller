@@ -36,6 +36,11 @@ use SystemImager::Server;
 use SystemImager::Common;
 use SystemImager::Config;
 
+# OSCAR specific stuff
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::PackagePath;
+use OSCAR::Database;
+
 use strict;
 
 @EXPORT = qw(createimage_window add2rsyncd delfromrsyncd);
@@ -82,6 +87,10 @@ sub createimage_window {
     my %defaults = %vars;
     my %noshow = %{$vars{noshow}};
 
+    # locate all available distro pools
+    my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+    my @distros = sort(keys(%distro_pools));
+
     $noshow{vdiskdev}="yes" unless -d '/proc/iSeries';
 
     my $image_window = $window->Toplevel();
@@ -113,6 +122,13 @@ sub createimage_window {
     #
     #  Third Line:  where are your packages?
     #
+    my $distrooption = label_option_line($image_window, "Target Distribution",
+				       \$vars{distro},\@distros, "x",
+				       helpbutton($image_window,
+						  "Target Distribution out of".
+						  " the installed pools."))
+	unless $noshow{distro};
+
     label_entry_line($image_window, "Packages Directory", \$vars{pkgpath},"","x",
 		     helpbutton($image_window, "Package Directory"))
 	unless $noshow{pkgpath};
@@ -225,7 +241,21 @@ sub createimage_window {
     # key bindings
     $image_window->bind("<Control-q>",sub {$image_window->destroy});
     $image_window->bind("<Control-r>",sub {$reset_button->invoke});
-	
+
+    # binding for distro selection
+
+    $distrooption->bind("<ButtonRelease>", sub {
+	#
+	my $dist = $vars{distro};
+	my %d = %{$distro_pools{$dist}};
+	my $pools = $d{distro_repo}.",".$d{oscar_repo};
+	#
+	$vars{pkgpath} = $pools;
+	#
+	&make_pkglist($d{os});
+    }
+			);
+    
     center_window( $image_window );
 }
 
@@ -388,14 +418,13 @@ sub add_image_build {
     my $vars = shift;
     my $window = shift;
     my $verbose = &get_verbose();
-    $verbose = 1 if (!$verbose && $ENV{OSCAR_VERBOSE});
 
     my $cmd = "mksiimage -A --name $$vars{imgname} " .
-	"--location " . join(",",$$vars{pkgpath}) . " " .
+	"--location $$vars{pkgpath} " .
 	"--filename $$vars{pkgfile} " .
 	"--arch $$vars{arch} " . 
 	"--path $$vars{imgpath}/$$vars{imgname} " .
-	($verbose?"--verbose":"") . "$$vars{extraflags}";
+	"$$vars{extraflags}";
 	
     print "Executing command: $cmd\n";
 
@@ -412,7 +441,7 @@ sub add_image_build {
 	    kill( "TERM", $pid );
 	    last;
 	}
-	print "$line" if ($verbose);
+	print "$line" if (exists $ENV{OSCAR_VERBOSE});
 	my $ovalue = $value;
 	if ($line =~ /\[progress: (\d+)\]/) {
 	    # progress is scaled to 90%
@@ -425,7 +454,7 @@ sub add_image_build {
 
     progress_update(90);
 
-    print "Built image from rpms\n";
+    print "Image build finished.\n";
 
     # Now set the root password if given
     return 0 unless progress_continue();
@@ -564,4 +593,22 @@ sub add2rsyncd {
     return 1;
 }
 
+sub make_pkglist {
+    my ($os) = @_;
+    my @opkgs = list_selected_packages("all");
+    my $outfile = "/tmp/oscar-install-rpmlist.$$";
+    my @errors;
+    local *OUTFILE;
+    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+    foreach my $opkg_ref (@opkgs) {
+	my $opkg = $$opkg_ref{package};
+	my @pkgs = pkgs_of_opkg($opkg, undef, \@errors,
+				group => "oscar_clients",
+				os    => $os );
+	foreach my $pkg (@pkgs) {
+	    print OUTFILE "$pkg\n";
+	}
+    }
+    close(OUTFILE);
+}
 1;
