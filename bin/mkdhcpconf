@@ -119,6 +119,12 @@ foreach my $mach (@machinelist) {
 		}
 	}
 }
+# interface definitions for appliance adapters
+foreach my $adapter (@adaplist){
+    if (($adapter->client =~ /^__.*__$/) && ($adapter->mac) ) {
+	&write_appl_entry($adapter);
+    }
+}
 
 print OUTFILE "\t}\n}\n";
 &verbose("Adding other networks");
@@ -205,6 +211,18 @@ sub find_internal_ip {
     }
     return undef;
 } #find_internal_ip
+
+sub write_appl_entry {
+	my ($adapter) = @_;
+	my $name = $adapter->client;
+	$name =~ /^__(.*)__$/;
+	$name = $1."_appliance";
+	print OUTFILE "\t\thost ".$name." {\n";
+	print OUTFILE "\t\t\thardware ethernet ".$adapter->mac.";\n";
+	print OUTFILE "\t\t\tfixed-address ".$adapter->ip.";\n";
+        print OUTFILE "\t\t\tfilename \"\";\n";    
+        print OUTFILE "\t\t}\n";
+} #write_appl_entry
 
 sub write_entry {
 	my ($mach, $adapter) = @_;

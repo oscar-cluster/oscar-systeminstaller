@@ -100,11 +100,18 @@ unless ($config->Add){
     } elsif ($config->name) {
 	my @names=split(/,/,$config->name);
 	foreach my $name (@names){
-	    my @mach = list_client(name=>$name);
-	    if (scalar(@mach)) {
-		push(@machinelist,@mach);
+	    # special names for appliances not registered as machines
+	    if ($name =~ /^__.*__$/) {
+		my $mach = { _vars => { _name => $name, } };
+		bless $mach, "SIS::Client";
+		push @machinelist, $mach;
 	    } else {
-		carp("Machine ".$name." does not exist.\n");
+		my @mach = list_client(name=>$name);
+		if (scalar(@mach)) {
+		    push(@machinelist,@mach);
+		} else {
+		    carp("Machine ".$name." does not exist.\n");
+		}
 	    }
 	}
     }
@@ -142,23 +149,40 @@ if ($config->Update) {
     my %ADAPTERS;
 
     &verbose("Getting adapters");
-    my @adaps=list_adapter(devname=>$devname);
+    my @adaps;
+    if ($config->devname) {
+	@adaps=list_adapter(devname=>$devname);
+    } elsif ($config->all) {
+	@adaps=list_adapter();
+    } elsif ($config->name) {
+	@adaps=list_adapter(client=>$config->name);
+    }
+    # build array of adapters
     foreach my $a (@adaps) {
 	my $c=$a->client;
 	push(@{$ADAPTERS{$c}},$a);
     }
+    # select adapters belonging to some machine
     foreach my $mach (@machinelist) {
 	if ($ADAPTERS{$mach->name}) {
 	    my @adapters=@{$ADAPTERS{$mach->name}};
 	    push(@deladaps,@adapters);
 	}
     }
+    # add adapters belonging to appliances, too
+    for my $key (keys %ADAPTERS) {
+	if ($key =~ /^__.*__$/) {
+	    my @adapters=@{$ADAPTERS{$key}};
+	    push(@deladaps,@adapters);
+	}	    
+    }
+
     &verbose("Deleting adapters");
     my @keys=map{$_->primkey} @deladaps;
     del_adapter(@keys);
 
 } elsif ($config->Add) {
-    if (!exists_client($config->name)) {
+    if ($config->name !~ /^__.*__$/ && !exists_client($config->name)) {
 	carp("Client " . $config->name ." does not exist. It should be added to the Client database first.\n");
 	exit 1;
     }
@@ -189,8 +213,6 @@ if ($config->Update) {
 
 }else { #Must be list
     &verbose("Listing machine data.");
-    my @machines = list_client();
-    my $mach;
     my @adapters=list_adapter();
     if (@adapters) {
 	if ($config->parse){
