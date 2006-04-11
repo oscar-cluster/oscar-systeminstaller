@@ -4,7 +4,7 @@
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: 2.1.2
+Version: 2.2.0
 Release: 1
 License: GPL
 URL: http://systeminstaller.sourceforge.net
@@ -123,6 +123,13 @@ fi
 
 
 %changelog
+* Tue Apr 11 2006 Erich Focht
+- added functionality for selecting distros when building an image,
+  depending on the installed repos.
+- added special names for appliances which will not be provided with
+  files when booted through dhcpd. This way the DHCP server can be
+  used for more than just the cluster nodes.
+
 * Sun Feb 12 2006 Erich Focht
 - Removed stuff which is either obsolete or not used with OSCAR.
 - Removed distinfo and need for distro detection.
