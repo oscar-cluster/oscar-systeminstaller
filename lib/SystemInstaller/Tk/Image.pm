@@ -125,8 +125,7 @@ sub createimage_window {
     my $distrooption = label_option_line($image_window, "Target Distribution",
 				       \$vars{distro},\@distros, "x",
 				       helpbutton($image_window,
-						  "Target Distribution out of".
-						  " the installed pools."))
+						  "Target Distribution"))
 	unless $noshow{distro};
 
     label_entry_line($image_window, "Packages Directory", \$vars{pkgpath},"","x",

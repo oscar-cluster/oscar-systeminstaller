@@ -23,7 +23,9 @@ use strict;
 @EXPORT = qw(%Help helpwindow helpbutton);
 
 %Help = (
+	 #### Build Image Help
          "Image Name" => "Image Name:\n\nThe name you wish to call the image.",
+	 "Target Distribution" => "Target Distribution:\n\nThis menu allows the selection of the distribution/architecture on which the image will be based. The choices are from the distribution repositories located in /tftpboot/distro.\n\n The selection of one menu item leads to an automatic change of the Package Directory entry as well as the regeneration of the package list file located in /tmp/rpmlist_*\n",
          "Package Directory" => "Package Directory:\n\nThis option specifies the directory which contains the packages (RPM, Deb, or other) which will be used to build the image.\n\nAll the packages used to build an image must be in the same directory.",
          "Package File" => "Package File:\n\nThis option specifies a text file which contains a list of all the packages that should be installed.\nThere are various samples for several distributions under /usr/share/systeminstaller/distinfo",
          "Disk File" => "Disk File:\n\nThis option specifies a text file which contains the disk partitiontion table for the image.\n\nFor more information on the format please see the mksidisk man page. There is a sample disktable in /usr/share/doc/systeminstaller-<version>/disktable.",
