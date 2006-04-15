@@ -150,7 +150,7 @@ sub get_image {
     my $mkaiscmd = $main::config->mkaiscript . " -quiet -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
     !system($mkaiscmd) or (carp("Couldn't run $mkaiscmd"), $window->Unbusy(), return undef);
 
-    print "Ran mkautoinstallscript\n";
+    print "Ran si_mkautoinstallscript\n";
 
     # This allows for an arbitrary callback to be registered.
     # It will get a reference to all the variables that have been defined for the image

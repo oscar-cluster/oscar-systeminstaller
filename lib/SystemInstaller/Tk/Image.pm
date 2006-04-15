@@ -533,7 +533,7 @@ sub add_image_build {
     return 0 unless progress_continue();
     progress_update(98);
 
-    print "Ran mkautoinstallscript\n";
+    print "Ran si_mkautoinstallscript\n";
 
     # This allows for an arbitrary callback to be registered.
     # It will get a reference to all the variables that have been defined for the image
