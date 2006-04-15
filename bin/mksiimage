@@ -624,6 +624,6 @@ Greg Geiselhart, geiselha@us.ibm.com
 
 =head1 SEE ALSO
 
-perl(1), mksimachine(1), mksidisk(1),  mkautoinstallscript(8).
+perl(1), mksimachine(1), mksidisk(1),  si_mkautoinstallscript(8).
 
 =cut
