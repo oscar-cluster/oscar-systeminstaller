@@ -123,6 +123,10 @@ fi
 
 
 %changelog
+* Sun Apr 16 2006 Bernard Li <bli@bcgsc.ca>
+- Removed multicast bits since this is now taken care of by the
+  "Setup Networking" widget in OSCAR
+
 * Tue Apr 11 2006 Erich Focht
 - added functionality for selecting distros when building an image,
   depending on the installed repos.

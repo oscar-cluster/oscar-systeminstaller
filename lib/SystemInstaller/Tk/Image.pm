@@ -57,7 +57,6 @@ sub createimage_window {
 		pkgfile => "",
 		pkgpath => "",
 		ipmeth => "",
-		mcast => "",
 		piaction => "",
 		diskfile => "",
 		vdiskdev => "none",
@@ -191,17 +190,7 @@ sub createimage_window {
 	unless $noshow{ipmeth};
 
     #
-    #  Fifth Line: enable multicasting? Yes or No.
-    #
-
-    my @multicastOpts = qw(on off);
-    my $multicastOpts= label_option_line($image_window, "Multicasting",
-					 \$vars{mcast},\@multicastOpts, "x",
-					 helpbutton($image_window, "Multicast"))
-	unless $noshow{mcast};
-
-    #
-    #  Sixth Line: what is the post install action?
+    #  What is the post install action?
     #
 
     my @postinstall = qw(beep reboot shutdown);
@@ -228,7 +217,6 @@ sub createimage_window {
 							     piaction => $postoption,
 							     arch => $archoption,
 							     ipmeth => $ipoption,
-							     mcast => $multicastOpts
 							     },
 							 ],
 					     -pady => 8,
@@ -465,59 +453,15 @@ sub add_image_build {
 		    );
     }
     return 0 unless progress_continue();
-    progress_update(91);
+    progress_update(92);
     
-    #
-    # Update flamethrower.conf
-    #
-    return 0 unless progress_continue();
-    if ($$vars{mcast} eq "on") {
-	
-	# Backup original flamethrower.conf
-	$cmd = "/bin/mv -f /etc/systemimager/flamethrower.conf /etc/systemimager/flamethrower.conf.bak";
-	if( system( $cmd ) ) {
-	    carp("Couldn't run command $cmd");
-	    return 0;
-	}
-	return 0 unless progress_continue();
-	progress_update(92);
-
-	$cmd = "sed -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' /etc/systemimager/flamethrower.conf.bak > /etc/systemimager/flamethrower.conf";
-	if( system( $cmd ) ) {
-	    carp("Error encountered while changing START_FLAMETHROWER_DAEMON = no to yes in /etc/systemimager/flamethrower.conf");
-	    return 0;
-	}
-	return 0 unless progress_continue();
-	progress_update(93);
-
-	# add entry for boot-i386-standard module
-	my $march = $$vars{arch};
-	$march =~ s/i.86/i386/;
-	$cmd = "/usr/lib/systemimager/perl/confedit --file /etc/systemimager/flamethrower.conf --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/i386/standard/\"";
-	if( system( $cmd ) ) {
-	    carp("Couldn't run command $cmd");
-	    return 0;
-	}
-	return 0 unless progress_continue();
-	progress_update(95);
-	print "Updated flamethrower.conf\n";
-	
-	$cmd = "/etc/init.d/systemimager-server-flamethrowerd restart";
-	if( system( $cmd ) ) {
-	    carp("Couldn't start flamethrower");
-	    return 0;
-	}
-    }
-    return 0 unless progress_continue();
-    progress_update(96);
-
     $cmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
     if( system($cmd) ) {
 	carp("Couldn't run command $cmd");
 	return 0;
     }
     return 0 unless progress_continue();
-    progress_update(97);
+    progress_update(94);
 
     print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
 	
@@ -531,7 +475,7 @@ sub add_image_build {
 	return 0;
     }
     return 0 unless progress_continue();
-    progress_update(98);
+    progress_update(96);
 
     print "Ran si_mkautoinstallscript\n";
 
