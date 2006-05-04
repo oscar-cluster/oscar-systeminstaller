@@ -166,7 +166,7 @@ PREAMBLE
 		print OUTFILE "option domain-name-servers ".$config->nameservers.";\n";
 	}
 	if ($config->multicast) {
-		print OUTFILE "option option-143 code 143 = string; #For flamethrower\n";
+		print OUTFILE "option option-143 code 143 = string; # For flamethrower\n";
 		print OUTFILE "option option-143 \"9000\"; # Also for flamethrower\n";
 	}
 	if ($dhcpdver >= 3) {
