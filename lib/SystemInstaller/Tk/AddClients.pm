@@ -190,7 +190,8 @@ sub run_addclients {
         error_window($window,"You must add at least one host!");
         $window->Unbusy();
         $numentry->focus;
-        $numentry->selectionRange( 0, "end" );
+        # -BL- selectionRange is no longer supported in perl-Tk-804
+        #$numentry->selectionRange( 0, "end" );
         return undef;
     }
 
