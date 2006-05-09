@@ -233,7 +233,12 @@ sub write_entry {
         print OUTFILE "\t\t\tfilename \"".
 	    $bootfile{arch_of_machine($mach->name)}."\";\n";    
         print OUTFILE "\t\t\toption routers ". $mach->route .";\n" if $mach->route;
-        print OUTFILE "\t\t\toption domain-name \"". $mach->domainname . "\";\n" if $mach->domainname;
+	# add default search domains to that of the client node
+	# (doesn't matter if they are the same)
+	if ($mach->domainname) {
+	    print OUTFILE "\t\t\toption domain-name \"". $mach->domainname . 
+		" " . $HINFO{domain} . "\";\n";
+	}
         print OUTFILE "\t\t}\n";
 } #write_entry
 
