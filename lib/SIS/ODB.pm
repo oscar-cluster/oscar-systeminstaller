@@ -203,7 +203,7 @@ sub sisget {
     my @result;
     my (%options,@errors);
     $options{debug}=1;
-    print "SQL query: $sql\n" if $debug;
+    print "SQL query: $sql\n" if $option{debug};
     die "$0:Failed to query values via << $sql >>"
         if (!do_select($sql,\@result, \%options, @errors));
     return @result;
@@ -226,7 +226,7 @@ sub sisset {
         my $keyval = $o->{$key};
 	my $sql = "SELECT $key FROM $table WHERE $key='".$keyval."'";
 
-	print "SQL query: $sql\n" if $debug;
+	print "SQL query: $sql\n" if $option{debug};
 	die "$0:Failed to query values via << $sql >>"
 	    if (!do_select($sql,\@result, \%options, \@errors));
 	if (scalar(@result)) {
