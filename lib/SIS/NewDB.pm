@@ -14,6 +14,9 @@ package SIS::NewDB;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Copyright (c) Erich Focht <efocht@hpce.nec.com> , 2006
+#
+# $Id$
 
 =head1 NAME
 
@@ -140,35 +143,74 @@ my %sis2oda = (
 		   location => "Images.path",
 	       },
 	       adapter => {
-		   #client  => "Nodes.name:Nodes.id=Nics.node_id",
+		   client  => "Nodes.name:Nodes.id=Nics.node_id",
 		   mac     => "Nics.mac",
 		   ip      => "Nics.ip",
-		   #netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
+		   netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
 		   devname => "Nics.name" ,
 	       },
 	       client => {
 		   #EF: route is probably the Networks.gateway entry.
-		   #route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
+		   route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
 		   hostname => "Nodes.hostname",
 		   domainname => "Nodes.dns_domain",
-		   #arch => "Images.architecture:Nodes.image_id=Images.id",
-		   #imagename => "Images.name:Nodes.image_id=Images.id",
+		   arch => "Images.architecture:Nodes.image_id=Images.id",
+		   imagename => "Images.name:Nodes.image_id=Images.id",
 		   name => "Nodes.name",
 		   proccount => "Nodes.cpu_num",
 	       },
 	       );
 
 
+# 
+my %main_table = (
+		  image => "Images",
+		  client => "Nodes",
+		  adapter => "Nics",
+		  );
+#
+# Key fields in the corresponding ODA table.
+# I didn't use the "id" fields because I'd like to remove them from the table.
+# Also: I want to use a field that's returned by the list_* command.
+my %key_fields = (
+		  image => { name => "name" },  # SIS(Image).name  -> Images.name
+		  client => { name => "name" }, # SIS(Client).name -> Nodes.name
+		  adapter => { ip => "ip" },    # SIS(Adapter).ip  -> Nics.ip
+		  );
 
-sub list_image {
-    return list_common("image",@_);
+
+sub list_image { return list_common("image",@_)}
+sub list_adapter { return list_common("adapter",@_)}
+sub list_client { return list_common("client",@_)}
+
+sub exists_image {
+    my ($name) = @_;
+    my @images = list_image(name => $name);
+    return scalar(@images);
 }
-sub list_adapter {
-    return list_common("adapter",@_);
+sub exists_client {
+    my ($name) = @_;
+    my @images = list_client(name => $name);
+    return scalar(@images);
 }
-sub list_client {
-    return list_common("client",@_);
+sub exists_adapter {
+    my ($name, $client) = @_;
+    my @images = list_adapter(devname => $name, client => $client);
+    return scalar(@images);
 }
+# 
+sub del_image { return del_common("image",@_)}
+sub del_client {return del_common("client",@_)}
+sub del_adapter {return del_common("adapter",@_)}
+
+
+# sub set_image {return sisset('SIS::Image',@_)}
+# sub set_client {return sisset('SIS::Client',@_)}
+# sub set_adapter {return sisset('SIS::Adapter',@_)}
+
+
+
+##########################################################################
 
 sub list_common {
     my ($table,%args) = @_;
@@ -217,6 +259,93 @@ sub list_common {
     return @result;
 }
 
+
+sub del_common {
+    my ($table,%args) = @_;
+    my $maintable = $main_table{$table};
+    my $siskey = (keys(%{$key_fields{$table}}))[0];
+    my $odakey = $maintable . "." . $key_fields{$table}->{$siskey};
+
+    if (!scalar(keys(%args))) {
+	print "No records selected. Refusing to delete all records in".
+	    " table  $maintable\n";
+	return 0;
+    }
+
+    # - get the selection output by list_*
+    # - collect key fields from output
+    # - delete records with key fields from the main table
+    my @selection;
+    eval "\@selection = list_$table(%args)";
+    if (!scalar(@selection)) {
+	print "Selection had no result. Returning.\n" if ($debug);
+	return 0;
+    }
+
+    my @keys = map { $_->{$siskey} } @selection;
+
+
+    my $sql = "DELETE FROM $maintable";
+
+
+    my @where = map { "$odakey='".$_."'" } @keys;
+    if (@where) {
+	$sql .= " WHERE " . join(" OR ", @where);
+    }
+
+    my @result;
+    my (%options,@errors);
+    $options{debug}=1;
+    print "SQL query: $sql\n" if $debug;
+    #die "$0:Failed to query values via << $sql >>"
+    #    if (!do_select($sql,\@result, \%options, @errors));
+    return @result;
+}
+
+#sub set_common {
+#    my ($table,%args) = @_;
+#    my $maintable = $main_table{$table};
+#    my $siskey = (keys(%{$key_fields{$table}}))[0];
+#    my $odakey = $maintable . "." . $key_fields{$table}->{$siskey};
+#
+#    if (!scalar(keys(%args))) {
+#	print "No records selected. Refusing to delete all records in".
+#	    " table  $maintable\n";
+#	return 0;
+#    }
+#
+#    # - get the selection output by list_*
+#    # - collect key fields from output
+#    # - delete records with key fields from the main table
+#    my @selection;
+#    eval "\@selection = list_$table(%args)";
+#    if (!scalar(@selection)) {
+#	print "Selection had no result. Returning.\n" if ($debug);
+#	return 0;
+#    }
+#
+#    my @keys = map { $_->{$siskey} } @selection;
+#
+#
+#    my $sql = "DELETE FROM $maintable";
+#
+#
+#    my @where = map { "$odakey='".$_."'" } @keys;
+#    if (@where) {
+#	$sql .= " WHERE " . join(" OR ", @where);
+#    }
+#
+#    my @result;
+#    my (%options,@errors);
+#    $options{debug}=1;
+#    print "SQL query: $sql\n" if $debug;
+#    #die "$0:Failed to query values via << $sql >>"
+#    #    if (!do_select($sql,\@result, \%options, @errors));
+#    return @result;
+#
+#
+#}
+
 sub convert_fields_as {
     my ($ref, $as) = @_;
 
@@ -233,15 +362,29 @@ sub convert_fields_as {
 
 sub convert_sis2oda {
     my ($args, $table) = @_;
+    my $maintable = $main_table{$table};
     my $dummy;
     for my $k (keys(%{$args})) {
-	my $o = $sis2oda{$table}->{$k};
-	if ($o =~ /:/) {
-	    ($o,$dummy) = split (/:/,$o);
-	}
 	my $v = $args->{$k};
-	delete $args->{$k};
-	$args->{$o} = $v;
+	if (exists($sis2oda{$table}->{$k})) {
+	    #
+	    # convert SIS selector to ODA selector argument
+	    #
+	    my $o = $sis2oda{$table}->{$k};
+	    if ($o =~ /:/) {
+		($o,$dummy) = split (/:/,$o);
+	    }
+	    delete $args->{$k};
+	    $args->{$o} = $v;
+	} else {
+	    #
+	    # is native ODA selector, prepend maintable to it if needed
+	    #
+	    if ($k !~ /\./) {
+		delete $args->{$k};
+		$args->{"$maintable.$k"} = $v;
+	    }
+	}
     }
 }
 
@@ -278,34 +421,8 @@ sub convert_results_oda2sis {
 }
 
 
-# sub exists_image {
-#     my ($name) = @_;
-#     my @images = list_image(name => $name);
-#     return scalar(@images);
-# }
-# 
-# sub list_image {return _list_obj('SIS::Image',@_)}
-# sub del_image {return sisdel('SIS::Image',@_)}
-# sub set_image {return sisset('SIS::Image',@_)}
-# 
-# sub exists_client {
-#     my ($name) = @_;
-#     my @images = list_client(name => $name);
-#     return scalar(@images);
-# }
-# 
-# sub list_client {return _list_obj('SIS::Client',@_)}
-# sub del_client {return sisdel('SIS::Client',@_)}
-# sub set_client {return sisset('SIS::Client',@_)}
-# 
-# sub exists_adapter {
-#     my ($name, $client) = @_;
-#     my @images = list_adapter(devname => $name, client => $client);
-#     return scalar(@images);
-# }
-# sub list_adapter {return _list_obj('SIS::Adapter',@_)}
-# sub del_adapter {return sisdel('SIS::Adapter',@_)}
-# sub set_adapter {return sisset('SIS::Adapter',@_)}
+
+
 # 
 # sub _list_obj {
 #     my $type = shift;
