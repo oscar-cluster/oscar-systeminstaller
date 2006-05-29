@@ -147,7 +147,7 @@ sub get_image {
                       $window->Unbusy(),
                       return undef);
 
-    my $mkaiscmd = $main::config->mkaiscript . " -quiet -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+    my $mkaiscmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
     !system($mkaiscmd) or (carp("Couldn't run $mkaiscmd"), $window->Unbusy(), return undef);
 
     print "Ran si_mkautoinstallscript\n";

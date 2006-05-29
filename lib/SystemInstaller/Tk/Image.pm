@@ -464,12 +464,12 @@ sub add_image_build {
     progress_update(94);
 
     print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
-	
-    if ( $$vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) ) {
-	$cmd = $main::config->mkaiscript . " -quiet -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction} -iseries-vdisk=$$vars{vdiskdev}" ;
-    } else {
-	$cmd = $main::config->mkaiscript . " -quiet -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}"; 
-    }
+
+    # Default command options
+    $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+
+    $cmd = $cmd . " -iseries-vdisk=$$vars{vdiskdev}" if ( $$vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) );
+
     if( system($cmd) ) {
 	carp("Couldn't run $cmd");
 	return 0;
