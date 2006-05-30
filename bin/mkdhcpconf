@@ -239,6 +239,7 @@ sub write_entry {
 	    print OUTFILE "\t\t\toption domain-name \"". $mach->domainname . 
 		" " . $HINFO{domain} . "\";\n";
 	}
+	print OUTFILE "\t\t\tnext-server oscar_server;\n";
         print OUTFILE "\t\t}\n";
 } #write_entry
 
