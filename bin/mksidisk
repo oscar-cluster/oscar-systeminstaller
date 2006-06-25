@@ -93,7 +93,7 @@ if ($config->Add) {
                 croak("Partition file, $fn, not found!");
         }
         $partfh=*PARTITION_FILE;
-        $partfn=$ENV{PWD}."/".$fn;
+        $partfn=$fn;
         
     } else {
         $partfh=*STDIN;
