@@ -127,8 +127,8 @@ sub createimage_window {
 						  "Target Distribution"))
 	unless $noshow{distro};
 
-    label_entry_line($image_window, "Packages Directory", \$vars{pkgpath},"","x",
-		     helpbutton($image_window, "Package Directory"))
+    label_entry_line($image_window, "Package Repositories", \$vars{pkgpath},"","x",
+		     helpbutton($image_window, "Package Repositories"))
 	unless $noshow{pkgpath};
     
 	
