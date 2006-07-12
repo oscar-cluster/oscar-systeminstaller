@@ -104,20 +104,37 @@ if ($config->bootfile) {
 &verbose("Getting dhcpd version");
 my $dhcpdver=&dhcpd_version;
 
-&verbose("Printing file preamble");
-&preamble(%HINFO);
-
-print getnetent;
 &verbose("Resolving machine list.");
 my @machinelist = list_client();
 my @adaplist = list_adapter();
 
+# collect all domain names
+# - first take those passed on the command line
+# - add domains of all defined machines
+my %all_domains;
+for my $dom (split(" ",$HINFO{domain})) {
+    $dom =~ s/^\.//;
+    next if ($dom eq "");
+    $all_domains{$dom} = 1;
+}
 foreach my $mach (@machinelist) {
-	foreach my $adapter (@adaplist){
-		if (($mach->name eq $adapter->client) && ($adapter->mac) ) {
-			&write_entry($mach, $adapter);
-		}
+    if ($mach->domainname) {
+	my $k = $mach->domainname;
+	$all_domains{$k} = 1;
+    }
+}
+$HINFO{domain} = join(" ",keys(%all_domains));
+
+&verbose("Printing file preamble");
+&preamble(%HINFO);
+
+# write host specific entries
+foreach my $mach (@machinelist) {
+    foreach my $adapter (@adaplist){
+	if (($mach->name eq $adapter->client) && ($adapter->mac) ) {
+	    &write_entry($mach, $adapter);
 	}
+    }
 }
 # interface definitions for appliance adapters
 foreach my $adapter (@adaplist){
@@ -236,8 +253,7 @@ sub write_entry {
 	# add default search domains to that of the client node
 	# (doesn't matter if they are the same)
 	if ($mach->domainname) {
-	    print OUTFILE "\t\t\toption domain-name \"". $mach->domainname . 
-		" " . $HINFO{domain} . "\";\n";
+	    print OUTFILE "\t\t\toption domain-name \"".$mach->domainname."\";\n";
 	}
 	print OUTFILE "\t\t\tnext-server oscar_server;\n";
         print OUTFILE "\t\t}\n";
