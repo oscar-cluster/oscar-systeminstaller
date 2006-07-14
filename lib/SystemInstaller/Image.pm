@@ -133,22 +133,23 @@ sub write_scconf {
         my @kernels=find_kernels($imagedir);
         my $i=0;
         my $default=0;
+
         foreach (@kernels){
                 my ($path,$label)=split;
                 # Make sure its not longer than 15 characters
-                $label=substr($label,0,15);
-                unless ($default){
-                        print SCFILE "\tDEFAULTBOOT = $label\n\n";
-                        $default++;
-                }
-                print SCFILE "[KERNEL$i]\n";
-                print SCFILE "\tPATH = $path\n";
-                print SCFILE "\tLABEL = $label\n\n";
-                $i++;
-        }        
-        close SCFILE;
-        return 1;
-                
+		# (why actually? grub doesn't have this limitation)
+		#$label=substr($label,0,15);
+		unless ($default){
+			print SCFILE "\tDEFAULTBOOT = $label\n\n";
+			$default++;
+		}
+		print SCFILE "[KERNEL$i]\n";
+		print SCFILE "\tPATH = $path\n";
+		print SCFILE "\tLABEL = $label\n\n";
+		$i++;
+	}        
+	close SCFILE;
+	return 1;
 } #write_scconf
 
 sub find_kernels {

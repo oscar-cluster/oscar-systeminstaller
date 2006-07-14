@@ -299,8 +299,8 @@ sub partition_setup {
 			return 1;
 		}
 	} elsif ( ($image->arch =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
-              if (&SystemInstaller::Partition::IA::create_partition_file($image->location,%DISKS)) {
-                        return 1;
+		if (&SystemInstaller::Partition::IA::create_partition_file($image->location,%DISKS)) {
+			return 1;
 		}
 	} else {
 		print STDERR "$image->arch is not a recognized architecture\n";
@@ -308,8 +308,8 @@ sub partition_setup {
 	}
         &verbose("Writing updateclient exclude file");
         unless (&write_exclude_file($image->location,%DISKS)) {
-                carp("Failed to write exclude file to image");
-                return 1;
+		carp("Failed to write exclude file to image");
+		return 1;
         }
         return 0;
 

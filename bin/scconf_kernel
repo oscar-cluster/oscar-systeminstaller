@@ -1,0 +1,140 @@
+#!/usr/bin/env perl
+
+#   $Id$
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+#   Tool for editing systemconfigurator.conf default boot kernel
+#   from the shell.
+#
+#   Written and Copyright (c) by Erich Focht <efocht@hpce.nec.com>, July 2006
+#
+
+use strict;
+use vars qw($VERSION);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use POSIX;
+use Carp;
+use Getopt::Long;
+use lib "/usr/lib/systeminstaller";
+use SystemInstaller::Image;
+
+my ($imagepath, $defaultboot, $set, $verbose);
+GetOptions(
+           "image|i=s"       => \$imagepath,
+           "defaultboot|d=s" => \$defaultboot,
+           "verbose"   => \$verbose,
+           ) || &usage();
+
+if (!$imagepath) {
+    print "You MUST specify an image path !\n";
+    &usage;
+}
+if (!-d $imagepath) {
+    print "The image path $imagepath is not a directory!\n";
+    &usage;
+}
+my $scconf = "$imagepath/etc/systemconfig/systemconfig.conf";
+if (!-e $scconf) {
+    print "File $scconf not found!? Are you sure you use systemconfigurator?\n";
+    &usage;
+}
+
+# read list of kernels in the image
+my @kernels = SystemInstaller::Image::find_kernels($imagepath);
+my %boot;
+foreach (@kernels) {
+    my ($k,$l) = split();
+    #
+    # There is a limitation in systemconfigurator for the label length
+    # of 15 characters. Trying to remove it...
+    #
+    #if (length($l) > 15) {
+    #	print "WARNING: label is longer than 15 characters!\n";
+    #	print "label >$l<\n";
+    #}
+    #my $sl = substr($l,0,15);
+    my $sl = $l;
+    if (exists($boot{$sl})) {
+	print "ERROR: Duplicate kernel boot label detected!\n";
+	print "$l : $k , $sl $boot{$sl}\n";
+	exit 1;
+    }
+    $boot{$sl} = $k;
+}
+
+# locate default boot kernel
+my $cmd = "scconf_tool --block BOOT --var DEFAULTBOOT $scconf";
+open CMD, "$cmd |" or die "Could not run: $cmd : $!";
+my $line = <CMD>;
+close CMD;
+chomp $line;
+$line =~ m/^\s*DEFAULTBOOT\s*=\s*(.*)\s*$/;
+my $oldboot = $1;
+
+if (!$oldboot) {
+    print "Unable to detect old defaultboot label in $scconf\n";
+    exit 1;
+}
+
+if ($defaultboot) {
+    #if (length($defaultboot) > 15) {
+    #	print "WARNING: Trimming default boot label to 15 characters!\n";
+    #	$defaultboot = substr($defaultboot,0,15);
+    #}
+    if (!exists($boot{$defaultboot})) {
+	print "ERROR: Label $defaultboot not found in imae $imagepath\n";
+	exit 1;
+    }
+    $cmd = "scconf_tool --block BOOT --set --var DEFAULTBOOT".
+	" --val $defaultboot $scconf";
+    open CMD, "$cmd |" or die "Failed to run: $cmd : $!";
+    my @out = <CMD>;
+    close CMD;
+    open OUT, "> $scconf" or die "Could not open $scconf for writing : $!";
+    print OUT @out;
+    close OUT;
+}
+
+# print output
+$defaultboot = $oldboot if (!$defaultboot);
+print "DEFAULTBOOT : $defaultboot\n";
+printf "%-20s    %s\n","Label","Kernel";
+for my $l (keys(%boot)) {
+    printf "%-20s    %s\n",$l,$boot{$l};
+}
+
+exit 0;
+
+############################
+
+sub usage {
+    my $progname = $0;
+    if ($progname =~ m/(.+\/)(\w+)/) {
+	$progname = $2;
+    }
+    print <<USAGE;
+List kernels available in an image and show default boot kernel in the
+/etc/systemconfig/systemconfig.conf file.
+Set default boot kernel by modifying the /etc/systemconfig/systemconfig.conf
+file inside the image.
+
+Usage: $progname --image|-i <IMAGEPATH> [--defaultboot|-d <LABEL>]
+
+
+USAGE
+    exit;
+}

@@ -4,7 +4,7 @@
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: 2.2.4
+Version: 2.3.0
 Release: 1
 License: GPL
 URL: http://systeminstaller.sourceforge.net
@@ -77,6 +77,7 @@ rm -rf /var/tmp/%{name}-%{version}-root
 %doc samples/systeminstaller.conf
 %doc samples/disktable
 %{prefix}/bin/mk*
+%{prefix}/bin/scconf*
 %doc /usr/share/man/man1/mk*
 %doc /usr/share/man/man1/SIS*
 %doc /usr/share/man/man5/systeminstaller*
@@ -123,6 +124,11 @@ fi
 
 
 %changelog
+* Fri Jul 14 2006 Erich Focht
+- Added scconf_tool and scconf_kernel for editing sc.conf files
+- Removed 15 characted kernel boot label length limitation
+- version: 2.3.0
+
 * Sun Apr 16 2006 Bernard Li <bli@bcgsc.ca>
 - Removed multicast bits since this is now taken care of by the
   "Setup Networking" widget in OSCAR

@@ -108,6 +108,8 @@ WriteMakefile(
 				bin/mksimachine
 				bin/mksirange
 				bin/mkdhcpconf
+				bin/scconf_tool
+				bin/scconf_kernel
 				tksis/tksis
 				)],
               'INSTALLBIN' => "/usr/bin",
