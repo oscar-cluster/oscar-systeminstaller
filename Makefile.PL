@@ -33,34 +33,34 @@ srpm :: rpm_prep dist
 \trpm -ts --target noarch \$(NAME)-\$(VERSION).tar.gz
 
 ext_install :: conf
-\tmkdir -p \$(PREFIX)/../var/lib/sis
-\ttouch  \$(PREFIX)/../var/lib/sis/image
-\ttouch  \$(PREFIX)/../var/lib/sis/adapter
-\ttouch  \$(PREFIX)/../var/lib/sis/client
+\tmkdir -p \$(DESTDIR)\$(PREFIX)/../var/lib/sis
+\ttouch  \$(DESTDIR)\$(PREFIX)/../var/lib/sis/image
+\ttouch  \$(DESTDIR)\$(PREFIX)/../var/lib/sis/adapter
+\ttouch  \$(DESTDIR)\$(PREFIX)/../var/lib/sis/client
 
-\$(PREFIX)/../etc/systeminstaller/systeminstaller.conf : samples/systeminstaller.conf \$(PREFIX)/../etc/systeminstaller
-\tinstall samples/systeminstaller.conf \$(PREFIX)/../etc/systeminstaller/
+\$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/systeminstaller.conf : samples/systeminstaller.conf \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller
+\tinstall samples/systeminstaller.conf \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/
 
-\$(PREFIX)/../etc/systeminstaller/tksis.conf : samples/tksis.conf \$(PREFIX)/../etc/systeminstaller
-\tinstall samples/tksis.conf \$(PREFIX)/../etc/systeminstaller/
+\$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/tksis.conf : samples/tksis.conf \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller
+\tinstall samples/tksis.conf \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/
 
-\$(PREFIX)/../etc/systeminstaller :
-\tinstall -d \$(PREFIX)/../etc/systeminstaller
+\$(DESTDIR)\$(PREFIX)/../etc/systeminstaller :
+\tinstall -d \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller
 
-conf: \$(PREFIX)/../etc/systeminstaller/tksis.conf \$(PREFIX)/../etc/systeminstaller/systeminstaller.conf
+conf: \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/tksis.conf \$(DESTDIR)\$(PREFIX)/../etc/systeminstaller/systeminstaller.conf
 
 img_install ::
-\tinstall -d \$(PREFIX)/share/systeminstaller/images
-\tinstall tksis/images/monitor.xpm \$(PREFIX)/share/systeminstaller/images
-\tinstall tksis/images/image.xpm \$(PREFIX)/share/systeminstaller/images
+\tinstall -d \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
+\tinstall tksis/images/monitor.xpm \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
+\tinstall tksis/images/image.xpm \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
 
 distinfo_install ::
 
 \t for file in `find distinfo | grep -v CVS`; do \\
 \t\t if [[ -d \$\$file ]]; then \\
-\t\t\t install -d \$(PREFIX)/share/systeminstaller/\$\$file; \\
+\t\t\t install -d \$(DESTDIR)\$(PREFIX)/share/systeminstaller/\$\$file; \\
 \t\t else \\
-\t\t\t install \$\$file \$(PREFIX)/share/systeminstaller/\$\$file; \\
+\t\t\t install \$\$file \$(DESTDIR)\$(PREFIX)/share/systeminstaller/\$\$file; \\
 \t\t fi; \\
 \t done
 
@@ -74,9 +74,9 @@ manifest :
 
 manext_install ::
 \tcd doc && \\
-\tinstall -d \$(INSTALLMAN1DIR)/../man5 && \\
-\t\$(POD2MAN5_EXE) systeminstaller.conf.pod \$(INSTALLMAN1DIR)/../man5/systeminstaller.conf.5 && \\
-\t\$(POD2MAN5_EXE) SIS.pod \$(INSTALLMAN1DIR)/../man1/SIS.1 && \\
+\tinstall -d \$(DESTINSTALLMAN1DIR)/../man5 && \\
+\t\$(POD2MAN5_EXE) systeminstaller.conf.pod \$(DESTINSTALLMAN1DIR)/../man5/systeminstaller.conf.5 && \\
+\t\$(POD2MAN5_EXE) SIS.pod \$(DESTINSTALLMAN1DIR)/../man1/SIS.1 && \\
 \tcd ..
 
 install :: all pure_install doc_install ext_install manext_install img_install distinfo_install
