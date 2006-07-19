@@ -11,14 +11,7 @@ my $releasex = "1";
 sub MY::postamble {
     my $string = <<EOF;
 
-POD2MAN_EXE = /usr/bin/pod2man "--center=System Installer" "--release=System Installer v$version"
-POD2MAN = \$(PERL) -we '\%m=\@ARGV;for (keys \%m){' \\
--e 'next if -e \$\$m{\$\$_} && -M \$\$m{\$\$_} < -M \$\$_ && -M \$\$m{\$\$_} < -M "Makefile";' \\
--e 'print "Manifying \$\$m{\$\$_}\\n";' \\
--e 'system(qq[\$\$^X ].q["-I\$(PERL_ARCHLIB)" "-I\$(PERL_LIB)" \$(POD2MAN_EXE) ].qq[\$\$_>\$\$m{\$\$_}])==0 or warn "Couldn\\047t install \$\$m{\$\$_}\\n";' \\
--e 'chmod(oct(\$(PERM_RW))), \$\$m{\$\$_} or warn "chmod \$(PERM_RW) \$\$m{\$\$_}: \$\$!\\n";}'
-
-POD2MAN5_EXE = \$(POD2MAN_EXE) "--section=5"
+POD2MAN5_EXE = \$(POD2MAN) "--section=5"
 
 deb_prep ::
 \tperl -pi.bak -e 's/^VERSION.*/VERSION = $version/' debian/rules
@@ -108,8 +101,8 @@ WriteMakefile(
 				bin/mksimachine
 				bin/mksirange
 				bin/mkdhcpconf
-				bin/scconf_tool
-				bin/scconf_kernel
+                                bin/scconf_tool
+                                bin/scconf_kernel
 				tksis/tksis
 				)],
               'INSTALLBIN' => "/usr/bin",
