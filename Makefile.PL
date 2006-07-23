@@ -22,9 +22,9 @@ deb :: deb_prep dist
 \techo "Debian Packages have been built in /tmp/scdeb"
 
 rpm_prep ::
-\tperl -pi.bak -e 's/\%define version\\b.*/\%define version         $version/' sin.spec
-\tperl -pi.bak -e 's/\%define release\\b.*/\%define release         $release/' sin.spec
-\tperl -pi.bak -e 's/\%define releasex\\b.*/\%define releasex         $releasex/' sin.spec
+\tperl -pi.bak -e 's/\%define version\\b.*/\%define version         $version/' sin-oscar.spec
+\tperl -pi.bak -e 's/\%define release\\b.*/\%define release         $release/' sin-oscar.spec
+\tperl -pi.bak -e 's/\%define releasex\\b.*/\%define releasex         $releasex/' sin-oscar.spec
 
 rpm :: srpm
 \trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
