@@ -9,7 +9,7 @@ Release: 1
 License: GPL
 URL: http://systeminstaller.sourceforge.net
 Group: Applications/System
-Source: %{name}.tar.gz
+Source: %{name}-%{version}.tar.gz
 
 BuildArchitectures: noarch
 BuildRequires: /usr/bin/perl, perl(AppConfig), systemimager-server >= 3.5.0, systemconfigurator, perl(MLDBM)
@@ -47,7 +47,7 @@ some of the OSCAR infrastructure.
 System Installer Perl Tk User Interface
 
 %prep
-%setup -n %{name}
+%setup -n %{name}-%{version}
 
 # No configure, no make, just copy files to the output dir.
 %build

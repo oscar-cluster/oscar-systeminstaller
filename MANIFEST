@@ -70,3 +70,10 @@ samples/tksis.conf
 samples/disktable
 doc/systeminstaller.conf.pod
 doc/SIS.pod
+debian/changelog
+debian/compat
+debian/control
+debian/copyright
+debian/README.Debian
+debian/rules
+META.yml                                 Module meta-data (added by MakeMaker)

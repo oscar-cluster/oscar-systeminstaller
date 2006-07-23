@@ -4,7 +4,7 @@ use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
 # The global version is stored here so that it can be used by 
 # the man page string in rewriting POD2MAN_EXE
 
-my $version = "2.1";
+my $version = "2.3.0";
 my $release = "1";
 my $releasex = "1";
 
@@ -18,7 +18,7 @@ deb_prep ::
 
 deb :: deb_prep dist
 \tmkdir -p /tmp/scdeb
-\tmv systeminstaller-$version.tar.gz /tmp/scdeb && cd /tmp/scdeb && tar -xvzf systeminstaller-$version.tar.gz && cd systeminstaller-$version && dpkg-buildpackage && rm -rf /tmp/scdeb/systeminstaller-$version
+\tmv \$(NAME)-$version.tar.gz /tmp/scdeb && cd /tmp/scdeb && tar -xvzf \$(NAME)-$version.tar.gz && cd \$(NAME)-$version && dpkg-buildpackage && rm -rf /tmp/scdeb/\$(NAME)-$version
 \techo "Debian Packages have been built in /tmp/scdeb"
 
 rpm_prep ::
@@ -27,10 +27,10 @@ rpm_prep ::
 \tperl -pi.bak -e 's/\%define releasex\\b.*/\%define releasex         $releasex/' sin.spec
 
 rpm :: srpm
-\trpm -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
+\trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
 
 srpm :: rpm_prep dist
-\trpm -ts --target noarch \$(NAME)-\$(VERSION).tar.gz
+\trpmbuild -ts --target noarch \$(NAME)-\$(VERSION).tar.gz
 
 ext_install :: conf
 \tmkdir -p \$(DESTDIR)\$(PREFIX)/../var/lib/sis
@@ -93,7 +93,7 @@ EOF
 
 WriteMakefile(
               'VERSION' => $version,
-              'NAME' => 'systeminstaller',
+              'NAME' => 'systeminstaller-oscar',
               'EXE_FILES' => [qw(
 				bin/mksiadapter
 				bin/mksidisk
@@ -101,9 +101,9 @@ WriteMakefile(
 				bin/mksimachine
 				bin/mksirange
 				bin/mkdhcpconf
-                                bin/scconf_tool
-                                bin/scconf_kernel
 				tksis/tksis
+                bin/scconf_tool
+                bin/scconf_kernel 
 				)],
               'INSTALLBIN' => "/usr/bin",
               'INSTALLSITELIB' => "/usr/lib/systeminstaller",
