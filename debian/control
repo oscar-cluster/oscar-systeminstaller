@@ -1,0 +1,24 @@
+Source: systeminstaller-oscar
+Section: misc
+Priority: optional
+Maintainer: Geoffroy Vallee <valleegr@ornl.gov>
+Build-Depends: debhelper (>= 4.0.0), perl, libappconfig-perl, libdbd-csv-perl, libsql-statement-perl, libtext-csv-perl, libmldbm-sync-perl, libmldbm-perl 
+Standards-Version: 2.3.0 
+
+Package: systeminstaller-oscar-x11
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: System Installer Perl Tk User Interface.
+ System Installer Perl Tk User Interface
+
+Package: systeminstaller-oscar
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description:System Installer for the OSCAR cluster stack.
+ System Installer provides a unified image building tool.
+ It is intended to be distribution and architecture
+ independent. It interfaces with SystemImager and
+ System Configurator. This version of SystemInstaller is
+ adapted for use with the OSCAR cluster stack and requires
+ some of the OSCAR infrastructure.
+

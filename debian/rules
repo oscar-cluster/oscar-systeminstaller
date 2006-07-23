@@ -1,0 +1,123 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+
+
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	# Add here commands to configure the package.
+
+	touch configure-stamp
+
+
+build: configure-stamp build-stamp
+
+build-stamp: configure-stamp 
+	perl Makefile.PL
+
+	# Add here commands to compile the package.
+	$(MAKE)
+	#docbook-to-man debian/systeminstaller-oscar.sgml > systeminstaller-oscar.1
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	-$(MAKE) clean
+
+	dh_clean 
+
+# the two following sections should be done in a clean way
+install-indep: install-x11
+#	dh_testdir
+#	dh_testroot
+#	dh_clean -k 
+#	dh_installdirs
+
+	# Add here commands to install the package into debian/hawknl.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/bin/tksis
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man1/tk*
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man3/tk*
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/SystemInstaller/Tk
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/Tk
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/share/systeminstaller/images
+
+install-x11: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Add here commands to install the package into debian/hawknl.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar-tmp 
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
+	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/bin/tksis $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
+#	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller/Tk
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/Tk
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
+	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/share/systeminstaller/images/* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1
+	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/local/man/man1/tksis* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1/
+#	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/lib/systeminstaller/SystemInstaller/Tk/* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller/Tk
+	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/lib/systeminstaller/Tk/*  $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/Tk
+
+# Build architecture-independent files here.
+binary-indep: build install-indep
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installexamples
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_perl
+#	dh_python
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch 
+.PHONY: build clean binary-indep binary-arch binary install configure
