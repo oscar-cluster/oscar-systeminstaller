@@ -16,6 +16,8 @@ bin/mksiimage
 bin/mksimachine
 bin/mksirange
 bin/mkdhcpconf
+bin/scconf_tool
+bin/scconf_kernel
 data/adapter
 data/Adapter
 data/client
