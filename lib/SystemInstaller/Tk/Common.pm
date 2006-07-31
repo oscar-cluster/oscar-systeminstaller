@@ -36,6 +36,9 @@ use strict;
 
 %Labels = ();
 
+# Default font for Tk dialogs
+my $FONT = "-*-helvetica-bold-r-normal-*-14-140-*-*-*-*-*-*";
+
 #
 #  selector2entry sets up the callback needed for a fileselector to be tied to 
 #  an entry box
@@ -96,6 +99,7 @@ sub yn_window {
 	my $dialog = $w->Dialog(
 		-title => 'A Question',
 		-bitmap => 'question',
+		-font => $FONT,
 		-text => $message,
 		-default_button => 'No',
 		-buttons => [ 'Yes', 'No' ],
@@ -113,6 +117,7 @@ sub done_window {
 	my $dialog = $w->Dialog(
 		-title => 'Done!',
 		-bitmap => 'info',
+		-font => $FONT,
 		-text => $message,
 		-default_button => 'OK',
 		-buttons => [ 'OK' ],
@@ -130,6 +135,7 @@ sub error_window {
 	my $dialog = $w->Dialog(
 		-title => 'ERROR!',
 		-bitmap => 'error',
+		-font => $FONT,
 		-text => $message,
 		-default_button => 'OK',
 		-buttons => [ 'OK' ],
