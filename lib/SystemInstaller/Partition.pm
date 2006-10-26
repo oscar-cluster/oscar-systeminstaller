@@ -1,6 +1,6 @@
 package SystemInstaller::Partition;
 	
-#   $Header: /cvsroot/systeminstaller/systeminstaller/lib/SystemInstaller/Partition.pm,v 1.27 2002/12/17 17:25:48 mchasal Exp $
+#   $Id$
 #   Copyright (c) 2001 International Business Machines
  
 #   This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,12 @@ package SystemInstaller::Partition;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
 #   Stacy Woods <spwoods@us.ibm.com>             
-
-#   Erich Focht <efocht@hpce.nec.com>: Added RAID1 support. (c) 2005 NEC HPCE
-
+#
+#   Copyright (c) 2005, 2006 Erich Focht <efocht@hpce.nec.com>
+#                 Added RAID1 support.
+#                 Generalized to new systemimager RAID XML format.
+#                 Added RAID0,1,5,6 support.
+#
 
 use strict;
 use vars qw($VERSION @EXPORT @EXPORT_OK);
@@ -70,8 +73,11 @@ sub read_partition_info {
 		    my @parts = split /\s+/, $_;
 		    shift @parts;
 		    my $rdev = shift @parts;    # raid* device name
-		    #my @spares = grep /^\[\S+\]$/, @parts;
-		    @{$DISKS{$rlevel}{$rdev}} = @parts;
+		    my @spares = grep /^\[\S+\]$/, @parts;
+		    @spares = map { m/^\[(\S+)\]$/; $1; } @spares;
+		    my @active = grep !/^\[\S+\]$/, @parts;
+		    @{$DISKS{$rlevel}{$rdev}{active}} = @active;
+		    @{$DISKS{$rlevel}{$rdev}{spares}} = @spares;
 		    next;
 		}
 
@@ -85,19 +91,15 @@ sub read_partition_info {
 		    my @partitions = ();
 		    my $raid = "";
 		    # is it a software raid partition?
-		    if (defined($DISKS{RAID0}{$pdev})) {
-			@partitions = @{$DISKS{RAID0}{$pdev}};
-			$raid = "*";
-		    } elsif (defined($DISKS{RAID1}{$pdev})) {
-			@partitions = @{$DISKS{RAID1}{$pdev}};
-			$raid = "*";
-		    } elsif (defined($DISKS{RAID5}{$pdev})) {
-			@partitions = @{$DISKS{RAID5}{$pdev}};
-			$raid = "*";
-		    } elsif (defined($DISKS{RAID6}{$pdev})) {
-			@partitions = @{$DISKS{RAID6}{$pdev}};
-			$raid = "*";
-		    } else {
+		    for my $level (0, 1, 5, 6) {
+			my $rlev = "RAID$level";
+			if (defined($DISKS{$rlev}{$pdev})) {
+			    push @partitions, @{$DISKS{$rlev}{$pdev}{active}};
+			    push @partitions, @{$DISKS{$rlev}{$pdev}{spares}};
+			    $raid = "*";
+			}
+		    }
+		    if (!$raid) {
 			push @partitions, $pdev;
 		    }
 		    foreach my $part (@partitions) {
