@@ -57,7 +57,7 @@ sub create_partition_file {
                 &build_sfdisk_file($ipath,%DISKS);
         } elsif ($main::config->diskversion eq "3") {
                 &build_aiconf_file($ipath,%DISKS);
-                &build_raidtab_file($ipath,%DISKS);
+                #&build_raidtab_file($ipath,%DISKS);
                 &build_mdadmconf_file($ipath,%DISKS);
         } else {
                 carp("Disk table version is invalid in systeminstaller.conf file.");
@@ -170,6 +170,27 @@ sub build_aiconf_file {
                 }        
                 print AICONF "\t</disk>\n";
         }
+
+	# Write RAID structures - EF -
+	for my $rlevel ("0", "1", "5", "6") {
+	    my $rraid = "RAID$rlevel";
+	    foreach my $rdev (keys %{$DISKS{$rraid}}) {
+		my @parts = @{$DISKS{$rraid}{$rdev}};
+		my $ndevs = scalar(@parts);
+		print AICONF "\t<raid name=\"rdev\"\n";
+		print AICONF "\t    raid_level=\"raid$rlevel\"\n";
+		print AICONF "\t    raid_devices=\"$ndevs\"\n";
+		# no spare devices supported right now [EF]
+		print AICONF "\t    spare_devices=\"0\"\n";
+		print AICONF "\t    persistence=\"yes\"\n";
+		if ($rlevel eq "5" || $rlevel eq "6") {
+		    print AICONF "\t    layout=\"left-asymmetric\"\n";
+		}
+		print AICONF "\t    devices=\"".join(" ",@parts)."\"\n";
+		print AICONF "\t/>\n";
+	    }
+	}
+
         # Now do the filesystems
         my $lcount=100;
         foreach my $dev (@{$DISKS{MOUNTORDER}}) {

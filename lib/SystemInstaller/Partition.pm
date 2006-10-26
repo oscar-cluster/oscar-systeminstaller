@@ -63,12 +63,15 @@ sub read_partition_info {
                         next;
                 }
 
-		# RAID1 software raid definitions
-		if (/^\s*raid1\s+/) {
+		# RAID* software raid definitions
+		if (/^\s*raid([0156])\s+/) {
+		    my $level = $1;
+		    my $rlevel = "RAID$level";
 		    my @parts = split /\s+/, $_;
 		    shift @parts;
-		    my $rdev = shift @parts;    # raid1 device name
-		    @{$DISKS{RAID1}{$rdev}} = @parts;
+		    my $rdev = shift @parts;    # raid* device name
+		    #my @spares = grep /^\[\S+\]$/, @parts;
+		    @{$DISKS{$rlevel}{$rdev}} = @parts;
 		    next;
 		}
 
@@ -81,9 +84,18 @@ sub read_partition_info {
 
 		    my @partitions = ();
 		    my $raid = "";
-		    # is it a software raid1 partition?
-		    if (defined($DISKS{RAID1}{$pdev})) {
+		    # is it a software raid partition?
+		    if (defined($DISKS{RAID0}{$pdev})) {
+			@partitions = @{$DISKS{RAID0}{$pdev}};
+			$raid = "*";
+		    } elsif (defined($DISKS{RAID1}{$pdev})) {
 			@partitions = @{$DISKS{RAID1}{$pdev}};
+			$raid = "*";
+		    } elsif (defined($DISKS{RAID5}{$pdev})) {
+			@partitions = @{$DISKS{RAID5}{$pdev}};
+			$raid = "*";
+		    } elsif (defined($DISKS{RAID6}{$pdev})) {
+			@partitions = @{$DISKS{RAID6}{$pdev}};
 			$raid = "*";
 		    } else {
 			push @partitions, $pdev;
