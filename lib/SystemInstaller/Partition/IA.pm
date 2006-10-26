@@ -174,7 +174,7 @@ sub build_aiconf_file {
 	# Write RAID structures - EF -
 	for my $rlevel ("0", "1", "5", "6") {
 	    my $rraid = "RAID$rlevel";
-	    foreach my $rdev (keys %{$DISKS{$rraid}}) {
+	    foreach my $rdev (sort(keys %{$DISKS{$rraid}})) {
 		my @parts = @{$DISKS{$rraid}{$rdev}};
 		my $ndevs = scalar(@parts);
 		print AICONF "\t<raid name=\"$rdev\"\n";
