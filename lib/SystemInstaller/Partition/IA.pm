@@ -252,7 +252,7 @@ sub build_aiconf_file {
 	my $instkdir = "/usr/share/systemimager/boot/$instarch/standard";
 	my $kvers = kernel_version($instkdir . "/kernel");
 	if ($kvers =~ /^2\.6\./) {
-		print AICONF "\t<boel devstyle=\"devfs\" />\n";
+		print AICONF "\t<boel devstyle=\"udev\" />\n";
 	}
 
         print AICONF "</config>\n";
