@@ -177,7 +177,7 @@ sub build_aiconf_file {
 	    foreach my $rdev (keys %{$DISKS{$rraid}}) {
 		my @parts = @{$DISKS{$rraid}{$rdev}};
 		my $ndevs = scalar(@parts);
-		print AICONF "\t<raid name=\"rdev\"\n";
+		print AICONF "\t<raid name=\"$rdev\"\n";
 		print AICONF "\t    raid_level=\"raid$rlevel\"\n";
 		print AICONF "\t    raid_devices=\"$ndevs\"\n";
 		# no spare devices supported right now [EF]
