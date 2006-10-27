@@ -20,6 +20,9 @@
 
 #   Stacy Woods <spwoods@us.ibm.com>
 #   Michael Chase-Salerno <mchasal@users.sf.net>
+#
+#   Copyright (c) 2005,2006 Erich Focht <efocht@hpce.nec.com>
+#   All rights reserved.
 
 use strict;
 use vars qw($config $VERSION);
@@ -350,6 +353,35 @@ with the --List option. Note that the ":" in the specification of
 an nfs remote mount point will be replaced with a "#".
 
 =back
+
+=head2 Software RAIDs
+
+Software RAIDs can be described in the disktab files in simple way.
+RAID0, RAID1, RAID5 and RAID6 are supported. The definition consists
+of two stages:
+  - The software raid device level and members definition line. The first
+    keyword is one of raid0, raid1, raid5 or raid6. It 
+  - The member partition size, mount point and options definition line.
+    All partitions of a software RAID device have the same size.
+
+
+Sample file:
+   # raid devices and their member disk partition devices
+   # - two mirrored devices
+   raid1 /dev/md0 /dev/sda1 /dev/sdb1
+   raid1 /dev/md1 /dev/sda2 /dev/sdb2
+   # - a RAID5 device: [/dev/sdd1] is a spare device
+   raid5 /dev/md2 /dev/sda3 /dev/sdb3 /dev/sdc1 [/dev/sdd1]
+   # - a RAID0 (striped) device
+   raid0 /dev/md3 /dev/sda4 /dev/sdb4
+   
+   # partition sizes, filesystem type, mount point and options
+   /dev/md0       100        ext3      /boot    defaults bootable
+   /dev/md1       2048       swap
+   /dev/md2       8192       ext3      /        defaults
+   /dev/md3       *          ext3      /scratch defaults
+
+
 
 =head1 NOTES:
 
