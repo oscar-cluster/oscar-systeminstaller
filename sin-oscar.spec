@@ -4,7 +4,7 @@
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: 2.3.0
+Version: 2.3.1
 Release: 1
 License: GPL
 URL: http://systeminstaller.sourceforge.net
@@ -120,6 +120,11 @@ fi
 
 
 %changelog
+* Fri Oct 27 2006 Erich Focht
+- Added support for RAID0,1,5,6 and new XML format in systemimager for software raids
+- Added support for spare devices when defining raids.
+- version 2.3.1
+
 * Fri Jul 14 2006 Erich Focht
 - Added scconf_tool and scconf_kernel for editing sc.conf files
 - Removed 15 characted kernel boot label length limitation

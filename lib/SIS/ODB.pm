@@ -246,7 +246,7 @@ sub sisset {
 	    $sql .= "VALUES ('" . join("', '",(values(%{$o}))) . "')";
 
 	    croak("$0:Failed to insert values via << $sql >>")
-		if !do_update($sql, $table, \%options, \@errors);
+		if !do_insert($sql, $table, \%options, \@errors);
 	}
     }
     return 1;
