@@ -96,7 +96,7 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
     
     sub timestamp {
         my ($sec, $min, $hour, $mday,$mon, $year, $wday, $yday, $isdst) = localtime(time);
-        $month++;
+        $mon++;
         $year=$year+1900;
         return "$year-$mon-$mday $hour:$min:$sec";
     }
