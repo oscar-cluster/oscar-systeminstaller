@@ -136,9 +136,6 @@ sub build_aiconf_file {
 					$flags="raid";
 				    }
                                 }
-                                if ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "swap") {
-                                    $flags="swap";
-                                }
 				if ($flags) {
                                         print AICONF "flags=\"$flags\" ";
 				}
