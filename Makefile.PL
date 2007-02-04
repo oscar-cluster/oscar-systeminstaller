@@ -22,9 +22,9 @@ deb :: deb_prep dist
 \techo "Debian Packages have been built in /tmp/scdeb"
 
 rpm_prep ::
-\tperl -pi.bak -e 's/\%define version\\b.*/\%define version         $version/' sin-oscar.spec
-\tperl -pi.bak -e 's/\%define release\\b.*/\%define release         $release/' sin-oscar.spec
-\tperl -pi.bak -e 's/\%define releasex\\b.*/\%define releasex         $releasex/' sin-oscar.spec
+\tsed -e 's/\%define version\\b.*/\%define version         $version/' \\
+\t-e 's/\%define release\\b.*/\%define release         $release/' \\
+\t-e 's/\%define releasex\\b.*/\%define releasex         $releasex/' sin-oscar.spec.in > sin-oscar.spec
 
 rpm :: srpm
 \trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
@@ -111,4 +111,5 @@ WriteMakefile(
 			      MLDBM => '2',
                               AppConfig => '1.52',
                              },
+              'realclean' => {FILES => "*.old *.bak *.spec *.tar.gz Makefile MANIFEST"},
              );

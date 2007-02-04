@@ -1,11 +1,14 @@
 %define prefix          /usr
+%define version         %version
+%define release         %release
+%define releasex        %releasex
 
 %define _unpackaged_files_terminate_build 0
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: 2.3.1
-Release: 1
+Version: %version
+Release: %release
 License: GPL
 URL: http://systeminstaller.sourceforge.net
 Group: Applications/System

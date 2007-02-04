@@ -76,7 +76,7 @@ $config->define(
         client=>{ARGCOUNT=> ARGCOUNT_ONE},
         user=>{ARGCOUNT=> ARGCOUNT_ONE},
         parse=>{ARGCOUNT=>ARGCOUNT_NONE},
-
+        force=>{ARGCOUNT=>ARGCOUNT_NONE},
 );
 
 
@@ -133,7 +133,7 @@ if ($config->Get) {
 } 
 if ($config->Add) {
     &verbose("Checking for existing image.");
-    if (exists_image($config->name)) {
+    if (exists_image($config->name) && !$config->force) {
 	my $iname = $config->name;
 	croak("Image $iname exists -- not added.\n");
     }
@@ -447,6 +447,7 @@ usage: $progname [ operation ] <options>
     --source <image>        the image to make a copy of.
     -v, --verbose           massive verbose output
     --parse                 print colon-delimited output (valid with --List)
+    --force                 force operation even if image exists (valid with --Add)
 
 
 USAGE

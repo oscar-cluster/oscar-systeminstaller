@@ -16,6 +16,8 @@ bin/mksiimage
 bin/mksimachine
 bin/mksirange
 bin/mkdhcpconf
+bin/scconf_tool
+bin/scconf_kernel
 data/adapter
 data/Adapter
 data/client
@@ -39,6 +41,7 @@ lib/SystemInstaller/Image/Kernel_iseries.pm
 lib/SystemInstaller/Machine.pm
 lib/SystemInstaller/Package.pm
 lib/SystemInstaller/PackageBest.pm
+lib/SystemInstaller/PackageBest/Rpm.pm
 lib/SystemInstaller/Package/Deb.pm
 lib/SystemInstaller/Package/Deboot.pm
 lib/SystemInstaller/Package/PackManSmart.pm
@@ -70,3 +73,9 @@ samples/tksis.conf
 samples/disktable
 doc/systeminstaller.conf.pod
 doc/SIS.pod
+debian/changelog
+debian/compat
+debian/control
+debian/copyright
+debian/README.Debian
+debian/rules

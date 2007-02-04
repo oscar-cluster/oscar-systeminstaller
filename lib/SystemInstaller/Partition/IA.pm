@@ -136,9 +136,16 @@ sub build_aiconf_file {
 					$flags="raid";
 				    }
                                 }
-				if ($flags) {
+                                if ($DISKS{PARTITIONS}{$parname}{TYPE} == "82") {
+				    if ($flags) {
+					$flags .= ",swap";
+				    } else {
+					$flags="swap";
+				    }
+                                }
+                                if ($flags) {
                                         print AICONF "flags=\"$flags\" ";
-				}
+                                }
                                 print AICONF "/>\n";
                         } elsif ((! $extparcreated )&&(defined $DISKS{PARTITIONS}{$disk."5"}) ){
                                 print AICONF "\t\t<part num=\"$parnum\" size=\"\*\" ";
@@ -164,9 +171,16 @@ sub build_aiconf_file {
 					$flags="raid";
 				    }
                                 }
-				if ($flags) {
+                                if ($DISKS{PARTITIONS}{$parname}{TYPE} == "82") {
+				    if ($flags) {
+					$flags .= ",swap";
+				    } else {
+					$flags="swap";
+				    }
+                                }
+                                if ($flags) {
                                         print AICONF "flags=\"$flags\" ";
-				}
+                                }
                                 print AICONF "/>\n";
                         }
                 }        

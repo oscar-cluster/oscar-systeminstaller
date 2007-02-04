@@ -339,8 +339,6 @@ sub listimages {
 sub add_image {
     my $vars = shift;
     my $window = shift;
-
-
     my $config = init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
@@ -352,15 +350,11 @@ sub add_image {
 	    $window->Unbusy();
 	    return undef;
 	}
-	#
-	# This should work, but it's not trustworthy.
-	#
-	system("mksiimage -D --name $$vars{imgname}");
-	#
-	# Belt and suspenders for above.
-	#
-	SystemImager::Server->remove_image_stub($rsync_stub_dir, $$vars{imgname});
-	SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+
+        # Manually delete the image directory such that SystemInstaller can re-create it in the same path
+        # This way, the SystemImager rsync files etc. are intact
+        system("rm -rf $$vars{imgpath}/$$vars{imgname}");
+        $$vars{extraflags} .= "--force";
 	$window->update();
     }
 

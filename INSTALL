@@ -33,3 +33,18 @@ The following steps will install from the tar ball release
 If you get any errors during 'make test' please report them, along with
 the output of 'perl -V' to systeminstaller-users@lists.sourceforge.net.
 
+The following steps will allow you to build RPMs
+
+ perl Makefile.PL
+ make manifest
+ make rpm
+
+The following steps will allow you to build debs
+
+ perl Makefie.PL
+ make manifest
+ make deb
+
+To cleanup
+
+ make realclean
