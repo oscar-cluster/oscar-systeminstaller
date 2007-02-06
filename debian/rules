@@ -50,39 +50,32 @@ clean:
 	dh_clean 
 
 # the two following sections should be done in a clean way
-install-indep: install-x11
-#	dh_testdir
-#	dh_testroot
-#	dh_clean -k 
-#	dh_installdirs
-
-	# Add here commands to install the package into debian/hawknl.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/bin/tksis
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man1/tk*
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man3/tk*
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/SystemInstaller/Tk
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/Tk
-	rm -rf $(CURDIR)/debian/systeminstaller-oscar/usr/share/systeminstaller/images
-
-install-x11: build
+install-indep: 
 	dh_testdir
 	dh_testroot
-	dh_clean -k
+	dh_clean -k 
 	dh_installdirs
 
-	# Add here commands to install the package into debian/hawknl.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar-tmp 
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
-	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/bin/tksis $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
-#	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller/Tk
-	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/Tk
+
+	# Add here commands to install the package into debian/systeminstaller-oscar.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
+
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/bin/tksis \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
-	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/share/systeminstaller/images/* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/share/systeminstaller/images/* \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1
-	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/local/man/man1/tksis* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1/
-#	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/lib/systeminstaller/SystemInstaller/Tk/* $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller/Tk
-	mv $(CURDIR)/debian/systeminstaller-oscar-tmp/usr/lib/systeminstaller/Tk/*  $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/Tk
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man1/tksis* \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1/
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/SystemInstaller/Tk \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/Tk  \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller
 
 # Build architecture-independent files here.
 binary-indep: build install-indep
