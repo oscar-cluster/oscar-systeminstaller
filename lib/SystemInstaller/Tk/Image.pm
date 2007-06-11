@@ -17,6 +17,7 @@ package SystemInstaller::Tk::Image;
 # $Id$
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
+# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
 
 use base qw(Exporter);
 use vars qw(@EXPORT);
@@ -89,6 +90,25 @@ sub createimage_window {
     # locate all available distro pools
     my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
     my @distros = sort(keys(%distro_pools));
+    # We put the local distro first: this avoid the bug where the GUI has 
+    # default values based on alphabetic sorting and others based on the local
+    # distro, which makes the GUI kind of incoherent.
+    #
+    # Also note that this kind of functionality may be integrated into 
+    # OS_Dectec. But since this is not currently the case (OS_Detect can detect
+    # the distro of pools for Linux distributions, not OSCAR pools.
+    my $os = OSCAR::OCA::OS_Detect::open("/");
+    my $osid = $os->{distro}."-".$os->{distro_version}."-".$os->{arch};
+    my $i = 0;
+    while ($i < scalar(@distros)) {
+        print "$i: $distros[$i]\n";
+        if ($distros[$i] eq $osid) {
+            my $d = $distros[$i];
+            delete ($distros[$i]);
+            unshift (@distros, $d);
+        }
+        $i++;
+    }
 
     $noshow{vdiskdev}="yes" unless -d '/proc/iSeries';
 
@@ -110,7 +130,12 @@ sub createimage_window {
     #
     my $package_button = $image_window->Button(
 					       -text=>"Choose a File...",
-					       -command=> [\&selector2entry, \$vars{pkgfile}, "Select package list", [["Package list", ".rpmlist"],["All files", "*"]], $image_window],
+					       -command=> [\&selector2entry, 
+                                       \$vars{pkgfile}, 
+                                       "Select package list", 
+                                       [["Package list", ".rpmlist"],
+                                        ["All files", "*"]], 
+                                       $image_window],
 					       -pady => 4,
 					       -padx => 4,
 					       );
@@ -121,23 +146,64 @@ sub createimage_window {
     #
     #  Third Line:  where are your packages?
     #
-    my $distrooption = label_option_line($image_window, "Target Distribution",
-				       \$vars{distro},\@distros, "x",
-				       helpbutton($image_window,
-						  "Target Distribution"))
-	unless $noshow{distro};
+    my @options;
+    my $validate = "";
+    my $labeltext = "Package Repositories";
+    my $variable = $vars{pkgpath};
+    my @morewidgets = helpbutton($image_window, "Package Repositories");
+    if($validate) {
+        @options = (
+            -validatecommand => $validate,
+            -validate => "focusout",
+        );
+    }
+    my $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
+    my $entry = $image_window->Entry(-textvariable => $variable, @options);
+    $label->grid($entry, "x", @morewidgets, -sticky => "nw");
 
-    label_entry_line($image_window, "Package Repositories", \$vars{pkgpath},"","x",
-		     helpbutton($image_window, "Package Repositories"))
-	unless $noshow{pkgpath};
-    
+    $labeltext = "Target Distribution";
+    $variable = $vars{distro};
+    my $opt = \@distros;
+    my $label2 = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
+
+    my $default = $variable;
+    my $distrooption = $image_window->Optionmenu(
+        -options => $opt,
+        -command => sub {
+            my $dist = shift;
+            print "Selection: $dist\n";
+            my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+            foreach my $k (keys %distro_pools) {
+                if ($k eq $dist) {
+                    my $new_pools = "$distro_pools{$k}->{distro_repo}, ".
+                                    "$distro_pools{$k}->{oscar_repo}";
+                    print "the new package list is: $new_pools\n";
+                    $vars{pkgpath} = $new_pools;
+                    $entry->gridForget();                
+                    $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
+                    $entry = $image_window->Entry(-textvariable => $new_pools, @options);
+                    $label->grid($entry, -row => 3, -column => 1, -sticky => "nw");
+                }
+            }
+        },
+        -variable => $variable);
+    $distrooption->setOption($default) if $default;
+
+    my @morewidgets2 = helpbutton($image_window,
+                      "Target Distribution");
+    $label2->grid($distrooption, "x", @morewidgets2, -sticky => "nesw");
 	
     #
     #  Fourth line:  disktable
     #
     my $disk_button = $image_window->Button(
 					    -text=>"Choose a File...",
-					    -command=> [\&selector2entry, \$vars{diskfile}, "Select disk configuration", [["Disk configuration", ".disk"],["All files", "*"]], $image_window],
+					    -command=> [\&selector2entry, 
+                                    \$vars{diskfile}, 
+                                    "Select disk configuration", 
+                                    [["Disk configuration", ".disk"],
+                                     ["All files", "*"]], 
+                                    $image_window],
 					    -pady => 4,
 					    -padx => 4,
 					    );
@@ -146,7 +212,10 @@ sub createimage_window {
     # (only for iseries).  Virtual disk enable.
     # 
 
-    label_entry_line($image_window, "Virtual Disk", \$vars{vdiskdev},"","x",helpbutton($image_window, "Virtual Disk"))
+    label_entry_line($image_window, 
+                     "Virtual Disk", 
+                     \$vars{vdiskdev},
+                     "","x",helpbutton($image_window, "Virtual Disk"))
 	unless $noshow{vdiskdev};
 
     #
@@ -161,9 +230,12 @@ sub createimage_window {
     # Set root password
     #
 	
-    my $passlabel=$image_window->Label(-text=>"Root password(confirm):", -anchor=>"w");
+    my $passlabel=$image_window->Label(-text=>"Root password(confirm):", 
+                                       -anchor=>"w");
     my $pass = $image_window->Entry(-textvariable=>\$vars{pass1}, -show=>"*");
-    my $passconfirm = $image_window->Entry(-textvariable=>\$vars{pass2}, -show=>"*", -width=>14);
+    my $passconfirm = $image_window->Entry(-textvariable=>\$vars{pass2}, 
+                                           -show=>"*", 
+                                           -width=>14);
     $passlabel->grid($pass,$passconfirm,helpbutton($image_window, "Root password"))
 	unless $noshow{password};
 
@@ -173,9 +245,12 @@ sub createimage_window {
 	
     my @archoptions = qw( i386 i486 i586 i686 ia64 ppc x86_64 athlon amd64 );
 
-    my $archoption = label_option_line($image_window, "Target Architecture",
-				       \$vars{arch},\@archoptions, "x",
-				       helpbutton($image_window,"Target Architecture"))
+    my $archoption = label_option_line($image_window, 
+                                       "Target Architecture",
+                                       \$vars{arch},\@archoptions, 
+                                       "x",
+				                       helpbutton($image_window,
+                                                  "Target Architecture"))
 	unless $noshow{arch};
 
     #
@@ -184,9 +259,12 @@ sub createimage_window {
 
     my @ipoptions = qw( dhcp replicant static );
 
-    my $ipoption = label_option_line($image_window, "IP Assignment Method",
-				     \$vars{ipmeth},\@ipoptions, "x",
-				     helpbutton($image_window, "IP Method"))
+    my $ipoption = label_option_line($image_window, 
+                                     "IP Assignment Method",
+                                     \$vars{ipmeth},
+                                     \@ipoptions, 
+                                     "x",
+				                     helpbutton($image_window, "IP Method"))
 	unless $noshow{ipmeth};
 
     #
@@ -196,8 +274,8 @@ sub createimage_window {
     my @postinstall = qw(beep reboot shutdown kexec);
 
     my $postoption = label_option_line($image_window, "Post Install Action",
-				       \$vars{piaction},\@postinstall, "x",
-				       helpbutton($image_window, "Post Install Action"))
+                       \$vars{piaction},\@postinstall, "x",
+                       helpbutton($image_window, "Post Install Action"))
 	unless $noshow{piaction};
 
     # Then a whole bunch of control buttons
@@ -223,26 +301,15 @@ sub createimage_window {
 					     -padx => 8,
 					     );
 
-    $reset_button->grid($activate_button, quit_button($image_window),"-" , -sticky => "nesw");
+    $reset_button->grid($activate_button, 
+                        quit_button($image_window),
+                        "-" , 
+                        -sticky => "nesw");
 	
     # key bindings
     $image_window->bind("<Control-q>",sub {$image_window->destroy});
     $image_window->bind("<Control-r>",sub {$reset_button->invoke});
 
-    # binding for distro selection
-
-    $distrooption->bind("<ButtonRelease>", sub {
-	#
-	my $dist = $vars{distro};
-	my %d = %{$distro_pools{$dist}};
-	my $pools = $d{distro_repo}.",".$d{oscar_repo};
-	#
-	$vars{pkgpath} = $pools;
-	#
-	&make_pkglist($d{os});
-    }
-			);
-    
     center_window( $image_window );
 }
 
