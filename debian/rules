@@ -56,26 +56,30 @@ install-indep:
 	dh_clean -k 
 	dh_installdirs
 
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/man/man1
 
 	# Add here commands to install the package into debian/systeminstaller-oscar.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar
+	$(MAKE) pure_install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar \
+		SITEPREFIX=/usr INSTALLSITEMAN1DIR=/usr/share/man/man1 \
+		INSTALLSITEMAN3DIR==/usr/share/man/man3
 
 	mv $(CURDIR)/debian/systeminstaller-oscar/usr/bin/tksis \
 		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
-	mv $(CURDIR)/debian/systeminstaller-oscar/usr/share/systeminstaller/images/* \
+#	mv $(CURDIR)/debian/systeminstaller-oscar/usr/share/systeminstaller/images/* \
 		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1
-	mv $(CURDIR)/debian/systeminstaller-oscar/usr/local/man/man1/tksis* \
-		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/local/man/man1/
+	mv $(CURDIR)/debian/systeminstaller-oscar/usr/share/man/man1/tksis* \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/man/man1/
 	mv $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/SystemInstaller/Tk \
 		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller
 	mv $(CURDIR)/debian/systeminstaller-oscar/usr/lib/systeminstaller/Tk  \
 		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller
+	# clean up some mess created after the execution of the Makefile
+	rm -rf $(CURDIR)/debian/systeminstaller-oscar-x11/usr/local
 
 # Build architecture-independent files here.
 binary-indep: build install-indep

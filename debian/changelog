@@ -1,3 +1,10 @@
+systeminstaller-oscar (2.3.1-2gv2) UNRELEASED; urgency=low
+
+  * Fix a bug in the "build image" widget: now when we select a "target
+    distribution, the pool list is really update.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 10 Jun 2007 23:48:49 -0400
+
 systeminstaller-oscar (2.3.1-2gv1) UNRELEASED; urgency=low
 
   * Fix Debian package issues

@@ -8,13 +8,20 @@ Standards-Version: 2.3.0
 Package: systeminstaller-oscar-x11
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, systeminstaller-oscar
-Description: System Installer Perl Tk User Interface.
+Description: System Installer Tk Gui
+ System Installer provides a unified image building tool.
+ It is intended to be distribution and architecture
+ independent. It interfaces with SystemImager and
+ System Configurator. This version of SystemInstaller is
+ adapted for use with the OSCAR cluster stack and requires
+ some of the OSCAR infrastructure.
+ .
  System Installer Perl Tk User Interface
 
 Package: systeminstaller-oscar
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description:System Installer for the OSCAR cluster stack.
+Description: System Installer for the OSCAR cluster stack
  System Installer provides a unified image building tool.
  It is intended to be distribution and architecture
  independent. It interfaces with SystemImager and
