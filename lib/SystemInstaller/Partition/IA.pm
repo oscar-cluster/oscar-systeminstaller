@@ -285,8 +285,8 @@ sub build_mdadmconf_file {
 
     my ($image_dir,%DISKS) = @_;
     # only RAID1 is actually supported currently (EF: Nov 30, 2005)
-    return if (!defined($DISKS{RAID0}) && !defined($DISKS{RAID1}) &&
-	       !defined($DISKS{RAID5}) && !defined($DISKS{RAID6}));
+    return if (!(%{$DISKS{RAID0}}) && !(%{$DISKS{RAID1}}) &&
+	       !(%{$DISKS{RAID5}}) && !(%{$DISKS{RAID6}}));
     local *RT;
     if (-f "$image_dir/etc/mdadm.conf") {
 	&verbose("Overwriting old mdadm.conf file from image $image_dir...\n");
