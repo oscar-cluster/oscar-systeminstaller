@@ -157,7 +157,7 @@ sub check_reqd_pkgs {
         # Input:        list of pkgs
         # Output:       list of missing pkgs or null if OK
         my @pkglist=@_;
-        my @req_pkgs=qw(systemconfigurator);
+        my @req_pkgs=qw(opkg-sis-client);
         my @missing=();
         foreach my $pkg (@req_pkgs){
                 unless (grep(/^$pkg.*/,@pkglist)) {
