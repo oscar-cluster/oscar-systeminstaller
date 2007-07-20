@@ -58,14 +58,23 @@ install-indep:
 
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/man/man1
+	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/etc/systeminstaller
 
 	# Add here commands to install the package into debian/systeminstaller-oscar.
 	$(MAKE) pure_install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar \
 		SITEPREFIX=/usr INSTALLSITEMAN1DIR=/usr/share/man/man1 \
 		INSTALLSITEMAN3DIR==/usr/share/man/man3
+	$(MAKE) conf DESTDIR=$(CURDIR)/debian/systeminstaller-oscar \
+		SITEPREFIX=/usr INSTALLSITEMAN1DIR=/usr/share/man/man1 \
+		INSTALLSITEMAN3DIR==/usr/share/man/man3
+	$(MAKE) ext_install DESTDIR=$(CURDIR)/debian/systeminstaller-oscar \
+		SITEPREFIX=/usr INSTALLSITEMAN1DIR=/usr/share/man/man1 \
+		INSTALLSITEMAN3DIR==/usr/share/man/man3
 
 	mv $(CURDIR)/debian/systeminstaller-oscar/usr/bin/tksis \
 		$(CURDIR)/debian/systeminstaller-oscar-x11/usr/bin
+	mv $(CURDIR)/debian/systeminstaller-oscar/etc/systeminstaller/tksis.conf \
+		$(CURDIR)/debian/systeminstaller-oscar-x11/etc/systeminstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller/SystemInstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/lib/systeminstaller
 	mkdir -p $(CURDIR)/debian/systeminstaller-oscar-x11/usr/share/systeminstaller/images

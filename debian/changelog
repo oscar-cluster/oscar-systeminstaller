@@ -1,30 +1,38 @@
-systeminstaller-oscar (2.3.1-2gv2) UNRELEASED; urgency=low
+systeminstaller-oscar (2.3.1-2gv3) stable; urgency=low
+
+  * Include configuration files into the different packages.
+  * Inlcudes the files /var/lib/sis/image, /var/lib/sis/adapter, and
+    /var/lib/sis/client in the package systeminstaller-oscar.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 20 Jul 2007 18:18:51 -0400
+
+systeminstaller-oscar (2.3.1-2gv2) stable; urgency=low
 
   * Fix a bug in the "build image" widget: now when we select a "target
     distribution, the pool list is really update.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 10 Jun 2007 23:48:49 -0400
 
-systeminstaller-oscar (2.3.1-2gv1) UNRELEASED; urgency=low
+systeminstaller-oscar (2.3.1-2gv1) stable; urgency=low
 
   * Fix Debian package issues
   * Include refactoring of the Makefile (by Bernard Li)
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Mon,  5 Feb 2007 23:40:22 -0500
 
-systeminstaller-oscar (2.3.1-1) UNRELEASED; urgency=low
+systeminstaller-oscar (2.3.1-1) stable; urgency=low
 
   * New upstream version
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Sat, 16 Dec 2006 13:36:35 -0500
 
-systeminstaller-oscar (2.3.0-1) UNRELEASED; urgency=low
+systeminstaller-oscar (2.3.0-1) stable; urgency=low
 
   * New upstream version.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 23 Jul 2006 18:51:32 -0400
 
-systeminstaller-oscar (2.2.4-1) UNRELEASED; urgency=low
+systeminstaller-oscar (2.2.4-1) stable; urgency=low
 
   * New upstream version.
 
