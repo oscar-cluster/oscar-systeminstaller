@@ -7,8 +7,8 @@
 
 Summary: System Installer for the OSCAR cluster stack
 Name: systeminstaller-oscar
-Version: %version
-Release: %release
+Version: %{version}
+Release: %{release}
 License: GPL
 URL: http://systeminstaller.sourceforge.net
 Group: Applications/System
@@ -19,21 +19,21 @@ BuildRequires: /usr/bin/perl, perl(AppConfig), systemimager-server >= 3.5.0, sys
 Requires: /usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, systemconfigurator, perl(MLDBM), packman-depman
 Vendor: http://oscar.openclustergroup.org
 Packager: OSCAR developer team
-Prefix: %prefix
+Prefix: %{prefix}
 Buildroot: /var/tmp/%{name}-%{version}-root
 AutoReqProv: no
 Provides: systeminstaller = %{version}
 
 %package x11
 Summary: System Installer Tk Gui
-Version: %version
+Version: %{version}
 License: GPL
 URL: http://systeminstaller.sourceforge.net
 Group: Applications/System
 Requires: systeminstaller >= 1.00, perl-Tk
 Vendor: http://oscar.openclustergroup.org
 Packager: OSCAR developer team
-Prefix: %prefix
+Prefix: %{prefix}
 Buildroot: /var/tmp/%{name}-%{version}-root
 AutoReqProv: no
 Provides: systeminstaller-x11 = %{version}

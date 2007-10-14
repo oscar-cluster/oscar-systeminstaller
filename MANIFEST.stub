@@ -77,5 +77,4 @@ debian/changelog
 debian/compat
 debian/control
 debian/copyright
-debian/README.Debian
 debian/rules
