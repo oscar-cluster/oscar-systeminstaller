@@ -1,8 +1,11 @@
 package SystemInstaller::Env;
 
-#   $Header: /cvsroot/systeminstaller/systeminstaller/lib/SystemInstaller/Env.pm,v 1.53 2003/04/09 17:31:39 mchasal Exp $
+#   $Id$
 
 #   Copyright (c) 2001 International Business Machines
+ 
+#   Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
+#                      All rights reserved.
  
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,7 +24,7 @@ package SystemInstaller::Env;
 #   Michael Chase-Salerno <salernom@us.ibm.com>             
 use strict;
 use base qw(Exporter);
-use vars qw($VERSION @EXPORT);
+use vars qw($VERSION @EXPORT $config);
 
 @EXPORT = qw(print_version get_version);
 
@@ -30,7 +33,7 @@ use AppConfig;
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 # Globally needed variables
-my $config = AppConfig->new(
+$config = AppConfig->new(
         cfgfile =>      { ARGCOUNT => 1, 
                 DEFAULT => '/etc/systeminstaller/systeminstaller.conf'},
         binpath =>      { ARGCOUNT => 1, 
@@ -78,10 +81,9 @@ if (-e $config->cfgfile ) {
 if (-e '/etc/systemimager/systemimager.conf') {
     $config->file('/etc/systemimager/systemimager.conf');
 }
-                                                  
+
 # Push it up to main
 $::main::config = $config;
-
 
 sub print_version {
         my $CMD=shift;
@@ -93,6 +95,7 @@ $CMD version $CMDVERSION
 Part of SystemInstaller version $PKGVERSION
 
 Copyright (C) 2001 Internation Business Machines
+Copyright (C) 2007 Erich Focht @ NEC HPC Europe
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -104,7 +107,7 @@ sub get_version {
         # This just returns the version number, looks silly,
         # but the string below is replaced during the build
         # process with the proper version.
-        my $SIVERSION="1.02";
+        my $SIVERSION="2.3.3";
         return $SIVERSION;
 }
 

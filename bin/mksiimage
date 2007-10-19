@@ -1,8 +1,10 @@
 #!/usr/bin/perl
 
-#   $Header: /cvsroot/systeminstaller/systeminstaller/bin/mksiimage,v 1.53 2003/04/11 20:44:28 mchasal Exp $
+#   $Id$
 
 #   Copyright (c) 2001 International Business Machines
+
+#   Copyright (c) 2007 Erich Focht @ NEC HPC Europe
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,19 +22,17 @@
 
 #   Michael Chase-Salerno <mchasal@users.sf.net>
 #   Greg Geiselhart <geiselha@us.ibm.com>
+#   Erich Focht <efocht@hpce.nec.com>
 
 $SIG{INT}       = 'SigHandler';         # Catch signals
 $SIG{QUIT}      = 'SigHandler';
 $SIG{TERM}      = 'SigHandler';
 $SIG{KILL}      = 'SigHandler';
 
-#Set the path
-$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
-
 use strict;
 use vars qw($config $VERSION);
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
 use SIS::DB;
 use SIS::Image;
@@ -46,6 +46,13 @@ use Data::Dumper;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);
+
+# Restore systeminstaller configuration, systemimager overwrites it.
+# systemimager.conf is parsed by systeminstaller, anyway.
+$config = $SystemInstaller::Env::config;
+
+#Set the path
+$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
 
 $config->define(
         Add=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -178,7 +185,9 @@ if ($config->Add) {
         }
 
         &verbose("Building image.");
-	$config->location =~ s/ //g; # compress spaces, separation is by ","
+	my $loc = $config->location;
+	$loc =~ s/ //g; # compress spaces, separation is by ","
+	$config->location($loc);
         unless (&pkg_install($config->location,
 			     $config->path,$config->arch,
 			     @{$config->filename})) {
