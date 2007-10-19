@@ -27,7 +27,7 @@ rpm :: srpm
 \trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
 
 srpm :: rpm_prep dist
-\trpmbuild -ts --target noarch \$(NAME)-\$(VERSION).tar.gz
+\trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.gz
 
 ext_install :: conf
 \tmkdir -p \$(DESTDIR)\$(PREFIX)/../var/lib/sis
