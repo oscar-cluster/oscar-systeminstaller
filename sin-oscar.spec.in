@@ -123,6 +123,12 @@ fi
 
 
 %changelog
+* Fri Oct 19 2007 Erich Focht -> 2.3.3-1
+- Fixed bug introduced in changeset 5892 (breaking repository selection)
+* Mon Oct 15 2007 Erich Focht -> 2.3.2-1
+- Modified checks for systemconfigurator to accept opkg-sis-client OR systemconfigurator
+- Changes by BLi (kexec)
+- Changes by GVallee
 * Fri Oct 27 2006 Erich Focht
 - Added support for RAID0,1,5,6 and new XML format in systemimager for software raids
 - Added support for spare devices when defining raids.

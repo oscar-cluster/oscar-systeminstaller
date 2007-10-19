@@ -175,7 +175,7 @@ sub createimage_window {
             my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
             foreach my $k (keys %distro_pools) {
                 if ($k eq $dist) {
-                    my $new_pools = "$distro_pools{$k}->{distro_repo}, ".
+                    my $new_pools = "$distro_pools{$k}->{distro_repo},".
                                     "$distro_pools{$k}->{oscar_repo}";
                     print "the new package list is: $new_pools\n";
                     $vars{pkgpath} = $new_pools;
@@ -199,11 +199,11 @@ sub createimage_window {
     my $disk_button = $image_window->Button(
 					    -text=>"Choose a File...",
 					    -command=> [\&selector2entry, 
-                                    \$vars{diskfile}, 
-                                    "Select disk configuration", 
-                                    [["Disk configuration", ".disk"],
-                                     ["All files", "*"]], 
-                                    $image_window],
+							\$vars{diskfile}, 
+							"Select disk configuration", 
+							[["Disk configuration", ".disk"],
+							 ["All files", "*"]], 
+							$image_window],
 					    -pady => 4,
 					    -padx => 4,
 					    );
@@ -249,7 +249,7 @@ sub createimage_window {
                                        "Target Architecture",
                                        \$vars{arch},\@archoptions, 
                                        "x",
-				                       helpbutton($image_window,
+				       helpbutton($image_window,
                                                   "Target Architecture"))
 	unless $noshow{arch};
 
@@ -274,8 +274,8 @@ sub createimage_window {
     my @postinstall = qw(beep reboot shutdown kexec);
 
     my $postoption = label_option_line($image_window, "Post Install Action",
-                       \$vars{piaction},\@postinstall, "x",
-                       helpbutton($image_window, "Post Install Action"))
+				       \$vars{piaction},\@postinstall, "x",
+				       helpbutton($image_window, "Post Install Action"))
 	unless $noshow{piaction};
 
     # Then a whole bunch of control buttons
@@ -468,7 +468,7 @@ sub add_image_build {
     my $verbose = &get_verbose();
 
     my $cmd = "mksiimage -A --name $$vars{imgname} " .
-	"--location $$vars{pkgpath} " .
+	"--location \"$$vars{pkgpath}\" " .
 	"--filename $$vars{pkgfile} " .
 	"--arch $$vars{arch} " . 
 	"--path $$vars{imgpath}/$$vars{imgname} " .

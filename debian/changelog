@@ -1,3 +1,15 @@
+systeminstaller-oscar (2.3.3-1) stable; urgency=low
+
+  * Fixed bug introduced in changeset 5892 (breaking repository selection)
+
+ -- Erich Focht <efocht@hpce.nec.com>  Fri, 19 Oct 2007 11:07:10 +0100
+
+systeminstaller-oscar (2.3.2-1) stable; urgency=low
+
+  * Modified checks for systemconfigurator to accept opkg-sis-client OR systemconfigurator
+
+ -- Erich Focht <efocht@hpce.nec.com>  Mon, 15 Oct 2007 13:07:20 +0100
+
 systeminstaller-oscar (2.3.1-2gv3) stable; urgency=low
 
   * Include configuration files into the different packages.

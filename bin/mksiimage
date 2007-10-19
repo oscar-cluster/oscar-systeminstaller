@@ -178,10 +178,13 @@ if ($config->Add) {
         }
 
         &verbose("Building image.");
-        unless (&pkg_install($config->location,$config->path,$config->arch,@{$config->filename})) {
+	$config->location =~ s/ //g; # compress spaces, separation is by ","
+        unless (&pkg_install($config->location,
+			     $config->path,$config->arch,
+			     @{$config->filename})) {
     	        &verbose("Unmounting /proc.");
  	        if (system("umount $procpath")){
-	   		carp("Unable to unmount /proc in the image.");
+		    carp("Unable to unmount /proc in the image.");
 	        }
 	        &del_image($config->name);
 	        carp("Package install failed\n");
