@@ -73,7 +73,7 @@ sub createimage_window {
     #
     # Validate image name.
     #
-    my @images = listimages("/etc/systemimager/rsyncd.conf");
+    my @images = &listimages;
     if( grep {$vars{imgname} eq $_} @images ) {
 	my $last = 0;
 	foreach (@images) {
@@ -396,7 +396,7 @@ sub listimages {
 	    next if $. <= 2;
 	    chomp;
 	    my @items = split;
-	    push @list, $items[1] if $items[1];
+	    push @list, $items[0] if $items[0];
 	}
 	close IN;
     }
@@ -412,7 +412,11 @@ sub add_image {
     
     $window->Busy(-recurse => 1);
 
-    if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) ) {
+    my @imgs = &listimages;
+    my $iexists = grep /^($$vars{imgname})$/, @imgs;
+    print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n";
+    if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) ||
+	$iexists ) {
 	unless( yn_window( $window, "\"$$vars{imgname}\" exists.\nDo you want to replace it?" ) ) {
 	    $window->Unbusy();
 	    return undef;
