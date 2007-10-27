@@ -314,7 +314,7 @@ sub build_mdadmconf_file {
 	    my @active = @{$DISKS{$rraid}{$rdev}{active}};
 	    my @spares = @{$DISKS{$rraid}{$rdev}{spares}};
 	    my $parts = join(",",(@active, @spares));
-	    print RT "ARRAY $rdev level=$rlevel devices=$parts\n";
+	    print RT "ARRAY $rdev level=raid$rlevel devices=$parts\n";
 	}
     }
     close RT;
