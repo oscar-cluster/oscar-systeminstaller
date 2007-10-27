@@ -26,7 +26,7 @@ rpm_prep ::
 rpm :: srpm
 \trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
 
-srpm :: rpm_prep dist
+srpm :: rpm_prep manifest dist
 \trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.gz
 
 ext_install :: conf
