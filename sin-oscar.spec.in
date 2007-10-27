@@ -123,6 +123,13 @@ fi
 
 
 %changelog
+* Fri Oct 19 2007 Erich Focht -> 2.3.4-1
+- fix trouble with non-english locale: ifconfig output is unexpected
+- when virtual interfaces are defined, they need to be excluded from the
+  dhcp configuration, otherwise dhcpd won't start
+- month in comment is wrong (in the range 0..11)
+- ifconfig is used without path, sometimes this leads to problems
+- for software raids the automatically created mdadm.conf had a wrong raid level
 * Fri Oct 19 2007 Erich Focht -> 2.3.3-1
 - Fixed bug introduced in changeset 5892 (breaking repository selection)
 * Mon Oct 15 2007 Erich Focht -> 2.3.2-1

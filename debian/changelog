@@ -1,5 +1,16 @@
 systeminstaller-oscar (2.3.3-1) stable; urgency=low
 
+  * fix trouble with non-english locale: ifconfig output is unexpected
+  * when virtual interfaces are defined, they need to be excluded from the
+    dhcp configuration, otherwise dhcpd won't start
+  * month in comment is wrong (in the range 0..11)
+  * ifconfig is used without path, sometimes this leads to problems
+  * for software raids the automatically created mdadm.conf had a wrong raid level
+
+ -- Erich Focht <efocht@hpce.nec.com>  Sat, 27 Oct 2007 17:07:10 +0100
+
+systeminstaller-oscar (2.3.3-1) stable; urgency=low
+
   * Fixed bug introduced in changeset 5892 (breaking repository selection)
 
  -- Erich Focht <efocht@hpce.nec.com>  Fri, 19 Oct 2007 11:07:10 +0100
