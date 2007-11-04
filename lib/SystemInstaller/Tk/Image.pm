@@ -115,7 +115,9 @@ sub createimage_window {
     my $image_window = $window->Toplevel();
     $image_window->withdraw;
     $image_window->title($vars{title});
-    my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it", -justify => "left", -aspect => 700);
+    my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it",
+					 -justify => "left",
+					 -aspect => 800);
     $message->grid("-","-","-");
 
     #
@@ -153,22 +155,24 @@ sub createimage_window {
     my @morewidgets = helpbutton($image_window, "Package Repositories");
     if($validate) {
         @options = (
-            -validatecommand => $validate,
-            -validate => "focusout",
+		    -validatecommand => $validate,
+		    -validate => "focusout",
+		    -width => 40,
         );
     }
     my $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
     my $entry = $image_window->Entry(-textvariable => $variable, @options);
     $label->grid($entry, "x", @morewidgets, -sticky => "nw");
 
-    $labeltext = "Target Distribution";
-    $variable = $vars{distro};
-    my $opt = \@distros;
-    my $label2 = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
 
-    my $default = $variable;
+    $labeltext = "Target Distribution";
+    $vars{distro} = $distros[0];
+    my $label2 = $image_window->Label(-text => "Target Distribution",
+				      -anchor => "w");
+    my $default = $vars{distro};
+
     my $distrooption = $image_window->Optionmenu(
-        -options => $opt,
+        -options => \@distros,
         -command => sub {
             my $dist = shift;
             print "Selection: $dist\n";
@@ -180,13 +184,14 @@ sub createimage_window {
                     print "the new package list is: $new_pools\n";
                     $vars{pkgpath} = $new_pools;
                     $entry->gridForget();                
-                    $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
+                    $label = $image_window->Label(-text => "$labeltext: ",
+						     -anchor => "w");
                     $entry = $image_window->Entry(-textvariable => $new_pools, @options);
                     $label->grid($entry, -row => 3, -column => 1, -sticky => "nw");
                 }
             }
         },
-        -variable => $variable);
+        -variable => \$vars{distro});
     $distrooption->setOption($default) if $default;
 
     my @morewidgets2 = helpbutton($image_window,
