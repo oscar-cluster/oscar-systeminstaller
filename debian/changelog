@@ -1,4 +1,10 @@
-systeminstaller-oscar (2.3.3-1) stable; urgency=low
+systeminstaller-oscar (2.3.5-1) stable; urgency=low
+
+  * urgent fix for newre Tk versions (suse 10.2) in SystemImager/Tk/Image.pm
+
+ -- Erich Focht <efocht@hpce.nec.com>  Sun, 04 Nov 2007 14:08:11 +0100
+
+systeminstaller-oscar (2.3.4-1) stable; urgency=low
 
   * fix trouble with non-english locale: ifconfig output is unexpected
   * when virtual interfaces are defined, they need to be excluded from the
