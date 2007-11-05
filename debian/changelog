@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.3.6-1) stable; urgency=low
+
+  * new feature of image builder: passing of package group files
+
+ -- Erich Focht <efocht@hpce.nec.com>  Mon, 05 Nov 2007 17:08:01 +0100
+
 systeminstaller-oscar (2.3.5-1) stable; urgency=low
 
   * urgent fix for newre Tk versions (suse 10.2) in SystemImager/Tk/Image.pm

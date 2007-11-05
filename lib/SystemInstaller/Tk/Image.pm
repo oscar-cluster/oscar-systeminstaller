@@ -121,7 +121,7 @@ sub createimage_window {
     $message->grid("-","-","-");
 
     #
-    #  First line:  What is you image name?
+    #  First line:  What is your image name?
     # 
 
     label_entry_line($image_window, "Image Name", \$vars{imgname},"","x",helpbutton($image_window, "Image Name"))
@@ -141,12 +141,17 @@ sub createimage_window {
 					       -pady => 4,
 					       -padx => 4,
 					       );
-    label_entry_line($image_window, "Package File", \$vars{pkgfile}, "", 
-		     $package_button, helpbutton($image_window, "Package File"))
+    label_entry_line($image_window,
+		     "Base Package File",
+		     \$vars{pkgfile},
+		     "", 
+		     $package_button,
+		     helpbutton($image_window, "Package File"))
 	unless $noshow{pkgfile};
 
+
     #
-    #  Third Line:  where are your packages?
+    #  Fourth Line:  where are your packages?
     #
     my @options;
     my $validate = "";
@@ -165,6 +170,37 @@ sub createimage_window {
     $label->grid($entry, "x", @morewidgets, -sticky => "nw");
 
 
+    #
+    # Select an additional package group file, if passed.
+    # $vars{package_group} must be a reference to an array of hash references.
+    # Each hash reference must be of the form:
+    #   { label => "group label" , path => path_to_group_file }
+    #
+    my ($selected_group, @group_labels);
+
+    if ($vars{package_group} && ref($vars{package_group}) eq "ARRAY") {
+	# Eliminate labels which point to non-existent files.
+	for (@{$vars{package_group}}) {
+	    if (-f $_->{path}) {
+		push @group_labels, $_->{label};
+	    }
+	}
+    }
+    if (scalar(@group_labels)) {
+	$vars{selected_group} = $group_labels[0];
+	my $groupoption = label_option_line($image_window, 
+					    "Additional Package Group",
+					    \$vars{selected_group},
+					    \@group_labels, 
+					    "x",
+					    helpbutton($image_window,
+						       "Package Group"))
+	    unless $noshow{package_group};
+    }
+
+    #
+    # Select the target distribution
+    #
     $labeltext = "Target Distribution";
     $vars{distro} = $distros[0];
     my $label2 = $image_window->Label(-text => "Target Distribution",
@@ -269,7 +305,7 @@ sub createimage_window {
                                      \$vars{ipmeth},
                                      \@ipoptions, 
                                      "x",
-				                     helpbutton($image_window, "IP Method"))
+				     helpbutton($image_window, "IP Method"))
 	unless $noshow{ipmeth};
 
     #
@@ -476,11 +512,23 @@ sub add_image_build {
     my $window = shift;
     my $verbose = &get_verbose();
 
+    my $groupfile;
+    if ($$vars{selected_group}) {
+	my $path;
+	for my $a (@{$$vars{package_group}}) {
+	    if ($a->{label} eq $$vars{selected_group}) {
+		$path = $a->{path};
+		last;
+	    }
+	}
+	$groupfile = "--filename $path";
+    }
     my $cmd = "mksiimage -A --name $$vars{imgname} " .
 	"--location \"$$vars{pkgpath}\" " .
 	"--filename $$vars{pkgfile} " .
 	"--arch $$vars{arch} " . 
 	"--path $$vars{imgpath}/$$vars{imgname} " .
+	"$groupfile ".
 	"$$vars{extraflags}";
 	
     print "Executing command: $cmd\n";

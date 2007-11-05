@@ -123,6 +123,8 @@ fi
 
 
 %changelog
+* Mon Nov 05 2007 Erich Focht -> 2.3.6-1
+- new feature of image builder: passing of package group files
 * Sun Nov 04 2007 Erich Focht -> 2.3.5-1
 - urgent bugfix for newer Tk (suse 10.2) Tk/Image.pm.
 * Fri Oct 19 2007 Erich Focht -> 2.3.4-1

@@ -98,7 +98,7 @@ use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
 my $debug = 1;
 
 
-$VERSION = sprintf("%d.%02d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)/);
 
 @EXPORT = qw(exists_image list_image set_image del_image
              exists_client list_client set_client del_client
