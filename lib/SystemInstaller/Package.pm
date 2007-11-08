@@ -89,8 +89,13 @@ sub pkg_install {
                 return 0;
         }
         &verbose("Installing package install files.");
-        unless (&files_install($pkgpath, $imgpath, @pkgfiles)) {
-                carp("Failed to install files.");
+	my @errs;
+        unless (&files_install($pkgpath, $imgpath, \@errs, @pkgfiles)) {
+		local *A;
+		open A, "> $ENV{OSCAR_HOME}/tmp/sin-install.error";
+		print A @errs."\n";
+		close A;
+                carp("Failed to install files.\n".join("\n",@errs));
                 if ($main::config->pkginstfail) { return 0;};
         }
         &verbose("Performing post-install.");

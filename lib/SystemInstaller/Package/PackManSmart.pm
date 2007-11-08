@@ -121,6 +121,7 @@ sub files_install {
     my $class    = shift;
     my $imgpath  = shift;
     my $pkgpath  = shift;
+    my $errs     = shift;
     my (@stages) = @_;
 
 
@@ -148,18 +149,17 @@ sub files_install {
     &verbose("Performing PackMan smart_install:");
     my ($res,@out) = $pm->smart_install(@pkglist);
     my @failed = $pm->check_installed(@pkglist);
-    if (!$res || @failed) {
-	print STDERR "Error occured during installation with Yume:\n";
-	print STDERR "pkglist was: ". join(",",@pkglist)."\n";
-	print STDERR join("\n",@out)."\n\n";
-	if (@failed) {
-	    print STDERR "Failed to install packages:\n   ".
-		join("\n    ",@out)."\n";
-	}
+    if (@failed) {
+	push @{$errs}, "\n~~~~\nERROR: Failed to install packages: ".
+		join(", ",@failed)."\n~~~~\n";
 	carp("PackMan smart_install failed.");
 	return 0;
     }
-
+    if (!$res) {
+	push @{$errs}, "Error occured during installation with Yume:\n";
+	push @{$errs}, "pkglist was: ". join(",",@pkglist)."\n";
+	push @{$errs}, join("\n",@out)."\n\n";
+    }
     return 1;
 } #files_install
 
