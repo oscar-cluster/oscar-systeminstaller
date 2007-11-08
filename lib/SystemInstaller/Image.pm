@@ -30,8 +30,10 @@ use File::Path;
 use SystemInstaller::Log qw (verbose);
 use Carp;
  
-@EXPORT = qw(init_image del_image write_scconf cp_image split_version); 
-@EXPORT_OK = qw(init_image del_image write_scconf cp_image split_version); 
+@EXPORT = qw(init_image del_image write_scconf cp_image split_version
+	     umount_recursive); 
+@EXPORT_OK = qw(init_image del_image write_scconf cp_image split_version
+	     umount_recursive); 
  
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
@@ -169,6 +171,28 @@ sub find_kernels {
         return 1;
 
 } #find_kernels
+
+#
+# Unmount /proc from an image. This needs to be recursive.
+#
+sub umount_recursive {
+    my ($path) = @_;
+
+    for (`grep "$path/" /proc/mounts`) {
+	chomp;
+	if (m, ($path\S+) ,) {
+	    my $d = $1;
+	    print "dir: $d\n";
+	    next if ($d =~ /^\s*$/);
+	    next if (!scalar(`grep " $d " /proc/mounts`));
+	    &umount_recursive($d);
+	}
+    }
+    print "      : unmounting $path\n";
+    !system("umount $path")
+	or croak("Couldn't umount $path!: $!");
+}
+
 
 ### POD from here down
 
