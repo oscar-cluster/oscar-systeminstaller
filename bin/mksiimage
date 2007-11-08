@@ -192,7 +192,7 @@ if ($config->Add) {
 			     $config->path,$config->arch,
 			     @{$config->filename})) {
     	        &verbose("Unmounting /proc.");
-	        &umount_recursive("$procpath"));
+	        &umount_recursive("$procpath");
 	        &del_image($config->name);
 	        carp("Package install failed\n");
 	        croak;
