@@ -147,11 +147,15 @@ sub files_install {
 
     &verbose("Performing PackMan smart_install:");
     my ($res,@out) = $pm->smart_install(@pkglist);
-
-    if (!$res) {
+    my @failed = $pm->check_installed(@pkglist);
+    if (!$res || @failed) {
 	print STDERR "Error occured during installation with Yume:\n";
 	print STDERR "pkglist was: ". join(",",@pkglist)."\n";
-	print STDERR join("\n",@out)."\n";
+	print STDERR join("\n",@out)."\n\n";
+	if (@failed) {
+	    print STDERR "Failed to install packages:\n   ".
+		join("\n    ",@out)."\n";
+	}
 	carp("PackMan smart_install failed.");
 	return 0;
     }
