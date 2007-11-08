@@ -7,7 +7,7 @@ Standards-Version: 2.3.0
 
 Package: systeminstaller-oscar-x11
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, systeminstaller-oscar
+Depends: ${shlibs:Depends}, ${misc:Depends}, systeminstaller-oscar, systemimager-server
 Description: System Installer Tk Gui
  System Installer provides a unified image building tool.
  It is intended to be distribution and architecture
@@ -20,7 +20,7 @@ Description: System Installer Tk Gui
 
 Package: systeminstaller-oscar
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, packman, systemimager-server
 Description: System Installer for the OSCAR cluster stack
  System Installer provides a unified image building tool.
  It is intended to be distribution and architecture

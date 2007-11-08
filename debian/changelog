@@ -1,3 +1,10 @@
+systeminstaller-oscar (2.3.6-2) gutsy; urgency=low
+
+  * Add a dependency with systemimager-server for the package
+    systeminstaller-oscar-x11 since the perl modules SystemImager/Server.pm is needed.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 07 Nov 2007 20:53:58 -0500
+
 systeminstaller-oscar (2.3.6-1) stable; urgency=low
 
   * new feature of image builder: passing of package group files
