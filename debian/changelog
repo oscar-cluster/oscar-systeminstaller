@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.3.7-1) gutsy; urgency=low
+
+  * added check whether all packages were really installed (new feature of packman)
+
+ -- Erich Focht <efocht@hpce.nec.com>  Thu, 08 Nov 2007 15:56:01 +0100
+
 systeminstaller-oscar (2.3.6-2) gutsy; urgency=low
 
   * Add a dependency with systemimager-server for the package

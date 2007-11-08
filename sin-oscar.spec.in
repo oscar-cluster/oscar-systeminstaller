@@ -123,6 +123,8 @@ fi
 
 
 %changelog
+* Thu Nov 08 2007 Erich Focht -> 2.3.7-1
+- added check whether all packages were really installed (new feature of packman)
 * Mon Nov 05 2007 Erich Focht -> 2.3.6-1
 - new feature of image builder: passing of package group files
 * Sun Nov 04 2007 Erich Focht -> 2.3.5-1
