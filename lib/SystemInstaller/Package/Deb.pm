@@ -131,6 +131,7 @@ sub files_install {
 	my $class=shift;
 	my $imgpath=shift;
 	my $pkgpath=shift;
+	my $errs=shift;
 	my @packages=@_;
 
 	my $RC=0;
