@@ -284,7 +284,7 @@ sub createimage_window {
     #  What is the architecture?
     #
 	
-    my @archoptions = qw( i386 i486 i586 i686 ia64 ppc x86_64 athlon amd64 );
+    my @archoptions = qw( i386 i486 i586 i686 ia64 ppc ppc64 x86_64 athlon amd64 );
 
     my $archoption = label_option_line($image_window, 
                                        "Target Architecture",

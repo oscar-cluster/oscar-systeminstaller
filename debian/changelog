@@ -4,6 +4,8 @@ systeminstaller-oscar (2.3.7-1) gutsy; urgency=low
 
   * added functionality to umount /proc recursively.
 
+  * added support for ppc, ppc64 in Partition.pm
+
  -- Erich Focht <efocht@hpce.nec.com>  Thu, 08 Nov 2007 15:56:01 +0100
 
 systeminstaller-oscar (2.3.6-2) gutsy; urgency=low
