@@ -308,7 +308,7 @@ sub partition_setup {
         }
 
 	&verbose("Determining which routine to call based on architecture.");
-	if ($image->arch =~ /^(i.86|ia64|x86_64)$/) {
+	if ($image->arch =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
         	if (&SystemInstaller::Partition::IA::create_partition_file($image->location,%DISKS)) {
 			return 1;
 		}
