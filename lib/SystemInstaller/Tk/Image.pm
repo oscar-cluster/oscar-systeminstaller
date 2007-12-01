@@ -450,12 +450,13 @@ sub add_image {
     my $config = init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
+    my $verbose = &get_verbose();
     
     $window->Busy(-recurse => 1);
 
     my @imgs = &listimages;
     my $iexists = grep /^($$vars{imgname})$/, @imgs;
-    print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n";
+    print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n" if $verbose;
     if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) ||
 	$iexists ) {
 	unless( yn_window( $window, "\"$$vars{imgname}\" exists.\nDo you want to replace it?" ) ) {
@@ -588,14 +589,15 @@ sub add_image_build {
 
     $cmd = $cmd . " -iseries-vdisk=$$vars{vdiskdev}" if ( $$vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) );
 
+    print "Running: $cmd ... ";
     if( system($cmd) ) {
-	carp("Couldn't run $cmd");
+	carp("failed");
 	return 0;
     }
     return 0 unless progress_continue();
     progress_update(96);
 
-    print "Ran si_mkautoinstallscript\n";
+    print "done\n";
 
     # This allows for an arbitrary callback to be registered.
     # It will get a reference to all the variables that have been defined for the image
