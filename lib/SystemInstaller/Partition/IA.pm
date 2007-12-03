@@ -266,6 +266,8 @@ sub build_aiconf_file {
 	# - detect architecture of install image
 	my $instarch = list_image(location => $image_dir)->arch;
 	$instarch =~ s/i.86/i386/;
+    # added to support ppc64-ps3
+    $instarch = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");
 	# detect version of install kernel
 	my $instkdir = "/usr/share/systemimager/boot/$instarch/standard";
 	my $kvers = kernel_version($instkdir . "/kernel");
