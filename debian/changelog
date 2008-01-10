@@ -1,56 +1,53 @@
+systeminstaller-oscar (2.3.8-1) gutsy; urgency=low
+
+  * New upstream version.
+  * Switch the package group to OSCAR.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Thu, 10 Jan 2008 13:21:10 -0500
+
 systeminstaller-oscar (2.3.7-1) gutsy; urgency=low
 
-  * added check whether all packages were really installed (new feature of packman)
-
-  * added functionality to umount /proc recursively.
-
-  * added support for ppc, ppc64 in Partition.pm
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Thu, 08 Nov 2007 15:56:01 +0100
 
 systeminstaller-oscar (2.3.6-2) gutsy; urgency=low
 
-  * Add a dependency with systemimager-server for the package
-    systeminstaller-oscar-x11 since the perl modules SystemImager/Server.pm is needed.
+  * New upstream version.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 07 Nov 2007 20:53:58 -0500
 
 systeminstaller-oscar (2.3.6-1) stable; urgency=low
 
-  * new feature of image builder: passing of package group files
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Mon, 05 Nov 2007 17:08:01 +0100
 
 systeminstaller-oscar (2.3.5-1) stable; urgency=low
 
-  * urgent fix for newre Tk versions (suse 10.2) in SystemImager/Tk/Image.pm
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Sun, 04 Nov 2007 14:08:11 +0100
 
 systeminstaller-oscar (2.3.4-1) stable; urgency=low
 
-  * fix trouble with non-english locale: ifconfig output is unexpected
-  * when virtual interfaces are defined, they need to be excluded from the
-    dhcp configuration, otherwise dhcpd won't start
-  * month in comment is wrong (in the range 0..11)
-  * ifconfig is used without path, sometimes this leads to problems
-  * for software raids the automatically created mdadm.conf had a wrong raid level
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Sat, 27 Oct 2007 17:07:10 +0100
 
 systeminstaller-oscar (2.3.3-1) stable; urgency=low
 
-  * Fixed bug introduced in changeset 5892 (breaking repository selection)
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Fri, 19 Oct 2007 11:07:10 +0100
 
-systeminstaller-oscar (2.3.2-1) stable; urgency=low
+systeminstaller-oscar (2.3 .2-1) stable; urgency=low
 
-  * Modified checks for systemconfigurator to accept opkg-sis-client OR systemconfigurator
+  * New upstream version.
 
  -- Erich Focht <efocht@hpce.nec.com>  Mon, 15 Oct 2007 13:07:20 +0100
 
-systeminstaller-oscar (2.3.1-2gv3) stable; urgency=low
+systeminstaller-oscar (2.3. 1-2gv3) stable; urgency=low
 
   * Include configuration files into the different packages.
   * Inlcudes the files /var/lib/sis/image, /var/lib/sis/adapter, and
@@ -60,18 +57,17 @@ systeminstaller-oscar (2.3.1-2gv3) stable; urgency=low
 
 systeminstaller-oscar (2.3.1-2gv2) stable; urgency=low
 
-  * Fix a bug in the "build image" widget: now when we select a "target
-    distribution, the pool list is really update.
+  * Include a bug fix from trunk.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 10 Jun 2007 23:48:49 -0400
-
+ 
 systeminstaller-oscar (2.3.1-2gv1) stable; urgency=low
 
   * Fix Debian package issues
-  * Include refactoring of the Makefile (by Bernard Li)
+  * New upstream version.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Mon,  5 Feb 2007 23:40:22 -0500
-
+ 
 systeminstaller-oscar (2.3.1-1) stable; urgency=low
 
   * New upstream version
@@ -83,7 +79,7 @@ systeminstaller-oscar (2.3.0-1) stable; urgency=low
   * New upstream version.
 
  -- Geoffroy Vallee <valleegr@ornl.gov>  Sun, 23 Jul 2006 18:51:32 -0400
-
+ 
 systeminstaller-oscar (2.2.4-1) stable; urgency=low
 
   * New upstream version.

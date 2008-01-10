@@ -1,11 +1,65 @@
 ------------------------------------------------------------
+System Installer v2.3.8
+------------------------------------------------------------
+        - Fix the changelog: systeminstaller-oscar changelogs
+              should _not_ be included into packages (RPM or
+              Deb) changelogs. Package chaneglogs are only
+              reserved for modifications to the packages, not
+              the "upstream" version of systeminstaller.
+------------------------------------------------------------
+System Installer v2.3.7
+------------------------------------------------------------
+        - Add check whether all packages were really installed 
+              (new feature of packman)
+        - Add functionality to umount /proc recursively.
+        - Add support for ppc, ppc64 in Partition.pm
+------------------------------------------------------------
+System Installer v2.3.6
+------------------------------------------------------------
+        - New feature of image builder: passing of package 
+              group files
+------------------------------------------------------------
+System Installer v2.3.5
+------------------------------------------------------------
+        - Urgent fix for newer Tk versions (suse 10.2) in 
+              SystemImager/Tk/Image.pm.
+------------------------------------------------------------
+System Installer v2.3.4
+------------------------------------------------------------
+        - Fix trouble with non-english locale: ifconfig 
+              output is unexpected
+        - When virtual interfaces are defined, they need to 
+              be excluded from the dhcp configuration, 
+              otherwise dhcpd won't start
+        - Month in comment is wrong (in the range 0..11)
+        - ifconfig is used without path, sometimes this leads 
+              to problems
+        - For software raids the automatically created 
+              mdadm.conf had a wrong raid level.
+------------------------------------------------------------
+System Installer v2.3.3
+------------------------------------------------------------
+        - Fixed bug introduced in changeset 5892 (breaking 
+              repository selection).
+------------------------------------------------------------
+System Installer v2.3.2
+------------------------------------------------------------
+        - Modified checks for systemconfigurator to accept 
+              opkg-sis-client OR systemconfigurator.
+------------------------------------------------------------
+System Installer v2.3.1
+------------------------------------------------------------
+        - Fix a bug in the "build image" widget: now when we 
+              select a "target distribution, the pool list 
+              is really update.
+        - Include refactoring of the Makefile (by Bernard Li).
+------------------------------------------------------------
 System Installer v1.04
 ------------------------------------------------------------
-        -Add update START_FLAMETHROWER_DAEMON = no to yes
+        - Add update START_FLAMETHROWER_DAEMON = no to yes
              in flamethrower.conf when multicast is selected.
-        -Add multicasting option to mkdhcpconf
-        -Add update flamethrower.conf and start 
-             flamethrower.
+        - Add multicasting option to mkdhcpconf
+        - Add update flamethrower.conf and start flamethrower.
 ------------------------------------------------------------
 System Installer v1.03
 ------------------------------------------------------------
