@@ -1,5 +1,5 @@
 Source: systeminstaller-oscar
-Section: misc
+Section: oscar
 Priority: optional
 Maintainer: Geoffroy Vallee <valleegr@ornl.gov>
 Build-Depends: debhelper (>= 4.0.0), perl, libappconfig-perl, libdbd-csv-perl, libsql-statement-perl, libtext-csv-perl, libmldbm-sync-perl, libmldbm-perl 
