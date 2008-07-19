@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 #   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
@@ -151,7 +148,7 @@ if ($config->Update) {
     &verbose("Getting adapters");
     my @adaps;
     if ($config->devname) {
-	@adaps=list_adapter(devname=>$devname);
+	@adaps=list_adapter(devname=>$config->devname);
     } elsif ($config->all) {
 	@adaps=list_adapter();
     } elsif ($config->name) {
@@ -213,7 +210,16 @@ if ($config->Update) {
 
 }else { #Must be list
     &verbose("Listing machine data.");
-    my @adapters=list_adapter();
+    my @adapters;
+    if ($config->devname) {
+	@adapters = list_adapter(devname=>$config->devname);
+    } elsif ($config->all) {
+	@adapters = list_adapter();
+    } elsif ($config->name) {
+	@adapters=list_adapter(client=>$config->name);
+    } else {
+	@adapters = list_adapter();
+    }
     if (@adapters) {
 	if ($config->parse){
 	    print "#Adapter definitions\n";

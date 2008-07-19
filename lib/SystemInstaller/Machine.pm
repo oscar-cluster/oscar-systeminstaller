@@ -54,6 +54,17 @@ sub get_machine_listing {
     return %results;
 }
 
+sub adapter_devs {
+    my %dev;
+    my @adapterlist = list_adapter();
+
+    foreach my $adap (@adapterlist) {
+	my $d = $adap->devname;
+	$dev{$d} = 1;
+    }
+    return sort(keys(%dev));
+}
+
 # Use Schwartzian transform to sort clients by node names alphabetically and numerically.
 # Names w/o numeric suffix precede those with numeric suffix.
 sub sortclients(@) {
@@ -63,16 +74,45 @@ sub sortclients(@) {
 	       @_;
 }
 
+# convert hostname to adapter-device specific name
+sub devhname {
+    my ($dev, $dname) = @_;
+
+    if ($dev ne "eth0") {
+	$dname =~ s/(\d+)$//;
+	return $dname . $dev . $1;
+    } else {
+	return $dname;
+    }
+}
+
+# convert adapter-specific name back to real hostname
+sub hnamedev {
+    my ($dev, $dname) = @_;
+
+    if ($dev ne "eth0") {
+	$dname =~ m/^(.*)$dev(\d+)$/;
+	return $1 . $2;
+    } else {
+	return $dname;
+    }
+}
+
 sub synchosts {
 	my @delhosts=@_;
 	my @machinelist = list_client();
-	my @adapterlist = list_adapter(devname=>"eth0");
+	my @adapterlist = list_adapter();
+	my @devlist = adapter_devs();
         my %ADAPTERS;
+	my %APPLIANCES;
         &verbose("Parsing adapters");
         foreach my $adap (@adapterlist) {
-                # will need to check if this is the install
-                # adapter in the future.
-                $ADAPTERS{$adap->client}=$adap->ip;
+	    my $name = $adap->client;
+	    $ADAPTERS{$adap->devname}{$name} = $adap->ip;
+	    if ($name =~ /^__(.*)__$/) {
+		my $client = $1;
+		$APPLIANCES{$client} = $adap->ip;
+	    }
         }
 	&verbose("Syncing /etc/hosts/ to database.");
 	open (HOSTS,"/etc/hosts");
@@ -82,11 +122,20 @@ sub synchosts {
 	while (<HOSTS>) {
 		my $found=0;
 		my ($ip,$lhost,$shost)=split;
+		if ($lhost && !$shost) {
+		    $shost = $lhost;
+		}
                 if ($_ =~ /.*managed by SIS.*/) {
                         $found=1;
                 }
-                if ($ADAPTERS{$shost}) {
+		for my $d (@devlist) {
+		    my $hname = hnamedev($d, $shost);
+		    if ($ADAPTERS{$d}{$hname}) {
 			$found=1;
+		    }
+		}
+		if ($APPLIANCES{$shost}) {
+		    $found=1;
 		}
 		foreach my $mach (@delhosts) {
 			if ($shost eq $mach) {
@@ -94,7 +143,7 @@ sub synchosts {
 			}
 		}
 		unless ($found) {
-			unless ($_ =~ /^$/ ) {
+			unless ($_ =~ /^$/ || $_ =~ /^\#/) {
 				print TMP $_;
 			}
 		}
@@ -105,11 +154,29 @@ sub synchosts {
 	&verbose("Re-adding currently defined machines.");
 
 	print TMP "\n# These entries are managed by SIS, please don't modify them.\n";
-	foreach my $mach (sortclients @machinelist) {
+	foreach my $dev (@devlist) {
+	    print TMP "\n# $dev addresses\n";
+	    foreach my $mach (sortclients @machinelist) {
                 my $name=$mach->name;
-                if ($ADAPTERS{$name}) {
-	                printf TMP "%-20.20s %s\t%s\n", $ADAPTERS{$name},$mach->hostname,$name;
-                }
+		if ($dev eq "eth0") {
+		    if ($ADAPTERS{$dev}{$name}) {
+	                printf TMP "%-20.20s %s\t%s\n",
+			$ADAPTERS{$dev}{$name}, $mach->hostname, $name;
+		    }
+		} else {
+		    my $dname = devhname($dev, $name);
+		    if ($ADAPTERS{$dev}{$name}) {
+	                printf TMP "%-20.20s %s\n",
+			$ADAPTERS{$dev}{$name}, $dname;
+		    }
+		}
+	    }
+	}
+	if (scalar(keys(%APPLIANCES))) {
+	    print TMP "\n# Appliance IPs\n";
+	    foreach my $appl (sort(keys(%APPLIANCES))) {
+		printf TMP "%-20.20s %s\n", $APPLIANCES{$appl}, $appl;
+	    }
 	}
 	close(TMP);
 	&verbose("Moving temp file to actual location.");

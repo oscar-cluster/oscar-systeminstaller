@@ -6,12 +6,15 @@ System Installer v2.3.8
               Deb) changelogs. Package chaneglogs are only
               reserved for modifications to the packages, not
               the "upstream" version of systeminstaller.
+	- Improved mksiadapter tool as well as generation/updating
+	  of /etc/hosts. It now includes names corresponding to
+	  all available interfaces [EF].
 ------------------------------------------------------------
 System Installer v2.3.7
 ------------------------------------------------------------
         - Add check whether all packages were really installed 
-              (new feature of packman)
-        - Add functionality to umount /proc recursively.
+              (new feature of packman) [EF].
+        - Add functionality to umount /proc recursively [EF].
         - Add support for ppc, ppc64 in Partition.pm
 ------------------------------------------------------------
 System Installer v2.3.6
