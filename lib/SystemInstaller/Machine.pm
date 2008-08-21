@@ -119,6 +119,7 @@ sub synchosts {
 	open (TMP,">/tmp/hosts.$$");
 	# First find all of the SIS entries and remove them.
 	&verbose("Removing old SIS entries");
+	my $below_line = 0;
 	while (<HOSTS>) {
 		my $found=0;
 		my ($ip,$lhost,$shost)=split;
@@ -127,6 +128,7 @@ sub synchosts {
 		}
                 if ($_ =~ /.*managed by SIS.*/) {
                         $found=1;
+			$below_line = 1;
                 }
 		for my $d (@devlist) {
 		    my $hname = hnamedev($d, $shost);
@@ -142,7 +144,7 @@ sub synchosts {
 				$found=1;
 			}
 		}
-		unless ($found) {
+		unless ($found || $below_line) {
 			unless ($_ =~ /^$/ || $_ =~ /^\#/) {
 				print TMP $_;
 			}

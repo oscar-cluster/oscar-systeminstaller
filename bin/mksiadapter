@@ -177,6 +177,8 @@ if ($config->Update) {
     &verbose("Deleting adapters");
     my @keys=map{$_->primkey} @deladaps;
     del_adapter(@keys);
+    &verbose("Syncing /etc/hosts");
+    synchosts();
 
 } elsif ($config->Add) {
     if ($config->name !~ /^__.*__$/ && !exists_client($config->name)) {
