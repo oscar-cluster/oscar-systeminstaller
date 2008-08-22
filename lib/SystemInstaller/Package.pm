@@ -39,7 +39,7 @@ use SystemInstaller::Package::Deboot;
 
 my @PKGMODS=qw(PackManSmart Deboot Deb Suse RpmNoScripts UpdateRpms Rpm);
 
-sub pkg_install {
+sub pkg_install ($$$@) {
 # Head sub to do all the steps, use this or the individual subs below.
 # Input:         pkg dir name, image dir name, arch, list of pkg files
 # Output:        boolean
@@ -157,7 +157,7 @@ sub pkglist_uniq {
 	return @upkgs;
 } #pkglist_uniq
 
-sub check_reqd_pkgs {
+sub check_reqd_pkgs (@) {
         # Ensure that required packages are in the list
         # Input:        list of pkgs
         # Output:       list of missing pkgs or null if OK

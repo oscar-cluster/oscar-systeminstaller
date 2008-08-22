@@ -272,7 +272,7 @@ sub uninstall_fake_start_stop_daemon {
 	"$imgpath/sbin/start-stop-daemon" or return 1;
 }	    
 
-sub debootstrap {
+sub debootstrap ($$$) {
 # debootstrap is used to install the base system into a chroot
 # Input:      target, suite, mirror
 # Returns:    0 if failure, 1 if ok
@@ -283,8 +283,8 @@ sub debootstrap {
     my $cmd = "debootstrap $suite $target $mirror";
     verbose("Executing $cmd");
     if (system($cmd)) {
-	verbose("Failed to debootstrap, aborting.");
-	return 0;
+	    verbose("Failed to debootstrap, aborting.");
+	    return 0;
     }
     ## debootstrap umounts proc within the image.  remount it here.
     ## if it fails, assume its a version of debootstrap that doesn't umount

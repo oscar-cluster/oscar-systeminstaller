@@ -46,29 +46,16 @@ use strict;
 
 @EXPORT = qw(createimage_window add2rsyncd delfromrsyncd);
 
-sub createimage_window {
+sub createimage_window ($%) {
     my $config = init_si_config();
 
-    my $window = shift;
-    my %vars = (
-		title => "Create an SIS Image",
-		imgpath => $config->default_image_dir,
-		imgname => "",
-		arch => (uname)[4],
-		pkgfile => "",
-		pkgpath => "",
-		ipmeth => "",
-		piaction => "",
-		diskfile => "",
-		vdiskdev => "none",
-		extraflags => "",
-		pass1 => "",
-		pass2 => "",
-		# This is the dummy post install.  Postinstalls MUST return true lest things go funky.
-		postinstall => sub {return 1},
-		noshow => {},
-		@_,
-		);
+    my ($window, %vars) = @_;
+    %vars->{'title'} = "Create an SIS Image";
+	%vars->{'vdiskdev'} = "none";
+	%vars->{'pass1'} = "";
+	%vars->{'pass2'} = "";
+	# This is the dummy post install.  Postinstalls MUST return true lest things go funky.
+	%vars->{'postinstall'} = sub {return 1};
 
     #
     # Validate image name.

@@ -137,7 +137,7 @@ sub files_install {
 
     my $pm = OSCAR::PackageSmart::prepare_pools($verbose,@pools);
     if (!$pm) {
-	croak "\nERROR: Could not create PackMan instance!\n";
+    	croak "\nERROR: Could not create PackMan instance!\n";
     }
 
     $pm->chroot($imgpath);
@@ -147,18 +147,19 @@ sub files_install {
     my @pkglist = @stages;
 
     &verbose("Performing PackMan smart_install:");
+    print "---> " . $pm->status() . "\n";
     my ($res,@out) = $pm->smart_install(@pkglist);
     my @failed = $pm->check_installed(@pkglist);
     if (@failed) {
-	push @{$errs}, "\n~~~~\nERROR: Failed to install packages: ".
-		join(", ",@failed)."\n~~~~\n";
-	carp("PackMan smart_install failed.");
-	return 0;
+	    push @{$errs}, "\n~~~~\nERROR: Failed to install packages: ".
+		    join(", ",@failed)."\n~~~~\n";
+	    carp("PackMan smart_install failed.");
+	    return 0;
     }
     if (!$res) {
-	push @{$errs}, "Error occured during installation with Yume:\n";
-	push @{$errs}, "pkglist was: ". join(",",@pkglist)."\n";
-	push @{$errs}, join("\n",@out)."\n\n";
+    	push @{$errs}, "Error occured during installation with Yume:\n";
+	    push @{$errs}, "pkglist was: ". join(",",@pkglist)."\n";
+	    push @{$errs}, join("\n",@out)."\n\n";
     }
     return 1;
 } #files_install
