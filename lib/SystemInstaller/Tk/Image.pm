@@ -17,7 +17,15 @@ package SystemInstaller::Tk::Image;
 # $Id$
 #
 # Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
-# Copyright (c) 2007 Geoffroy Vallee <valleegr@ornl.gov>
+# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                         Oak Ridge National Laboratory
+#                         All rights reserved.
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use base qw(Exporter);
 use vars qw(@EXPORT);
@@ -38,24 +46,314 @@ use SystemImager::Common;
 use SystemImager::Config;
 
 # OSCAR specific stuff
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::PackagePath;
 use OSCAR::Database;
 
 use strict;
 
-@EXPORT = qw(createimage_window add2rsyncd delfromrsyncd);
+@EXPORT = qw(
+            createimage_basic_window
+            createimage_window
+            add2rsyncd
+            delfromrsyncd
+            );
 
+sub createimage_basic_window ($%) {
+    my $config = init_si_config();
+
+    my ($window, %vars) = @_;
+    $vars{'title'} = "Create an SIS Image";
+    $vars{'vdiskdev'} = "none";
+    $vars{'pass1'} = "";
+    $vars{'pass2'} = "";
+    # This is the dummy post install.  Postinstalls MUST return true lest things go funky.
+    $vars{'postinstall'} = sub {return 1};
+
+    #
+    # Validate image name.
+    #
+    my @images = &listimages;
+    if( grep {$vars{imgname} eq $_} @images ) {
+    my $last = 0;
+    foreach (@images) {
+        if( /^\Q$vars{imgname}\E(\d+)$/ ) {
+        $last = $1 if $1 > $last;
+        }
+    }
+    $vars{imgname} .= $last + 1;
+    }
+
+    my %defaults = %vars;
+    my %noshow = %{$vars{noshow}};
+
+    # locate all available distro pools
+    my %distro_pools = &OSCAR::PackagePath::list_distro_pools();
+    my @distros = sort(keys(%distro_pools));
+    # We put the local distro first: this avoid the bug where the GUI has 
+    # default values based on alphabetic sorting and others based on the local
+    # distro, which makes the GUI kind of incoherent.
+    #
+    # Also note that this kind of functionality may be integrated into 
+    # OS_Dectec. But since this is not currently the case (OS_Detect can detect
+    # the distro of pools for Linux distributions, not OSCAR pools.
+    my $os = OSCAR::OCA::OS_Detect::open("/");
+    my $osid = $os->{distro}."-".$os->{distro_version}."-".$os->{arch};
+    my $i = 0;
+    while ($i < scalar(@distros)) {
+        print "$i: $distros[$i]\n";
+        if ($distros[$i] eq $osid) {
+            my $d = $distros[$i];
+            delete ($distros[$i]);
+            unshift (@distros, $d);
+        }
+        $i++;
+    }
+
+    $noshow{vdiskdev}="yes" unless -d '/proc/iSeries';
+
+    my $image_window = $window->Toplevel();
+    $image_window->withdraw;
+    $image_window->title($vars{title});
+    my $message = $image_window->Message(-text => "Fill out the following fields to build a System Installation Suite image.  If you need help on any field, click the help button next to it",
+                     -justify => "left",
+                     -aspect => 800);
+    $message->grid("-","-","-");
+
+    #
+    #  First line:  What is your image name?
+    # 
+
+    label_entry_line($image_window, "Image Name", \$vars{imgname},"","x",helpbutton($image_window, "Image Name"))
+    unless $noshow{pkgpath};
+
+    #
+    #  Second line: Where is your package file
+    #
+    my $package_button = $image_window->Button(
+                           -text=>"Choose a File...",
+                           -command=> [\&selector2entry, 
+                                       \$vars{pkgfile}, 
+                                       "Select package list", 
+                                       [["Package list", ".rpmlist"],
+                                        ["All files", "*"]], 
+                                       $image_window],
+                           -pady => 4,
+                           -padx => 4,
+                           );
+    label_entry_line($image_window,
+             "Base Package File",
+             \$vars{pkgfile},
+             "", 
+             $package_button,
+             helpbutton($image_window, "Package File"))
+    unless $noshow{pkgfile};
+
+    # Few variables we use all the time.
+    my ($labeltext, $entry, $label, @options);
+
+#     #
+#     #  Fourth Line:  where are your packages?
+#     #
+#     my @options;
+#     my $validate = "";
+#     my $labeltext = "Package Repositories";
+#     my $variable = $vars{pkgpath};
+#     my @morewidgets = helpbutton($image_window, "Package Repositories");
+#     if($validate) {
+#         @options = (
+#             -validatecommand => $validate,
+#             -validate => "focusout",
+#             -width => 40,
+#         );
+#     }
+#     my $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
+#     my $entry = $image_window->Entry(-textvariable => $variable, @options);
+#     $label->grid($entry, "x", @morewidgets, -sticky => "nw");
+
+
+    #
+    # Select an additional package group file, if passed.
+    # $vars{package_group} must be a reference to an array of hash references.
+    # Each hash reference must be of the form:
+    #   { label => "group label" , path => path_to_group_file }
+    #
+#     my ($selected_group, @group_labels);
+# 
+#     if ($vars{package_group} && ref($vars{package_group}) eq "ARRAY") {
+#     # Eliminate labels which point to non-existent files.
+#     for (@{$vars{package_group}}) {
+#         if (-f $_->{path}) {
+#         push @group_labels, $_->{label};
+#         }
+#     }
+#     }
+#     if (scalar(@group_labels)) {
+#     $vars{selected_group} = $group_labels[0];
+#     my $groupoption = label_option_line($image_window, 
+#                         "Additional Package Group",
+#                         \$vars{selected_group},
+#                         \@group_labels, 
+#                         "x",
+#                         helpbutton($image_window,
+#                                "Package Group"))
+#         unless $noshow{package_group};
+#     }
+
+    #
+    # Select the target distribution
+    #
+    $labeltext = "Target Distribution";
+    $vars{distro} = $distros[0];
+    my $label2 = $image_window->Label(-text => "Target Distribution",
+                      -anchor => "w");
+    my $default = $vars{distro};
+
+    my $distrooption = $image_window->Optionmenu(
+        -options => \@distros,
+        -command => sub {
+            my $dist = shift;
+            print "Selection: $dist\n";
+            $vars{'distro'} = $dist;
+        },
+        -variable => \$vars{distro});
+    $distrooption->setOption($default) if $default;
+
+    my @morewidgets2 = helpbutton($image_window,
+                      "Target Distribution");
+    $label2->grid($distrooption, "x", @morewidgets2, -sticky => "nesw");
+    
+    #
+    #  Fourth line:  disktable
+    #
+    my $disk_button = $image_window->Button(
+                        -text=>"Choose a File...",
+                        -command=> [\&selector2entry, 
+                            \$vars{diskfile}, 
+                            "Select disk configuration", 
+                            [["Disk configuration", ".disk"],
+                             ["All files", "*"]], 
+                            $image_window],
+                        -pady => 4,
+                        -padx => 4,
+                        );
+
+    #
+    # (only for iseries).  Virtual disk enable.
+    # 
+
+    label_entry_line($image_window, 
+                     "Virtual Disk", 
+                     \$vars{vdiskdev},
+                     "","x",helpbutton($image_window, "Virtual Disk"))
+    unless $noshow{vdiskdev};
+
+    #
+    # Disk partition file
+    #
+    
+    label_entry_line($image_window, "Disk Partition File", \$vars{diskfile}, "", 
+             $disk_button, helpbutton($image_window, "Disk File"))
+    unless $noshow{diskfile};
+
+    # 
+    # Set root password
+    #
+    
+    my $passlabel=$image_window->Label(-text=>"Root password(confirm):", 
+                                       -anchor=>"w");
+    my $pass = $image_window->Entry(-textvariable=>\$vars{pass1}, -show=>"*");
+    my $passconfirm = $image_window->Entry(-textvariable=>\$vars{pass2}, 
+                                           -show=>"*", 
+                                           -width=>14);
+    $passlabel->grid($pass,$passconfirm,helpbutton($image_window, "Root password"))
+    unless $noshow{password};
+
+    #
+    #  What is the architecture?
+    #
+    
+    my @archoptions = qw( i386 i486 i586 i686 ia64 ppc ppc64 x86_64 athlon amd64 );
+
+    my $archoption = label_option_line($image_window, 
+                                       "Target Architecture",
+                                       \$vars{arch},\@archoptions, 
+                                       "x",
+                       helpbutton($image_window,
+                                                  "Target Architecture"))
+    unless $noshow{arch};
+
+    #
+    #  What is your ip assignment method?
+    #
+
+    my @ipoptions = qw( dhcp replicant static );
+
+    my $ipoption = label_option_line($image_window, 
+                                     "IP Assignment Method",
+                                     \$vars{ipmeth},
+                                     \@ipoptions, 
+                                     "x",
+                     helpbutton($image_window, "IP Method"))
+    unless $noshow{ipmeth};
+
+    #
+    #  What is the post install action?
+    #
+
+    my @postinstall = qw(beep reboot shutdown kexec);
+
+    my $postoption = label_option_line($image_window, "Post Install Action",
+                       \$vars{piaction},\@postinstall, "x",
+                       helpbutton($image_window, "Post Install Action"))
+    unless $noshow{piaction};
+
+    # Then a whole bunch of control buttons
+
+    my $activate_button = $image_window->Button(
+                        -text => "Build Image",
+                        -command => [\&add_image, \%vars, $image_window],
+                        -pady => 8,
+                        -padx => 8,
+                        );
+
+    my $reset_button = $image_window->Button(
+                         -text=>"Reset",
+                         -command=> [
+                             \&reset_window, $image_window, \%vars, \%defaults,
+                             {
+                                 piaction => $postoption,
+                                 arch => $archoption,
+                                 ipmeth => $ipoption,
+                                 },
+                             ],
+                         -pady => 8,
+                         -padx => 8,
+                         );
+
+    $reset_button->grid($activate_button, 
+                        quit_button($image_window),
+                        "-" , 
+                        -sticky => "nesw");
+
+    # key bindings
+    $image_window->bind("<Control-q>",sub {$image_window->destroy});
+    $image_window->bind("<Control-r>",sub {$reset_button->invoke});
+
+    center_window( $image_window );
+}
+
+# !!!! WARNING: This function is not anymore adapted to OSCAR, the OSCAR GUI
+# should not use it anymore. Prefer createimage_basic_window instead. !!!!
 sub createimage_window ($%) {
     my $config = init_si_config();
 
     my ($window, %vars) = @_;
-    %vars->{'title'} = "Create an SIS Image";
-	%vars->{'vdiskdev'} = "none";
-	%vars->{'pass1'} = "";
-	%vars->{'pass2'} = "";
+    $vars{'title'} = "Create an SIS Image";
+	$vars{'vdiskdev'} = "none";
+	$vars{'pass1'} = "";
+	$vars{'pass2'} = "";
 	# This is the dummy post install.  Postinstalls MUST return true lest things go funky.
-	%vars->{'postinstall'} = sub {return 1};
+	$vars{'postinstall'} = sub {return 1};
 
     #
     # Validate image name.
@@ -431,37 +729,40 @@ sub listimages {
     return @list;
 }
 
-sub add_image {
+sub add_image ($$) {
     my $vars = shift;
     my $window = shift;
     my $config = init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
     my $verbose = &get_verbose();
-    
+
     $window->Busy(-recurse => 1);
 
     my @imgs = &listimages;
     my $iexists = grep /^($$vars{imgname})$/, @imgs;
-    print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n" if $verbose;
-    if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) ||
-	$iexists ) {
-	unless( yn_window( $window, "\"$$vars{imgname}\" exists.\nDo you want to replace it?" ) ) {
-	    $window->Unbusy();
-	    return undef;
-	}
+    print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n" 
+        if $verbose;
+    if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) 
+        || $iexists ) {
+        unless( yn_window( $window, "\"$$vars{imgname}\" exists.\n".
+                                    "Do you want to replace it?" ) ) {
+            $window->Unbusy();
+            return undef;
+        }
 
-        # Manually delete the image directory such that SystemInstaller can re-create it in the same path
+        # Manually delete the image directory such that SystemInstaller can
+        # re-create it in the same path.
         # This way, the SystemImager rsync files etc. are intact
         system("rm -rf $$vars{imgpath}/$$vars{imgname}");
         $$vars{extraflags} .= "--force";
-	$window->update();
+        $window->update();
     }
 
     if ($$vars{pass1} ne $$vars{pass2}) {
-	error_window($window, "The root passwords specified do not match");
-	$window->Unbusy();
-	return undef;
+        error_window($window, "The root passwords specified do not match");
+        $window->Unbusy();
+        return undef;
     }
 
     progress_bar( $window, "Building Image..." );
@@ -511,14 +812,26 @@ sub add_image_build {
 	}
 	$groupfile = "--filename $path";
     }
-    my $cmd = "mksiimage -A --name $$vars{imgname} " .
-	"--location \"$$vars{pkgpath}\" " .
-	"--filename $$vars{pkgfile} " .
-	"--arch $$vars{arch} " . 
-	"--path $$vars{imgpath}/$$vars{imgname} " .
-	"$groupfile ".
-	"$$vars{extraflags}";
-	
+    my $cmd;
+    if (defined $$vars{distro}) {
+        $cmd = "mksiimage -A --name $$vars{imgname} " .
+               "--distro $$vars{distro} " .
+               "--filename $$vars{pkgfile} " .
+               "--arch $$vars{arch} " .
+               "--path $$vars{imgpath}/$$vars{imgname} " .
+               "$groupfile ".
+               "$$vars{extraflags}";
+    } else {
+        # Old stuff, it is better to directly refer to a distro rather than
+        # pools of binary packages.
+        $cmd = "mksiimage -A --name $$vars{imgname} " .
+               "--location \"$$vars{pkgpath}\" " .
+               "--filename $$vars{pkgfile} " .
+               "--arch $$vars{arch} " . 
+               "--path $$vars{imgpath}/$$vars{imgname} " .
+               "$groupfile ".
+               "$$vars{extraflags}";
+    }
     print "Executing command: $cmd\n";
 
     my $value = 0;

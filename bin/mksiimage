@@ -74,6 +74,7 @@ $config->define(
         path=>{ARGCOUNT=> ARGCOUNT_ONE},
         filename=>{ARGCOUNT=> ARGCOUNT_LIST},
         location=>{ARGCOUNT=> ARGCOUNT_ONE},
+        distro=>{ARGCOUNT=> ARGCOUNT_ONE},
         host=>{ARGCOUNT=> ARGCOUNT_ONE},
         arch=>{ARGCOUNT=> ARGCOUNT_ONE},
         all=>{ARGCOUNT=> ARGCOUNT_NONE},
@@ -111,8 +112,8 @@ my $image;
 if ($config->Get) {
     &verbose("Checking for existing image.");
     if (exists_image($config->name)) {
-	my $iname = $config->name;
-	croak("Image $iname exists -- not added.\n");
+        my $iname = $config->name;
+        croak("Image $iname exists -- not added.\n");
     }
 
     $config->arch(''); # unset for now, would be nice to get from client
@@ -123,7 +124,7 @@ if ($config->Get) {
             $user="-ssh-user ". $config->user;
     }
     my $CMD="/usr/sbin/si_getimage -quiet -golden-client " .
-	 $config->client." -image ".$config->name." $user -update-script YES";
+        $config->client." -image ".$config->name." $user -update-script YES";
 
     &verbose("Getting image from $config->client.");
     &verbose("$CMD");
@@ -137,12 +138,13 @@ if ($config->Get) {
     set_image($image);
 
     exit 0;
-} 
+}
+
 if ($config->Add) {
     &verbose("Checking for existing image.");
     if (exists_image($config->name) && !$config->force) {
-	my $iname = $config->name;
-	croak("Image $iname exists -- not added.\n");
+        my $iname = $config->name;
+        croak("Image $iname exists -- not added.\n");
     }
 
     if ($config->build) {
@@ -450,6 +452,7 @@ usage: $progname [ operation ] <options>
     --path <path name>      fully qualified path name of the server image
     --all                   apply to all images (valid for --Delete)
     --filename <file name>  filename of the package list
+    --distro <distro id>    identifier of the target Linux distribution
     --location <directory>  location of the packages
     --arch <architecture>   architecture of the image
     --client <name or ip>   the client to get the image from
