@@ -1,0 +1,29 @@
+<!DOCTYPE article PUBLIC " -//OASIS//DTD DocBook V3.1//EN" "http://oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article class="whitepaper" id="documentation" lang="en">
+
+<artheader> <title>Systeminstaller-oscar Manual</title>
+
+<author>
+
+<firstname>Geoffroy</firstname>
+<surname>Vallee</surname>
+
+<affiliation>
+<address><email>valleegr@ornl.gov</email></address>
+</affiliation>
+</author>
+
+</artheader>
+
+<sect1><title>Introduction</title>
+
+</sect1>
+
+<sect1><title>Interaction with OSCAR Repository Manager</title>
+  <para>
+  </para>
+</sect1>
+
+</article>
+
