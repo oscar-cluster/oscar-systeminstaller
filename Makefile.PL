@@ -13,7 +13,7 @@ sub MY::postamble {
 
 POD2MAN5_EXE = \$(POD2MAN) "--section=5"
 
-deb :: dist
+deb :: manifest rpm_prep dist
 \tmkdir -p /tmp/scdeb
 \tmv \$(NAME)-$version.tar.gz /tmp/scdeb && cd /tmp/scdeb && tar -xvzf \$(NAME)-$version.tar.gz && cd \$(NAME)-$version && dpkg-buildpackage && rm -rf /tmp/scdeb/\$(NAME)-$version
 \techo "Debian Packages have been built in /tmp/scdeb"
