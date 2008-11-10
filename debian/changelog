@@ -1,3 +1,15 @@
+systeminstaller-oscar (2.3.9~svn20080926-0gv1) gutsy; urgency=low
+
+  * Testing package for the upcoming release of SystemInstaller.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 26 Sep 2008 10:48:55 -0400
+
+systeminstaller-oscar (2.3.9~svn20080923-0gv1) gutsy; urgency=low
+
+  * Testing package for the upcoming release of SystemInstaller.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Tue, 23 Sep 2008 23:47:42 -0400
+
 systeminstaller-oscar (2.3.8-1) gutsy; urgency=low
 
   * New upstream version.

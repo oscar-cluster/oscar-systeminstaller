@@ -51,7 +51,7 @@ sub init_image {
 # Returns:	1 if failure, 0 if ok
 
 	my $root = shift;
-	mkpath(["$root/usr/lib","$root/var","$root/home","$root/tmp","$root/boot","$root/proc","$root/root"]);
+# 	mkpath(["$root/usr/lib","$root/var","$root/home","$root/tmp","$root/boot","$root/proc","$root/root"]);
 	mkpath(["$root/etc/systemimager/partitionschemes"]);
 	mkpath(["$root/etc/systemconfig"]);
 	# Check that something worked.

@@ -151,54 +151,6 @@ sub createimage_basic_window ($%) {
     # Few variables we use all the time.
     my ($labeltext, $entry, $label, @options);
 
-#     #
-#     #  Fourth Line:  where are your packages?
-#     #
-#     my @options;
-#     my $validate = "";
-#     my $labeltext = "Package Repositories";
-#     my $variable = $vars{pkgpath};
-#     my @morewidgets = helpbutton($image_window, "Package Repositories");
-#     if($validate) {
-#         @options = (
-#             -validatecommand => $validate,
-#             -validate => "focusout",
-#             -width => 40,
-#         );
-#     }
-#     my $label = $image_window->Label(-text => "$labeltext: ", -anchor => "w");
-#     my $entry = $image_window->Entry(-textvariable => $variable, @options);
-#     $label->grid($entry, "x", @morewidgets, -sticky => "nw");
-
-
-    #
-    # Select an additional package group file, if passed.
-    # $vars{package_group} must be a reference to an array of hash references.
-    # Each hash reference must be of the form:
-    #   { label => "group label" , path => path_to_group_file }
-    #
-#     my ($selected_group, @group_labels);
-# 
-#     if ($vars{package_group} && ref($vars{package_group}) eq "ARRAY") {
-#     # Eliminate labels which point to non-existent files.
-#     for (@{$vars{package_group}}) {
-#         if (-f $_->{path}) {
-#         push @group_labels, $_->{label};
-#         }
-#     }
-#     }
-#     if (scalar(@group_labels)) {
-#     $vars{selected_group} = $group_labels[0];
-#     my $groupoption = label_option_line($image_window, 
-#                         "Additional Package Group",
-#                         \$vars{selected_group},
-#                         \@group_labels, 
-#                         "x",
-#                         helpbutton($image_window,
-#                                "Package Group"))
-#         unless $noshow{package_group};
-#     }
-
     #
     # Select the target distribution
     #
@@ -221,7 +173,7 @@ sub createimage_basic_window ($%) {
     my @morewidgets2 = helpbutton($image_window,
                       "Target Distribution");
     $label2->grid($distrooption, "x", @morewidgets2, -sticky => "nesw");
-    
+
     #
     #  Fourth line:  disktable
     #
@@ -250,28 +202,33 @@ sub createimage_basic_window ($%) {
     #
     # Disk partition file
     #
-    
-    label_entry_line($image_window, "Disk Partition File", \$vars{diskfile}, "", 
-             $disk_button, helpbutton($image_window, "Disk File"))
-    unless $noshow{diskfile};
+
+    label_entry_line($image_window,
+                     "Disk Partition File",
+                     \$vars{diskfile},
+                     "",
+                     $disk_button,
+                     helpbutton($image_window, "Disk File"))
+        unless $noshow{diskfile};
 
     # 
     # Set root password
     #
-    
+
     my $passlabel=$image_window->Label(-text=>"Root password(confirm):", 
                                        -anchor=>"w");
     my $pass = $image_window->Entry(-textvariable=>\$vars{pass1}, -show=>"*");
     my $passconfirm = $image_window->Entry(-textvariable=>\$vars{pass2}, 
                                            -show=>"*", 
                                            -width=>14);
-    $passlabel->grid($pass,$passconfirm,helpbutton($image_window, "Root password"))
+    $passlabel->grid($pass,$passconfirm,helpbutton($image_window, 
+        "Root password"))
     unless $noshow{password};
 
     #
     #  What is the architecture?
     #
-    
+
     my @archoptions = qw( i386 i486 i586 i686 ia64 ppc ppc64 x86_64 athlon amd64 );
 
     my $archoption = label_option_line($image_window, 
@@ -330,7 +287,7 @@ sub createimage_basic_window ($%) {
                          -padx => 8,
                          );
 
-    $reset_button->grid($activate_button, 
+    $reset_button->grid($activate_button,
                         quit_button($image_window),
                         "-" , 
                         -sticky => "nesw");
@@ -340,6 +297,8 @@ sub createimage_basic_window ($%) {
     $image_window->bind("<Control-r>",sub {$reset_button->invoke});
 
     center_window( $image_window );
+
+    return 0;
 }
 
 # !!!! WARNING: This function is not anymore adapted to OSCAR, the OSCAR GUI
@@ -730,8 +689,9 @@ sub listimages {
 }
 
 sub add_image ($$) {
-    my $vars = shift;
-    my $window = shift;
+    my ($vars, $window) = @_;
+
+    print "[add_image] Starting... \n";
     my $config = init_si_config();
     my $rsyncd_conf = $config->rsyncd_conf();
     my $rsync_stub_dir = $config->rsync_stub_dir();
@@ -755,7 +715,7 @@ sub add_image ($$) {
         # re-create it in the same path.
         # This way, the SystemImager rsync files etc. are intact
         system("rm -rf $$vars{imgpath}/$$vars{imgname}");
-        $$vars{extraflags} .= "--force";
+        $$vars{extraflags} .= " --force ";
         $window->update();
     }
 

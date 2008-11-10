@@ -3,6 +3,9 @@ package SystemInstaller::Package;
 #   $Header: /cvsroot/systeminstaller/systeminstaller/lib/SystemInstaller/Package.pm,v 1.57 2003/04/11 21:09:03 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
+#   Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
+#                      Oak Ridge National Laboratory
+#                      All rights reserved.
  
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,235 +21,245 @@ package SystemInstaller::Package;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-#   Michael Chase-Salerno <salernom@us.ibm.com>             
+#   Michael Chase-Salerno <salernom@us.ibm.com>
 #   Modified by Amit Pabalkar <amit.p@californiadigital.com>
-use strict;
+#   Mostly rewrote by Geoffroy Vallee for systeminstaller-oscar
+#       <valleegr@ornl.gov>
 
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
 use SystemInstaller::Log qw (verbose);
+use SystemInstaller::Package::PackManSmart;
+use OSCAR::RepositoryManager;
+use OSCAR::Opkg;
 use Carp;
 use Cwd;
 
 @EXPORT = qw(pkg_install);
 @EXPORT_OK = qw(pkglist_read files_find files_install);
- 
+
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
-use SystemInstaller::Package::PackManSmart;
-use SystemInstaller::Package::Deb;
-use SystemInstaller::Package::Deboot;
+################################################################################
+# Basic function that creates the basic image, including OSCAR packages. This  #
+# is actually only the SystemInstaller entry point to use ORM/PackMan 
+#                                                                              #
+# Input:        distro, the target distribution id (OS_Detect syntax).         #
+#               pkg dir name,                                                  #
+#               image dir name,                                                #
+#               arch,                                                          #
+#               list of pkg files                                              #
+# Output:       0 if error, 1 else.                                            #
+################################################################################
+sub pkg_install ($$$$@) {
+    my ($distro, $pkgpath, $imgpath, $arch, @pkglistfiles) =@_;
+    my (@pkglist, @pkgfiles);
+    my $outlines=13; # Extra lines of output for GUI count below.
 
-my @PKGMODS=qw(PackManSmart Deboot Deb Suse RpmNoScripts UpdateRpms Rpm);
+    my $rm;
+    if (defined $distro) {
+        $rm = OSCAR::RepositoryManager->new (distro => $distro);
+    } elsif (defined $pkgpath) {
+        $rm = OSCAR::RepositoryManager->new (repo => $pkgpath);
+    } else {
+        carp "ERROR: no distro or repos defined";
+        return 0;
+    }
 
-sub pkg_install ($$$@) {
-# Head sub to do all the steps, use this or the individual subs below.
-# Input:         pkg dir name, image dir name, arch, list of pkg files
-# Output:        boolean
-        my $pkgpath=shift;
-        my $imgpath=shift;
-        my $arch=shift;
-        my @pkglistfiles=@_;
-        my @pkglist; my @pkgfiles;
-        my $outlines=13; #Extra lines of output for GUI count below.
+    if (!defined $rm) {
+        carp "ERROR: Invalid RepositoryManager object";
+        return 0;
+    }
 
-	#
-	# skipping check for package path because of yume pools,
-	# they can be URLs and concatenated by ","
-	#
-        #&verbose("Checking package path.");
-        #unless (-e $pkgpath) {
-        #        carp("Package location $pkgpath not found!");
-        #        return 0;
-        #}
-        &verbose("Reading package list files.");
-        unless (@pkglist=&pkglist_read(@pkglistfiles)) {
-                carp("Failed to read package files.");
-                return 0;
+    # We set the chroot path so PackMan knows what to do (including the image
+    # bootstrap.
+    $rm->{pm}->{ChRoot} = $imgpath;
+
+    # We create the list of pkg to install from the different files defining the
+    # needed files.
+    foreach my $pkgs_file (@pkglistfiles) {
+        open (FILE, ">>$pkgs_file");
+        while (<FILE>) {
+            my($line) = $_;
+            chomp ($line);
+            push (@pkglist, $line);
         }
+        close (FILE);
+    }
 
-        &verbose("Checking for required packages");
-        my @missing;
-        if (@missing=&check_reqd_pkgs(@pkglist)){
-                my $pkgstring=join("\n\t",@missing);
-                carp("WARNING: Missing required packages, continuing:\n\t$pkgstring\n");
-        }
+    # We add the list of core OPKGs, client side.
+    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs ();
+    print "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
+    my $temp;
+    for (my $i=0; $i < scalar (@core_opkgs); $i++) {
+        push (@pkglist, "opkg-$core_opkgs[$i]-client");
+    }
+    print "---> Package list: ".join(" ", @pkglist)."\n";
 
-        
-        # Display the line count for GUI status bars.
-        my $linecount = ((scalar(@pkglist) * 2) + $outlines);
-        &verbose("Expected lines of output: $linecount");
+    use OSCAR::PackManDefs;
+    my ($err, $output) = $rm->install_pkg ($imgpath, @pkglist);
+    print "---> Installation result: ($err, $output)\n";
+    if ($err == ERROR) {
+        carp "ERROR: Impossible to install pkgs ($err, $output)";
+        return 0;
+    }
 
-        &verbose("Finding package install files.");
-        unless (@pkgfiles=&files_find($pkgpath, $arch, @pkglist)) {
-                carp("Failed to find files for all packages.");
-                return 0;
-        }
+    return 1;
+} # pkg_install
 
-        &verbose("Performing pre-install.");
-        unless (&files_pre_install($pkgpath, $imgpath)) {
-                carp("Pre-install failed.");
-                return 0;
-        }
-        &verbose("Installing package install files.");
-	my @errs;
-        unless (&files_install($pkgpath, $imgpath, \@errs, @pkgfiles)) {
-		local *A;
-		open A, "> $ENV{OSCAR_HOME}/tmp/sin-install.error";
-		print A @errs."\n";
-		close A;
-                carp("Failed to install files.\n".join("\n",@errs));
-                if ($main::config->pkginstfail) { return 0;};
-        }
-        &verbose("Performing post-install.");
-        unless (&files_post_install($pkgpath, $imgpath)) {
-                carp("Post-install failed, your image may not be quite right.");
-                if ($main::config->postinstfail) { return 0;};
-        }
-        return 1;
-
-} #pkg_install
-
-sub pkglist_read {
-# Read in the specified files
-# Input: 	list of pkg files.
-# Returns:	list of pkgs or null if failure
-
-        my @filelist=@_;
-        my @pkglist;
-	my $line; 
-	local *PFILE;
-        foreach my $fn (@filelist) {
-        	&verbose("Opening package file $fn.");
-        	if (! open(PFILE,$fn)) {
-                        carp("Unable to open package file $fn");
-        		return;
-        	}
-        	&verbose("Parsing package file.");
-        	while ($line=<PFILE>) {
-        		chomp $line;
-		        if (($line =~ /^\s*$/) || ($line =~ /^#/)) {
-			        next;
-                        }
-                        $line=~s/\s//g;
-        		# Found a package name, save it
-        	        push (@pkglist,$line);
-        	}
-        	close(PFILE);
-        }
-        # get rid of dupes and return the list
-        &verbose("Deleting duplicate package entries.");
-        return &pkglist_uniq(@pkglist);
-} #pkglist_read
-
-sub pkglist_uniq {
-# Gets rid of dupe package names while maintaining the order.
-# Input:        list of pkgs
-# Output:       list of unique pkgs 
-
-	my $ptype; my $pkg;
-	my %found=();
-	my @upkgs=();
-
-	foreach $pkg (@_) {
-		if (! defined $found{$pkg} ) {
-			$found{$pkg}++;
-			push (@upkgs,$pkg);	
-		}
-	}
-	return @upkgs;
-} #pkglist_uniq
-
-sub check_reqd_pkgs (@) {
-        # Ensure that required packages are in the list
-        # Input:        list of pkgs
-        # Output:       list of missing pkgs or null if OK
-        my @pkglist=@_;
-        my @req_pkgs=qw(systemconfigurator|opkg-sis-client);
-        my @missing=();
-        foreach my $pkg (@req_pkgs){
-                unless (grep(/^($pkg).*/,@pkglist)) {
-                        push(@missing, $pkg);
-                }
-         }
-         return @missing;
-}# check_reqd_pkgs
-
-sub files_find {
-# Find the filenames corresponding to the package lists
-# Input: pkg dir, arch, pkg list
-# Output:  file list or null on failure.
-        my $path=shift;
-        my $arch=shift;
-        my @pkglist=@_;
-
-        foreach my $mod (@PKGMODS){
-		my $class="SystemInstaller::Package::$mod";
-                if ($class->footprint("files",$path)) {
-                        &verbose("Finding files with module $class");
-                        return $class->files_find($path,$arch,@pkglist);
-                }
-        }
-        return;
-} #files_find
-
-sub files_pre_install {
-# Perform any pre install actions
-# Input: pkg dir, imagedir
-# Output:  Boolean
-        my $path=shift;
-        my $imgpath=shift;
-        my @file=@_;
-
-        foreach my $mod (@PKGMODS){
-		my $class="SystemInstaller::Package::$mod";
-                if ($class->footprint("pre_install",$path)) {
-                        &verbose("Performing pre-install with module $class");
-                        return $class->files_pre_install($imgpath,$path);
-                }
-        }
-        return;
-} #files_pre_install
-
-sub files_install {
-# Install the pkgs
-# Input: pkg dir, imagedir, file list
-# Output:  file list or null on failure.
-        my $path=shift;
-        my $imgpath=shift;
-        my @file=@_;
-
-	print "!!! Files for files_install = ".join(" ",@file)."\n";
-        foreach my $mod (@PKGMODS){
-		my $class="SystemInstaller::Package::$mod";
-                if ($class->footprint("install",$path)) {
-                        &verbose("Installing with module $class");
-                        return $class->files_install($imgpath,$path,@file);
-                }
-        }
-        return;
-} #files_install
-
-sub files_post_install {
-# Perform any post install actions
-# Input: pkg dir, imagedir
-# Output:  Boolean
-        my $path=shift;
-        my $imgpath=shift;
-        my @file=@_;
-
-        foreach my $mod (@PKGMODS){
-		my $class="SystemInstaller::Package::$mod";
-                if ($class->footprint("post_install",$path,$imgpath)) {
-                        &verbose("Performing post-install with module $class");
-                        return $class->files_post_install($imgpath,$path);
-                }
-        }
-        return;
-} #files_post_install
+# sub pkglist_read {
+# # Read in the specified files
+# # Input: 	list of pkg files.
+# # Returns:	list of pkgs or null if failure
+# 
+#         my @filelist=@_;
+#         my @pkglist;
+# 	my $line; 
+# 	local *PFILE;
+#         foreach my $fn (@filelist) {
+#         	&verbose("Opening package file $fn.");
+#         	if (! open(PFILE,$fn)) {
+#                         carp("Unable to open package file $fn");
+#         		return;
+#         	}
+#         	&verbose("Parsing package file.");
+#         	while ($line=<PFILE>) {
+#         		chomp $line;
+# 		        if (($line =~ /^\s*$/) || ($line =~ /^#/)) {
+# 			        next;
+#                         }
+#                         $line=~s/\s//g;
+#         		# Found a package name, save it
+#         	        push (@pkglist,$line);
+#         	}
+#         	close(PFILE);
+#         }
+#         # get rid of dupes and return the list
+#         &verbose("Deleting duplicate package entries.");
+#         return &pkglist_uniq(@pkglist);
+# } #pkglist_read
+# 
+# sub pkglist_uniq {
+# # Gets rid of dupe package names while maintaining the order.
+# # Input:        list of pkgs
+# # Output:       list of unique pkgs 
+# 
+# 	my $ptype; my $pkg;
+# 	my %found=();
+# 	my @upkgs=();
+# 
+# 	foreach $pkg (@_) {
+# 		if (! defined $found{$pkg} ) {
+# 			$found{$pkg}++;
+# 			push (@upkgs,$pkg);	
+# 		}
+# 	}
+# 	return @upkgs;
+# } #pkglist_uniq
+# 
+# # Ensure that required packages are in the list
+# #
+# # Input:        list of pkgs
+# # Output:       list of missing pkgs or null if OK
+# #
+# # TODO: do we really need that since we deal automatically with dependencies
+# # now and that we install automatically all core packages?
+# # DEPRECATED???
+# sub check_reqd_pkgs (@) {
+#     my @pkglist=@_;
+#     my @req_pkgs=qw(systemconfigurator|opkg-sis-client);
+#     my @missing=();
+#     foreach my $pkg (@req_pkgs){
+#         unless (grep(/^($pkg).*/, @pkglist)) {
+#             push(@missing, $pkg);
+#         }
+#     }
+#     return @missing;
+# } # check_reqd_pkgs
+# 
+# # Find the filenames corresponding to the package lists
+# # Input: pkg dir, arch, pkg list
+# # Output:  file list or null on failure.
+# sub files_find {
+#     my $path=shift;
+#     my $arch=shift;
+#     my @pkglist=@_;
+# 
+#     foreach my $mod (@PKGMODS){
+#         my $class="SystemInstaller::Package::$mod";
+#         if ($class->footprint("files",$path)) {
+#             &verbose("Finding files with module $class");
+#             return $class->files_find($path,$arch,@pkglist);
+#         }
+#     }
+#     return undef;
+# } # files_find
+# 
+# ################################################################################
+# # Perform any pre install actions.                                             #
+# #                                                                              #
+# # Input:    pkg dir,                                                           #
+# #           imagedir                                                           #
+# # Output:   0 if error, 1 else.                                                #
+# ################################################################################
+# sub files_pre_install {
+#     my $path=shift;
+#     my $imgpath=shift;
+#     my @file=@_;
+# 
+#     foreach my $mod (@PKGMODS){
+#         my $class="SystemInstaller::Package::$mod";
+#         if ($class->footprint("pre_install",$path)) {
+#             &verbose("Performing pre-install with module $class");
+#             return $class->files_pre_install($imgpath,$path);
+#         }
+#     }
+#     return undef;
+# } # files_pre_install
+# 
+# sub files_install {
+# # Install the pkgs
+# # Input: pkg dir, imagedir, file list
+# # Output:  file list or null on failure.
+#         my $path=shift;
+#         my $imgpath=shift;
+#         my @file=@_;
+# 
+# 	print "!!! Files for files_install = ".join(" ",@file)."\n";
+#         foreach my $mod (@PKGMODS){
+# 		my $class="SystemInstaller::Package::$mod";
+#                 if ($class->footprint("install",$path)) {
+#                         &verbose("Installing with module $class");
+#                         return $class->files_install($imgpath,$path,@file);
+#                 }
+#         }
+#         return;
+# } #files_install
+# 
+# sub files_post_install {
+# # Perform any post install actions
+# # Input: pkg dir, imagedir
+# # Output:  Boolean
+#         my $path=shift;
+#         my $imgpath=shift;
+#         my @file=@_;
+# 
+#         foreach my $mod (@PKGMODS){
+# 		my $class="SystemInstaller::Package::$mod";
+#                 if ($class->footprint("post_install",$path,$imgpath)) {
+#                         &verbose("Performing post-install with module $class");
+#                         return $class->files_post_install($imgpath,$path);
+#                 }
+#         }
+#         return;
+# } #files_post_install
 
 
 ### POD from here down
+
+1;
+
+__END__
 
 =head1 NAME
  

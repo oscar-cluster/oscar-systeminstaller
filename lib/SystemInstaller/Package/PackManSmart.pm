@@ -127,10 +127,10 @@ sub files_install {
 
     use lib "$ENV{OSCAR_HOME}/lib";
     require OSCAR::PackageSmart;
-        
+
     my $verbose=1;
     if (get_verbose) {
-	$verbose = 1;
+        $verbose = 1;
     }
 
     my @pools = split(",",$pkgpath);

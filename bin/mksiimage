@@ -146,27 +146,34 @@ if ($config->Add) {
         my $iname = $config->name;
         croak("Image $iname exists -- not added.\n");
     }
+    print "---> Distro: " . $config->distro . "\n";
+    print "---> Path: " . $config->path . "\n";
+    print "---> Name: " . $config->name . "\n";
+    print "---> Rsync stub directory: " . $config->rsync_stub_dir . "\n";
 
     if ($config->build) {
         &verbose("Building image");
         # Actually build the image
         &verbose("Updating Rsyncd.conf");
 
-	SystemImager::Server->create_image_stub($config->rsync_stub_dir, $config->name, $config->path) or
-    		croak("Cannot create rsync stub entry.");
+        SystemImager::Server->create_image_stub ($config->rsync_stub_dir,
+            $config->name,
+            $config->path)
+            or croak("Cannot create rsync stub entry.");
 
-	SystemImager::Server->gen_rsyncd_conf($config->rsync_stub_dir, $config->rsyncd_conf) or
-    		croak("Cannot generate rsyncd.conf file.");
+        SystemImager::Server->gen_rsyncd_conf($config->rsync_stub_dir,
+            $config->rsyncd_conf)
+            or croak("Cannot generate rsyncd.conf file.");
 
         &verbose("Updating flamethrower.conf");
-	# Add image entry to flamethrower.conf file
-	my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
-	if(-e $flamethrower_conf) {
-	    my $entry_name = $config->name;
-	    my $new_entry_data = "[$entry_name]\n  DIR = ".$config->path."\n";
-	    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+        # Add image entry to flamethrower.conf file
+        my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
+        if(-e $flamethrower_conf) {
+            my $entry_name = $config->name;
+            my $new_entry_data = "[$entry_name]\n  DIR = ".$config->path."\n";
+            SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
 		croak "Cannot create entry in $flamethrower_conf";
-	      
+
 	    # Add override entry to flamethrower.conf file
 	    $entry_name = "override_" . $config->name;
 	    $new_entry_data = "[$entry_name]\n  DIR = ".
@@ -175,35 +182,38 @@ if ($config->Add) {
 		croak "Cannot create entry in $flamethrower_conf";
 	}
 
-        &verbose("Initializing image directories.");
-        if (&init_image($config->path)) {
-	        &del_image($config->name);
-	        croak("Image initialization failed\n");
-        }
-        &verbose("Mounting /proc.");
-        my $procpath = $config->path."/proc";
-        if (system("mount -t proc proc $procpath")){
-    	        carp("Unable to mount /proc into the image.");
-        }
+#         &verbose("Mounting /proc.");
+#         my $procpath = $config->path."/proc";
+#         if (system("mount -t proc proc $procpath")){
+#     	        carp("Unable to mount /proc into the image.");
+#         }
 
         &verbose("Building image.");
 	my $loc = $config->location;
 	$loc =~ s/ //g; # compress spaces, separation is by ","
 	$config->location($loc);
-        unless (&pkg_install($config->location,
-			     $config->path,$config->arch,
-			     @{$config->filename})) {
-    	        &verbose("Unmounting /proc.");
-	        &umount_recursive("$procpath");
+        unless (&pkg_install(
+            $config->distro,
+            $config->location,
+            $config->path,
+            $config->arch,
+            @{$config->filename})) {
+#     	        &verbose("Unmounting /proc.");
+# 	        &umount_recursive("$procpath");
 	        &del_image($config->name);
-	        carp("Package install failed\n");
-	        croak;
+	        croak("Package install failed\n");
         }
 
-        &verbose("Unmounting /proc.");
-        if (system("umount $procpath")){
-	    	carp("Unable to unmount /proc in the image.");
+        &verbose("Adding SIS files.");
+        if (&SystemInstaller::Image::init_image($config->path) == 1) {
+          &del_image($config->name);
+          croak("Image initialization failed\n");
         }
+
+#         &verbose("Unmounting /proc.");
+#         if (system("umount $procpath")){
+# 	    	carp("Unable to unmount /proc in the image.");
+#         }
 
     } else {
        &verbose("Importing image.");

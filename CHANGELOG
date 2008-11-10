@@ -1,11 +1,17 @@
 ------------------------------------------------------------
+System Installer v2.3.9 (not yet released)
+------------------------------------------------------------
+    - Modify SystemInstaller to use ORM (and ultimately
+      PackMan) for image creation: avoid duplication of 
+      similar capabilities and simplify the code.
+------------------------------------------------------------
 System Installer v2.3.8
 ------------------------------------------------------------
-        - Fix the changelog: systeminstaller-oscar changelogs
-              should _not_ be included into packages (RPM or
-              Deb) changelogs. Package chaneglogs are only
-              reserved for modifications to the packages, not
-              the "upstream" version of systeminstaller.
+    - Fix the changelog: systeminstaller-oscar changelogs
+      should _not_ be included into packages (RPM or
+      Deb) changelogs. Package chaneglogs are only
+      reserved for modifications to the packages, not
+      the "upstream" version of systeminstaller.
 	- Improved mksiadapter tool as well as generation/updating
 	  of /etc/hosts. It now includes names corresponding to
 	  all available interfaces [EF].
