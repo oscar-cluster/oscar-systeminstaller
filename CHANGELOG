@@ -4,6 +4,9 @@ System Installer v2.3.9 (not yet released)
     - Modify SystemInstaller to use ORM (and ultimately
       PackMan) for image creation: avoid duplication of 
       similar capabilities and simplify the code.
+    - Fix a typo when using the mksiimage script with the
+      two "force" and "verbose" options (problem reported by
+      Erik Jacobson).
 ------------------------------------------------------------
 System Installer v2.3.8
 ------------------------------------------------------------
