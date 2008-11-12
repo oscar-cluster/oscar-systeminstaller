@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.3.9~svn20080926-0gv2) hardy; urgency=low
+
+  * Add a dependency with libmldbm-perl.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Wed, 12 Nov 2008 17:38:22 -0500
+
 systeminstaller-oscar (2.3.9~svn20080926-0gv1) gutsy; urgency=low
 
   * Testing package for the upcoming release of SystemInstaller.
