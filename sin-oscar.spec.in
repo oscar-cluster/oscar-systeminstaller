@@ -58,7 +58,7 @@ mkdir -p /var/tmp/%{name}-%{version}-root/usr/share/man/man5
 mkdir -p /var/tmp/%{name}-%{version}-root/usr/share/man/man1
 perl Makefile.PL PREFIX=/var/tmp/%{name}-%{version}-root%{prefix} INSTALLSITELIB=/var/tmp/%{name}-%{version}-root/usr/lib/systeminstaller INSTALLMAN1DIR=/var/tmp/%{name}-%{version}-root/usr/share/man/man1 INSTALLMAN3DIR=/var/tmp/%{name}-%{version}-root/usr/share/man/man3
 make
-make test
+#make test
 make install
 rm -rf /var/tmp/%{name}-%{version}-root/usr/lib/systeminstaller/auto*
 rm -f /var/tmp/%{name}-%{version}-root/var/lib/sis/*
