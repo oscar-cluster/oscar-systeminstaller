@@ -75,12 +75,13 @@ sub pkg_install ($$$$@) {
     # bootstrap.
     $rm->{pm}->{ChRoot} = $imgpath;
 
+    verbose "---> Package files: " .join (" ", @pkglistfiles)."\n";
+
     # We create the list of pkg to install from the different files defining the
     # needed files.
     foreach my $pkgs_file (@pkglistfiles) {
-        open (FILE, ">>$pkgs_file");
-        while (<FILE>) {
-            my($line) = $_;
+        open (FILE, "$pkgs_file");
+        while (my $line = <FILE>) {
             chomp ($line);
             push (@pkglist, $line);
         }
@@ -89,19 +90,25 @@ sub pkg_install ($$$$@) {
 
     # We add the list of core OPKGs, client side.
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs ();
-    print "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
+    verbose "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
     my $temp;
     for (my $i=0; $i < scalar (@core_opkgs); $i++) {
         push (@pkglist, "opkg-$core_opkgs[$i]-client");
     }
-    print "---> Package list: ".join(" ", @pkglist)."\n";
+    verbose "---> Package list: ".join(" ", @pkglist)."\n";
 
     use OSCAR::PackManDefs;
-    my ($err, $output) = $rm->install_pkg ($imgpath, @pkglist);
-    print "---> Installation result: ($err, $output)\n";
-    if ($err == ERROR) {
-        carp "ERROR: Impossible to install pkgs ($err, $output)";
-        return 0;
+    # We install pkg after pkg because we do not a single failure to avoid
+    # the installation of all packages.
+    foreach my $p (@pkglist) {
+        my ($err, $output) = $rm->install_pkg ($imgpath, $p);
+        if ($err != OSCAR::PackManDefs::SUCCESS()) {
+            print STDERR "WARNING: Impossible to install $p ($err, $output)\n";
+            # The error handling from ORM is not yet perfect, we display
+            # messages if we think there is an error during package installation
+            # but we do not stop.
+            # return 0;
+        }
     }
 
     return 1;

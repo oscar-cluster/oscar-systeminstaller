@@ -106,11 +106,11 @@ sub cp_image {
 
 } # cp_image
 
+# Write the boot and kernel info to the systemconfig.conf file.
+#
+# Input: imagedir, root device, boot device
+# Return: 1 if success, 0 else.
 sub write_scconf {
-        # Write the boot and kernel info to the systemconfig.conf file.
-        #
-        # Input: imagedir, root device, boot device
-        # Returns: Boolean
         my $imagedir=shift;
         my $root=shift;
         my $boot=shift;
@@ -132,41 +132,43 @@ sub write_scconf {
         print SCFILE "\tROOTDEV = $root\n\tBOOTDEV = $boot\n";
 
         # Now find the kernels.
-        my @kernels=find_kernels($imagedir);
+        my @kernels = find_kernels($imagedir);
+        if (scalar (@kerrnels) == 0) {
+            carp "ERROR: Impossible to find kernels";
+            return 0;
+        }
         my $i=0;
         my $default=0;
 
         foreach (@kernels){
                 my ($path,$label)=split;
-                # Make sure its not longer than 15 characters
-		# (why actually? grub doesn't have this limitation)
-		#$label=substr($label,0,15);
-		unless ($default){
-			print SCFILE "\tDEFAULTBOOT = $label\n\n";
-			$default++;
-		}
-		print SCFILE "[KERNEL$i]\n";
-		print SCFILE "\tPATH = $path\n";
-		print SCFILE "\tLABEL = $label\n\n";
-		$i++;
-	}        
-	close SCFILE;
-	return 1;
+                if (!$default) {
+                    print SCFILE "\tDEFAULTBOOT = $label\n\n";
+                    $default++;
+                }
+                print SCFILE "[KERNEL$i]\n";
+                print SCFILE "\tPATH = $path\n";
+                print SCFILE "\tLABEL = $label\n\n";
+                $i++;
+        }
+    close SCFILE;
+    return 1;
 } #write_scconf
 
-sub find_kernels {
 # Builds the systemconfig.conf
+#
 # Input: pkg path, imagedir, force flag
 # Output: boolean success/failure
+sub find_kernels {
 
         my $imgpath=shift;
         my @kernels;
 
         foreach (@MODS){
-		my $class="SystemInstaller::Image::$_";
-                if ($class->footprint($imgpath)) {
-                        return $class->find_kernels($imgpath);
-                }
+            my $class="SystemInstaller::Image::$_";
+            if ($class->footprint($imgpath)) {
+                return $class->find_kernels($imgpath);
+            }
         }
         return 1;
 
