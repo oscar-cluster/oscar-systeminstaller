@@ -133,7 +133,7 @@ sub write_scconf {
 
         # Now find the kernels.
         my @kernels = find_kernels($imagedir);
-        if (scalar (@kerrnels) == 0) {
+        if (scalar (@kernels) == 0) {
             carp "ERROR: Impossible to find kernels";
             return 0;
         }
