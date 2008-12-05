@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.3.9~svn20081205-0gv2) hardy; urgency=low
+
+  * New testing package for the upcoming release of SystemImager.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 05 Dec 2008 12:50:58 -0500
+
 systeminstaller-oscar (2.3.9~svn20081205-0gv1) hardy; urgency=low
 
   * New testing package for the upcoming release of SystemImager.
