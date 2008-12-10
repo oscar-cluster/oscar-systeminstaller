@@ -48,7 +48,7 @@ sub create_partition_file {
 # Returns:      1 if failure, 0 if ok
 #
 	my $ipath = shift;
-        my %DISKS = @_;
+    my %DISKS = @_;
 	my @found_devices;
 	my %disk_devices;
 	my $device;
@@ -67,7 +67,11 @@ sub create_partition_file {
         }
 	&create_systemconfig_conf($ipath,%DISKS);
 
-        return 0;
+    my $systemconfig_file = "$ipath/etc/systemconfig/systemconfig.conf";
+    require OSCAR::ImageMgt;
+    OSCAR::ImageMgt::update_systemconfigurator_configfile ($systemconfig_file);
+
+    return 0;
 } #read_partition_file
 
 sub build_aiconf_file {

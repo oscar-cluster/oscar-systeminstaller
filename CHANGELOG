@@ -7,6 +7,9 @@ System Installer v2.3.9 (not yet released)
     - Fix a typo when using the mksiimage script with the
       two "force" and "verbose" options (problem reported by
       Erik Jacobson).
+    - Fix a problem with the generation of the SystemConfigurator
+      configuration file when the label of the default kernel
+      is too long.
 ------------------------------------------------------------
 System Installer v2.3.8
 ------------------------------------------------------------
