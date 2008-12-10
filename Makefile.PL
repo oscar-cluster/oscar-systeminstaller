@@ -5,7 +5,7 @@ use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
 # the man page string in rewriting POD2MAN_EXE
 
 my $version = "2.3.9";
-my $release = "1";
+my $release = "2";
 my $releasex = "1";
 
 sub MY::postamble {
