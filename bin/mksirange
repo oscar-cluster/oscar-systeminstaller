@@ -139,26 +139,31 @@ if ($config->pad) {
 }
 &verbose("Adding machines.");
 my @ALIST;
+my $nb_errors = 0;
 foreach my $ipaddr (@IPLIST) {
         &verbose("Defining objects.");
-	my $clientdef = new SIS::Client($config->basename.$cnum);
+        my $clientdef = new SIS::Client($config->basename.$cnum);
         $clientdef->hostname($config->basename.$cnum.".".$config->domain);
         $clientdef->domainname($config->domain);
         $clientdef->imagename($config->image);
         $clientdef->route($config->gateway);
        
-        if (linkscript($clientdef)){
+        if (SystemInstaller::Machine::linkscript($clientdef)){
                 set_client($clientdef);
-        	my $adapdef = new SIS::Adapter("eth0");
+               	my $adapdef = new SIS::Adapter("eth0");
                 $adapdef->client($config->basename.$cnum);
                 $adapdef->ip($ipaddr);
                 $adapdef->netmask($config->netmask);
                 push(@ALIST,$adapdef);
         } else {
 	        carp("Client " . $config->basename.$cnum ." definition failed.\n");
+            $nb_errors++;
         }
 	$cnum++;
 }
+
+die "ERROR: Impossible to define clients" if ($nb_errors > 0);
+
 # The set_adapter is delayed for better scaling, the set_client can't be
 # because the validity check of the adapter needs the client to exist.
 set_adapter(@ALIST);

@@ -189,9 +189,32 @@ sub synchosts {
 	
 } #synchosts
 
+
+# Return: 1 if success, 0 else.
 sub linkscript {
         my $client=shift;
-        if (! symlink($client->imagename . ".master",$main::config->autoinstall_script_dir ."/". $client->name . ".sh")) {
+        my $script_dir = $main::config->autoinstall_script_dir;
+        my $orig_file = $client->imagename . ".master";
+        my $dest_file = "$script_dir/" . $client->name . ".sh";
+
+        if (! -f "$script_dir/$orig_file") {
+            carp "ERROR: Impossible to create the symlink, $orig_file does not exist";
+            return 0;
+        }
+
+        if (! -d $script_dir) {
+            carp "ERROR: Destination directory does not exist";
+            return 0;
+        }
+
+        if (-f $dest_file) {
+            carp "ERROR: Impossible to create the symlink the destination ".
+                 "file ($dest_file) already exists";
+            return 0;
+        }
+
+#        chdir($script_dir);
+        if (! symlink($orig_file, $dest_file)) {
                 carp("Unable to create new script link for machine ".$client->name);
                 return 0;
         }

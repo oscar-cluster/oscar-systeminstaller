@@ -205,7 +205,7 @@ sub run_addclients {
         }
     }
 
-    !system($cmd) or (carp("Couldn't run mksirange: $!"),
+    !system($cmd) or (carp("Couldn't run mksirange: ($cmd) $!"),
                       error_window($window,"Couldn't run mksirange: $!"),
                       $window->Unbusy(),
                       return undef);

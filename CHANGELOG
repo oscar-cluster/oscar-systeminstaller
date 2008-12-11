@@ -10,6 +10,7 @@ System Installer v2.3.9 (not yet released)
     - Fix a problem with the generation of the SystemConfigurator
       configuration file when the label of the default kernel
       is too long.
+    - Better error handling and debugging messages.
 ------------------------------------------------------------
 System Installer v2.3.8
 ------------------------------------------------------------
