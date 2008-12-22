@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.3.9 (not yet released)
+System Installer v2.3.9 
 ------------------------------------------------------------
     - Modify SystemInstaller to use ORM (and ultimately
       PackMan) for image creation: avoid duplication of 
