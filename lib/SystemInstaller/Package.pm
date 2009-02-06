@@ -32,6 +32,7 @@ use SystemInstaller::Log qw (verbose);
 use SystemInstaller::Package::PackManSmart;
 use OSCAR::RepositoryManager;
 use OSCAR::Opkg;
+use OSCAR::Utils;
 use Carp;
 use Cwd;
 
@@ -83,7 +84,9 @@ sub pkg_install ($$$$@) {
         open (FILE, "$pkgs_file");
         while (my $line = <FILE>) {
             chomp ($line);
-            push (@pkglist, $line);
+            # We ignore invalid package names.
+            next if (OSCAR::Utils::trim($line) eq "");
+            push (@pkglist, $line) if (OSCAR::Utils::is_a_comment ($line) == 0);
         }
         close (FILE);
     }

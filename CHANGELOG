@@ -1,4 +1,12 @@
 ------------------------------------------------------------
+System Installer v2.3.10 (not yet released)
+------------------------------------------------------------
+    - [Ticket #515] Invalid package names (such as comments)
+      are not included anymore in the list of packages to
+      installed, when parsing the package list files.
+    - Update dependencies to Perl modules from OSCAR base
+      > 6.0.1.
+------------------------------------------------------------
 System Installer v2.3.9 
 ------------------------------------------------------------
     - Modify SystemInstaller to use ORM (and ultimately
