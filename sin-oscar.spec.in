@@ -16,7 +16,7 @@ Source: 	%{name}-%{version}.tar.gz
 
 BuildArchitectures: 	noarch
 BuildRequires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.5.0, systemconfigurator, perl(MLDBM)
-Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, systemconfigurator, perl(MLDBM), packman
+Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, systemconfigurator, perl(MLDBM), packman, oscar-base-lib > 6.0.1
 Vendor: 		http://oscar.openclustergroup.org
 Packager: 		OSCAR developer team
 Prefix: 		%{prefix}

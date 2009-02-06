@@ -20,7 +20,7 @@ Description: System Installer Tk Gui
 
 Package: systeminstaller-oscar
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, systemimager-server, orm, libmldbm-perl
+Depends: ${shlibs:Depends}, ${misc:Depends}, systemimager-server, orm, libmldbm-perl, liboscar (> 6.0.1)
 Description: System Installer for the OSCAR cluster stack
  System Installer provides a unified image building tool.
  It is intended to be distribution and architecture
