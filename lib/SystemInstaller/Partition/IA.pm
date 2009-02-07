@@ -451,7 +451,7 @@ sub create_systemconfig_conf {
 	if (!($bootdev =~ m:/dev/md:)) {
 		$bootdev =~ s/[0-9]*$//;
 	}
-	return write_scconf($ipath, $rootdev, $bootdev);
+	return SystemInstaller::Image::write_scconf($ipath, $rootdev, $bootdev);
 } # create_systemconfig_conf
 
 =head1 NAME

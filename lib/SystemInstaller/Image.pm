@@ -23,11 +23,11 @@ package SystemInstaller::Image;
 #                           All rights reserved
 
 use strict;
+use lib "/usr/lib/systeminstaller/";
 
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
 use File::Path;
-use SystemInstaller::Log qw (verbose);
 use Carp;
  
 @EXPORT = qw(init_image del_image write_scconf cp_image split_version
@@ -106,11 +106,33 @@ sub cp_image {
 
 } # cp_image
 
+# Find the initrd for a given kernel.
+#
+# Input: imagepath, path where the image is stored.
+#        label, label of the kernel for which we are looking for the initrd 
+#               (e.g., 2.6.27-7-generic).
+# Return: relative path of the initrd (relative to the image path), or undef
+#         if no initrd is found.
+sub find_initrd ($$) {
+    my ($imagepath, $label) = @_;
+    my $initrd;
+
+    print STDERR "Label: $label\n";
+    opendir (DIR, "$imagepath/boot")
+        or (carp "ERROR: Could not read directory $imagepath!", return undef);
+    for my $f (readdir DIR) {
+        if ($f =~ /initrd(.*)$label(.*)/) {
+            return "/boot/$f";
+        }
+    }
+    return undef;
+}
+
 # Write the boot and kernel info to the systemconfig.conf file.
 #
 # Input: imagedir, root device, boot device
 # Return: 1 if success, 0 else.
-sub write_scconf {
+sub write_scconf ($$$) {
         my $imagedir=shift;
         my $root=shift;
         my $boot=shift;
@@ -148,6 +170,10 @@ sub write_scconf {
                 }
                 print SCFILE "[KERNEL$i]\n";
                 print SCFILE "\tPATH = $path\n";
+                my $initrd = find_initrd ($imagedir, $label);
+                if (defined $initrd) {
+                    print SCFILE "\tINITRD = $initrd\n";
+                }
                 print SCFILE "\tLABEL = $label\n\n";
                 $i++;
         }
@@ -159,10 +185,15 @@ sub write_scconf {
 #
 # Input: pkg path, imagedir, force flag
 # Output: boolean success/failure
-sub find_kernels {
+sub find_kernels ($) {
 
         my $imgpath=shift;
         my @kernels;
+
+        if (! -d $imgpath) {
+            carp "ERROR: Image directory does not exist ($imgpath)";
+            return 0;
+        }
 
         foreach (@MODS){
             my $class="SystemInstaller::Image::$_";
@@ -195,8 +226,9 @@ sub umount_recursive {
 	or croak("Couldn't umount $path!: $!");
 }
 
+1;
 
-### POD from here down
+__END__
 
 =head1 NAME
  
@@ -224,4 +256,3 @@ Michael Chase-Salerno <mchasal@users.sourceforge.net>
  
 =cut
 
-1;

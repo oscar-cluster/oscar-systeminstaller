@@ -6,6 +6,9 @@ System Installer v2.3.10 (not yet released)
       installed, when parsing the package list files.
     - Update dependencies to Perl modules from OSCAR base
       > 6.0.1.
+    - Add the automatic detection of initrd images when setting
+      image's kernel(s), otherwise, no Debian systems will boot.
+    - Code cleaning up.
 ------------------------------------------------------------
 System Installer v2.3.9 
 ------------------------------------------------------------
