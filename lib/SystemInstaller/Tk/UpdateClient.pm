@@ -24,13 +24,14 @@ use Tk;
 use Tk::FileSelect;
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
+use SystemInstaller::Utils;
 use strict;
 
 @EXPORT = qw(updateclient_window);
 
 
 sub updateclient_window {
-    my $config = init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
 
     my $window = shift;
     my %vars = (

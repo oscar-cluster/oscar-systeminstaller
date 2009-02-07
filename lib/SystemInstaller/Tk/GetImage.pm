@@ -24,13 +24,14 @@ use Tk;
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Tk::Image;
+use SystemInstaller::Utils;
 use Carp;
 use strict;
 
 @EXPORT = qw(creategetimage_window);
 
 sub creategetimage_window {
-    my $config = init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
 
     my $window = shift;
     my %vars = (

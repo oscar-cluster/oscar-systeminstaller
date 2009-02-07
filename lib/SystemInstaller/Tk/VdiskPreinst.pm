@@ -26,6 +26,7 @@ use Carp;
 use Tk;
 use Tk::FileSelect;
 use SystemInstaller::Tk::Common;
+use SystemInstaller::Utils;
 use SystemInstaller::Tk::Help;
 use strict;
 
@@ -33,7 +34,7 @@ use strict;
 
 
 sub vdiskpreinst_window {
-    my $config = init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
 
     my $window = shift;
     my %vars = (

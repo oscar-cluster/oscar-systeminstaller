@@ -27,7 +27,6 @@ use strict;
 			 label_listbox_line 
 			 resethash
 			 imageexists
-			 init_si_config
 			 center_window
 			 yn_window
 			 done_window
@@ -147,29 +146,6 @@ sub error_window {
 	&$onclose( @args ) if ref( $onclose ) eq 'CODE';
 
 	1;
-}
-
-sub init_si_config {
-	my $config = new AppConfig(
-		DEFAULT_IMAGE_DIR => { ARGCOUNT => 1},
-		DEFAULT_OVERRIDE_DIR => { ARGCOUNT => 1},
-		AUTOINSTALL_SCRIPT_DIR => { ARGCOUNT => 1},
-		AUTOINSTALL_BOOT_DIR => { ARGCOUNT => 1},
-		RSYNCD_CONF => { ARGCOUNT => 1},
-		RSYNC_STUB_DIR => { ARGCOUNT => 1},
-		CONFIG_DIR => { ARGCOUNT => 1},
-		TFTP_DIR => { ARGCOUNT => 1},
-		NET_BOOT_DEFAULT => { ARGCOUNT => 1},
-		AUTOINSTALL_TARBALL_DIR => { ARGCOUNT => 1},
-		AUTOINSTALL_TORRENT_DIR => { ARGCOUNT => 1},
-		# now for tksis configuration parameters
-		ICON_DIR => { ARGCOUNT => 1, DEFAULT => "/usr/share/systeminstaller/images"},
-		XTERM_CMD => { ARGCOUNT => 1, 
-			DEFAULT => "xterm -bg black -fg magenta",
-		},
-	);
-	$config->file("/etc/systemimager/systemimager.conf", "/etc/systeminstaller/tksis.conf");
-	return $config;
 }
 
 #

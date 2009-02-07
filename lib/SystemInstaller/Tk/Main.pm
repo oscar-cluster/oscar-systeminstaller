@@ -18,7 +18,7 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use Tk;
 use Carp;
-use SystemInstaller::Tk::Common qw(init_si_config);  
+use SystemInstaller::Utils;
 use SystemInstaller::Tk::Image qw(createimage_window add2rsyncd delfromrsyncd);
 use SystemInstaller::Tk::GetImage qw(creategetimage_window);
 use SystemInstaller::Tk::AddClients qw(addclients_window);
@@ -38,7 +38,7 @@ use POSIX;
 sub img_window {
     my $imgdir = shift;
     my $vars = shift;
-    my $config = init_si_config();
+    my $config = SystemInstaller::Utils::init_si_config();
     my $tree;
     
     my $window = new MainWindow();
