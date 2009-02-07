@@ -117,14 +117,16 @@ sub find_initrd ($$) {
     my ($imagepath, $label) = @_;
     my $initrd;
 
-    print STDERR "Label: $label\n";
+    local *DIR;
     opendir (DIR, "$imagepath/boot")
         or (carp "ERROR: Could not read directory $imagepath!", return undef);
     for my $f (readdir DIR) {
         if ($f =~ /initrd(.*)$label(.*)/) {
+            closedir (DIR);
             return "/boot/$f";
         }
     }
+    closedir (DIR);
     return undef;
 }
 
