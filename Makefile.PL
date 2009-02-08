@@ -12,11 +12,26 @@ sub MY::postamble {
     my $string = <<EOF;
 
 POD2MAN5_EXE = \$(POD2MAN) "--section=5"
+PKGDEST=
 
 deb :: manifest rpm_prep dist
 \tmkdir -p /tmp/scdeb
-\tmv \$(NAME)-$version.tar.gz /tmp/scdeb && cd /tmp/scdeb && tar -xvzf \$(NAME)-$version.tar.gz && cd \$(NAME)-$version && dpkg-buildpackage && rm -rf /tmp/scdeb/\$(NAME)-$version
-\techo "Debian Packages have been built in /tmp/scdeb"
+\tmv \$(NAME)-$version.tar.gz /tmp/scdeb \\
+\t\t&& cd /tmp/scdeb && tar -xvzf \$(NAME)-$version.tar.gz
+\t\@if [ -n "\$\$UNSIGNED_OSCAR_PKG" ]; then \\
+\t\techo "dpkg-buildpackage -rfakeroot -us -uc"; \\
+\t\tcd /tmp/scdeb/\$(NAME)-$version && dpkg-buildpackage -rfakeroot -us -uc; \\
+\telse \\
+\t\techo "dpkg-buildpackage -rfakeroot";\\
+\t\tcd /tmp/scdeb/\$(NAME)-$version && dpkg-buildpackage -rfakeroot; \\
+\tfi
+\t\@if [ -n "\$(PKGDEST)" ]; then \\
+\t\tmv /tmp/scdeb/\$(NAME)*.deb \$(PKGDEST); \\
+\t\techo "Debian packages are available in \$(PKGDEST)"; \\
+\telse \\
+\t\techo "Debian packages are available in /tmp/scdeb"; \\
+\tfi
+\trm -rf /tmp/scdeb/\$(NAME)-$version
 
 rpm_prep ::
 \tsed -e 's/\%define version\\b.*/\%define version         $version/' \\
@@ -25,6 +40,9 @@ rpm_prep ::
 
 rpm :: srpm
 \trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
+\t\@if [ -n "\$(PKGDEST)" ]; then \\
+\t\tmv `rpm --eval '%{_topdir}'`/RPMS/noarch/\$(NAME)-*.noarch.rpm \$(PKGDEST); \\
+\tfi
 
 srpm :: rpm_prep manifest dist
 \trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.gz

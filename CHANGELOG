@@ -1,6 +1,10 @@
 ------------------------------------------------------------
 System Installer v2.3.10 (not yet released)
 ------------------------------------------------------------
+    - Modify the Makefile so we can choose the directory where the 
+      binary packages are stored.
+    - Enable the creation of unsigned Debian packages by setting the
+      UNSIGNED_OSCAR_PKG environment variable.
     - [Ticket #126] Implement a sanity check before the actual
       creation of a new image.
     - [Ticket #462] The init_si_config function is now in a GUI
