@@ -1,6 +1,8 @@
 ------------------------------------------------------------
 System Installer v2.3.10 (not yet released)
 ------------------------------------------------------------
+    - [Ticket #126] Implement a sanity check before the actual
+      creation of a new image.
     - [Ticket #462] The init_si_config function is now in a GUI
       independent Perl module (SystemInstaller::Utils).
     - [Ticket #515] Invalid package names (such as comments)

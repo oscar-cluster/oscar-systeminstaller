@@ -34,6 +34,8 @@ use vars qw($config $VERSION);
 
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
+use File::Basename;
+use OSCAR::Utils;
 use SIS::DB;
 use SIS::Image;
 use SIS::Client;
@@ -107,6 +109,11 @@ if ($config->Help){
         exit 0;
 }
 
+# Some basic sanity checks
+if (!OSCAR::Utils::is_a_valid_string ($config->name)) {
+    die "ERROR: Invalid image name";
+}
+
 my $image;
 
 if ($config->Get) {
@@ -141,17 +148,40 @@ if ($config->Get) {
 }
 
 if ($config->Add) {
+    # Some sanity checks.
+    # First we check the image destination. The directory name includes the
+    # image name and we only want to check if the directory having the images
+    # exists.
+    my $dir = dirname ($config->path);
+    if (! -d $dir) {
+        die "ERROR: Invalid image path ($dir)";
+    }
+    if (! -d $config->rsync_stub_dir) {
+        die "ERROR: Invalid rsunc stub dir (".$config->rsync_stub_dir.")";
+    }
+    if (! OSCAR::Distro::is_a_valid_distro_id ($config->distro)) {
+        die "ERROR: Invalid distro ID (".$config->distro.")";
+    }
+    
     &verbose("Checking for existing image.");
     if (exists_image($config->name) && !$config->force) {
         my $iname = $config->name;
         croak("Image $iname exists -- not added.\n");
     }
-    print "---> Distro: " . $config->distro . "\n";
-    print "---> Path: " . $config->path . "\n";
-    print "---> Name: " . $config->name . "\n";
-    print "---> Rsync stub directory: " . $config->rsync_stub_dir . "\n";
+    verbose "---> Distro: " . $config->distro . "\n";
+    verbose "---> Path: " . $config->path . "\n";
+    verbose "---> Name: " . $config->name . "\n";
+    verbose "---> Rsync stub directory: " . $config->rsync_stub_dir . "\n";
 
     if ($config->build) {
+        # Some more sanity check
+        my $list = $config->filename;
+        foreach my $f (@$list) {
+            if (! -f $f) {
+                die "ERROR: a package list file does not exist ($f)";
+            }
+        }
+    
         &verbose("Building image");
         # Actually build the image
         &verbose("Updating Rsyncd.conf");
@@ -171,16 +201,20 @@ if ($config->Add) {
         if(-e $flamethrower_conf) {
             my $entry_name = $config->name;
             my $new_entry_data = "[$entry_name]\n  DIR = ".$config->path."\n";
-            SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
-		croak "Cannot create entry in $flamethrower_conf";
+            SystemImager::Common->add_or_delete_conf_file_entry(
+                $flamethrower_conf,
+                $entry_name,
+                $new_entry_data) or croak "Cannot create entry in
+                                           $flamethrower_conf";
 
-	    # Add override entry to flamethrower.conf file
-	    $entry_name = "override_" . $config->name;
-	    $new_entry_data = "[$entry_name]\n  DIR = ".
-		"/var/lib/systemimager/overrides/".$config->name."\n";
-	    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or 
-		croak "Cannot create entry in $flamethrower_conf";
-	}
+        # Add override entry to flamethrower.conf file
+        $entry_name = "override_" . $config->name;
+        $new_entry_data = "[$entry_name]\n  DIR = ".
+            "/var/lib/systemimager/overrides/".$config->name."\n";
+        SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf,
+            $entry_name, $new_entry_data) 
+            or croak "Cannot create entry in $flamethrower_conf";
+        }
 
 #         &verbose("Mounting /proc.");
 #         my $procpath = $config->path."/proc";
@@ -189,9 +223,9 @@ if ($config->Add) {
 #         }
 
         &verbose("Building image.");
-	my $loc = $config->location;
-	$loc =~ s/ //g; # compress spaces, separation is by ","
-	$config->location($loc);
+        my $loc = $config->location;
+        $loc =~ s/ //g; # compress spaces, separation is by ","
+        $config->location($loc);
         unless (&pkg_install(
             $config->distro,
             $config->location,
@@ -206,8 +240,8 @@ if ($config->Add) {
 
         &verbose("Adding SIS files.");
         if (&SystemInstaller::Image::init_image($config->path) == 1) {
-          &del_image($config->name);
-          croak("Image initialization failed\n");
+            &del_image($config->name);
+            croak("Image initialization failed\n");
         }
 
 #         &verbose("Unmounting /proc.");
@@ -216,14 +250,14 @@ if ($config->Add) {
 #         }
 
     } else {
-       &verbose("Importing image.");
-       &verbose("Checking image existance.");
-       # This should be replaced with an exists function from
-       # SystemImager when it becomes available (2.3).
-       my $dir=$config->path;
-       unless ( -d $dir) {
-               croak("Image $dir doesn't exist.");
-       }
+        &verbose("Importing image.");
+        &verbose("Checking image existance.");
+        # This should be replaced with an exists function from
+        # SystemImager when it becomes available (2.3).
+        my $dir=$config->path;
+        unless ( -d $dir) {
+            croak("Image $dir doesn't exist.");
+        }
     }
 
     &verbose("Updating database.");
