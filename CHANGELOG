@@ -1,6 +1,8 @@
 ------------------------------------------------------------
 System Installer v2.3.10 (not yet released)
 ------------------------------------------------------------
+    - Add a build configuration file for oscar-packager.
+    - Clean up the spec file.
     - Modify the Makefile so we can choose the directory where the 
       binary packages are stored.
     - Enable the creation of unsigned Debian packages by setting the
