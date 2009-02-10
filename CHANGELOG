@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.3.10 (not yet released)
+System Installer v2.3.10 
 ------------------------------------------------------------
     - Add a build configuration file for oscar-packager.
     - Clean up the spec file.
