@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.3.11 (not yet released).
+------------------------------------------------------------
+    - Update the list of requirements to build the package
+      on RPM based systems.
+------------------------------------------------------------
 System Installer v2.3.10 
 ------------------------------------------------------------
     - Add a build configuration file for oscar-packager.
