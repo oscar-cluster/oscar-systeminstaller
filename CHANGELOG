@@ -3,6 +3,8 @@ System Installer v2.3.11 (not yet released).
 ------------------------------------------------------------
     - Update the list of requirements to build the package
       on RPM based systems.
+    - mksiimage: fix a bug in sanity check; we check the image name only
+      for commands that actually involve a specific image.
 ------------------------------------------------------------
 System Installer v2.3.10 
 ------------------------------------------------------------

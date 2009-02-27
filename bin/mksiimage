@@ -110,7 +110,8 @@ if ($config->Help){
 }
 
 # Some basic sanity checks
-if (!OSCAR::Utils::is_a_valid_string ($config->name)) {
+if (($config->Get || $config->Add || $config->Delete || $config->Copy)
+    && !OSCAR::Utils::is_a_valid_string ($config->name)) {
     die "ERROR: Invalid image name";
 }
 
