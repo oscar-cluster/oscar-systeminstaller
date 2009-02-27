@@ -16,11 +16,15 @@ package SystemInstaller::Image;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-#   Copyright (c) 2001 International Business Machines
-#                      Michael Chase-Salerno <salernom@us.ibm.com>             
-#   Copyright (c) 2004, Revolution Linux Inc, Benoit des Ligneris
+#   Copyright (c) 2001      International Business Machines
+#                           Michael Chase-Salerno <salernom@us.ibm.com>
+#   Copyright (c) 2004,     Revolution Linux Inc, Benoit des Ligneris
 #   Copyright (c) 2003-2006 Erich Focht <efocht@hpce.nec.com>
 #                           All rights reserved
+#   Copyright (c) 2009      Geoffroy Vallee <valleegr at ornl dot gov>
+#                           Oak Ridge National Laboratory
+#                           All rights reserved.
+
 
 use strict;
 use lib "/usr/lib/systeminstaller/";
@@ -29,12 +33,24 @@ use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
 use File::Path;
 use Carp;
- 
-@EXPORT = qw(init_image del_image write_scconf cp_image split_version
-	     umount_recursive); 
-@EXPORT_OK = qw(init_image del_image write_scconf cp_image split_version
-	     umount_recursive); 
- 
+
+@EXPORT = qw(
+            cp_image
+            del_image
+            init_image
+            split_version
+            umount_recursive
+            write_scconf
+            );
+@EXPORT_OK = qw(
+            cp_image
+            del_image
+            init_image
+            split_version
+            umount_recursive
+            write_scconf
+            );
+
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
@@ -60,6 +76,7 @@ sub init_image {
 	}
 	return 0;
 } #init_image
+
 
 sub del_image {
 # Removes an image

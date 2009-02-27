@@ -16,8 +16,8 @@ package SystemInstaller::Tk::Image;
 
 # $Id$
 #
-# Copyright (c) 2006 Erich Focht <efocht@hpce.nec.com>
-# Copyright (c) 2007-2008 Geoffroy Vallee <valleegr@ornl.gov>
+# Copyright (c) 2006      Erich Focht <efocht@hpce.nec.com>
+# Copyright (c) 2007-2009 Geoffroy Vallee <valleegr@ornl.gov>
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
 
@@ -58,6 +58,10 @@ use strict;
             add2rsyncd
             delfromrsyncd
             );
+
+# Global variable to store image parameters. This is needed to keep an hand on
+# those parameters during the different phases of the GUI.
+use vars qw ($image_params);
 
 sub createimage_basic_window ($%) {
     my $config = SystemInstaller::Utils::init_si_config();
@@ -299,7 +303,7 @@ sub createimage_basic_window ($%) {
 
     center_window( $image_window );
 
-    return 0;
+    return (0);
 }
 
 # !!!! WARNING: This function is not anymore adapted to OSCAR, the OSCAR GUI
@@ -610,7 +614,7 @@ sub progress_bar {
     $progress_window->title($title);
 
     $progress_window->Label(
-			    -text => "Progress to completion:",
+			    -text => "Please be patient the image creation can take a while especially when using online repositories",
 			    -anchor => "w",
 			    )->pack(
 				    -fill => 'x',
@@ -618,32 +622,32 @@ sub progress_bar {
 				    -pady => 4,
 				    );
 
-    my $var;
-    our $progress_widget = $progress_window->ProgressBar(
-							 -variable => \$var,
-							 -takefocus => 0,
-							 -width => 20,
-							 -length => 400,
-							 -anchor => 'w',
-							 -from => 0,
-							 -to => 100,
-							 -blocks => 20,
-							 -colors => [0, 'green'], # [0, 'green', 50, 'yellow' , 80, 'red'],
-							 );
-    $progress_widget->pack(
-			   -fill => 'x',
-			   -padx => 4,
-			   );
-
-    $progress_window->Button(
-			     -text => "Cancel",
-			     -command => [ \&progress_cancel ],
-			     -padx => 8,
-			     -pady => 8,
-			     )->pack(
-				     -pady => 4,
-				     );
-    our $progress_status = 1;
+#    my $var;
+#    our $progress_widget = $progress_window->ProgressBar(
+#							 -variable => \$var,
+#							 -takefocus => 0,
+#							 -width => 20,
+#							 -length => 400,
+#							 -anchor => 'w',
+#							 -from => 0,
+#							 -to => 100,
+#							 -blocks => 20,
+#							 -colors => [0, 'green'], # [0, 'green', 50, 'yellow' , 80, 'red'],
+#							 );
+#    $progress_widget->pack(
+#			   -fill => 'x',
+#			   -padx => 4,
+#			   );
+#
+#    $progress_window->Button(
+#			     -text => "Cancel",
+#			     -command => [ \&progress_cancel ],
+#			     -padx => 8,
+#			     -pady => 8,
+#			     )->pack(
+#				     -pady => 4,
+#				     );
+#    our $progress_status = 1;
     center_window( $progress_window );
 
 }
@@ -689,6 +693,8 @@ sub listimages {
     return @list;
 }
 
+# Wrapper around the add_image_build to deal with GUI specific stuff (display
+# an error dialog if we cannot create the image and so on).
 sub add_image ($$) {
     my ($vars, $window) = @_;
 
@@ -726,122 +732,115 @@ sub add_image ($$) {
         return undef;
     }
 
-    progress_bar( $window, "Building Image..." );
+#    progress_bar( $window, "Building Image..." );
     my $result = add_image_build( $vars, $window );
-    progress_destroy();
+#    progress_destroy();
     if( $result ) {
-	done_window($window, "Successfully created image \"$$vars{imgname}\"");
-	if( $$vars{imgname} =~ /(.*?)(\d+)$/ ) {
-	    $$vars{imgname} = $1.($2 + 1);
-	} else {
-	    $$vars{imgname} .= 1;
-	}
+        done_window($window, "Successfully created image \"$$vars{imgname}\"");
+        if( $$vars{imgname} =~ /(.*?)(\d+)$/ ) {
+            $$vars{imgname} = $1.($2 + 1);
+        } else {
+            $$vars{imgname} .= 1;
+        }
     } else {
-	if( progress_continue() ) {
-	    error_window($window, "Failed building image \"$$vars{imgname}\"");
-	} else {
-	    error_window($window, "User cancelled building image \"$$vars{imgname}\"");
-	}
-	#
-	# This should work, but it's not trustworthy.
-	#
-	system("mksiimage -D --name $$vars{imgname}");
-	#
-	# Belt and suspenders for above.
-	#
-	SystemImager::Server->remove_image_stub($rsync_stub_dir, $$vars{imgname});
-	SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+        if( progress_continue() ) {
+            error_window($window, "Failed building image \"$$vars{imgname}\"");
+        } else {
+            error_window($window, "User cancelled building image \"$$vars{imgname}\"");
+        }
+        #
+        # This should work, but it's not trustworthy.
+        #
+        system("mksiimage -D --name $$vars{imgname}");
+        #
+        # Belt and suspenders for above.
+        #
+        SystemImager::Server->remove_image_stub($rsync_stub_dir,
+                                                $$vars{imgname});
+        SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
     }
 
     $window->Unbusy();
-    return $result;
+
+    return ($result);
 }
 
-sub add_image_build {
+# Actually create the image.
+sub add_image_build ($$) {
     my $vars = shift;
     my $window = shift;
     my $verbose = &get_verbose();
 
     my $groupfile;
     if ($$vars{selected_group}) {
-	my $path;
-	for my $a (@{$$vars{package_group}}) {
-	    if ($a->{label} eq $$vars{selected_group}) {
-		$path = $a->{path};
-		last;
-	    }
-	}
-	$groupfile = "--filename $path";
+        my $path;
+        for my $a (@{$$vars{package_group}}) {
+            if ($a->{label} eq $$vars{selected_group}) {
+                $path = $a->{path};
+                last;
+            }
+        }
+        $groupfile = "--filename $path";
     }
-    my $cmd;
-    if (defined $$vars{distro}) {
-        $cmd = "mksiimage -A --name $$vars{imgname} " .
-               "--distro $$vars{distro} " .
-               "--filename $$vars{pkgfile} " .
-               "--arch $$vars{arch} " .
-               "--path $$vars{imgpath}/$$vars{imgname} " .
-               "$groupfile ".
-               "$$vars{extraflags}";
-    } else {
-        # Old stuff, it is better to directly refer to a distro rather than
-        # pools of binary packages.
-        $cmd = "mksiimage -A --name $$vars{imgname} " .
-               "--location \"$$vars{pkgpath}\" " .
-               "--filename $$vars{pkgfile} " .
-               "--arch $$vars{arch} " . 
-               "--path $$vars{imgpath}/$$vars{imgname} " .
-               "$groupfile ".
-               "$$vars{extraflags}";
-    }
-    print "Executing command: $cmd\n";
 
-    my $value = 0;
-    $SIG{PIPE} = 'IGNORE';
-    my $pid = open( OUTPUT, "$cmd |" );
-    unless( $pid ) {
-	carp("Couldn't run command $cmd");
-	return 0;
+    # GV: i am sure we can find a better way to do that, we currently go back
+    # and forth between OSCAR base Perl modules and SystemInstaller. We should
+    # cleanup the image creation, the interaction with the GUI and the post
+    # image creation scripts.
+    if (OSCAR::ImageMgt::create_image ($$vars{imgname}, %$vars)) {
+        carp "ERROR: Impossible to create the image";
+        return 0;
     }
-    &progress_update( $value );
-    while(my $line = <OUTPUT>) {
-	unless( &progress_continue() ) {
-	    kill( "TERM", $pid );
-	    last;
-	}
-	print "$line" if (exists $ENV{OSCAR_VERBOSE});
-	my $ovalue = $value;
-	if ($line =~ /\[progress: (\d+)\]/) {
-	    # progress is scaled to 90%
-	    $value = $1 * 0.9;
-	}
-	&progress_update($value);
-    }
-    close(OUTPUT);
-    return 0 unless progress_continue();
 
-    progress_update(90);
+# TODO - GV: the progress bar is broken since we may use online repositories and
+# automatically deal with dependencies. So we just deactive it.
+#     my $value = 0;
+#     $SIG{PIPE} = 'IGNORE';
+#     my $pid = open( OUTPUT, "$cmd |" );
+#     unless( $pid ) {
+#         carp("Couldn't run command $cmd");
+#         return 0;
+#     }
+#     &progress_update( $value );
+#     while(my $line = <OUTPUT>) {
+#         unless( &progress_continue() ) {
+#         kill( "TERM", $pid );
+#         last;
+#     }
+#     print "$line" if (exists $ENV{OSCAR_VERBOSE});
+#     my $ovalue = $value;
+#     if ($line =~ /\[progress: (\d+)\]/) {
+#         # progress is scaled to 90%
+#         $value = $1 * 0.9;
+#     }
+#     &progress_update($value);
+#     }
+#     close(OUTPUT);
+#     return 0 unless progress_continue();
+# 
+#     progress_update(90);
 
     print "Image build finished.\n";
 
     # Now set the root password if given
-    return 0 unless progress_continue();
-    if ($$vars{pass1}) {
-	update_user(
-		    imagepath => $$vars{imgpath}."/".$$vars{imgname},
-		    user => 'root',
-		    password => $$vars{pass1}
-		    );
-    }
-    return 0 unless progress_continue();
-    progress_update(92);
-    
-    $cmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
+#     return 0 unless progress_continue();
+#     if ($$vars{pass1}) {
+#         update_user(
+#             imagepath => $$vars{imgpath}."/".$$vars{imgname},
+#             user => 'root',
+#             password => $$vars{pass1}
+#             );
+#     }
+#     return 0 unless progress_continue();
+#     progress_update(92);
+
+    my $cmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
     if( system($cmd) ) {
-	carp("Couldn't run command $cmd");
-	return 0;
+        carp("Couldn't run command $cmd");
+        return 0;
     }
-    return 0 unless progress_continue();
-    progress_update(94);
+#     return 0 unless progress_continue();
+#     progress_update(94);
 
     print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
 
@@ -852,34 +851,33 @@ sub add_image_build {
 
     print "Running: $cmd ... ";
     if( system($cmd) ) {
-	carp("failed");
-	return 0;
+        carp("ERROR: Impossible to execute $cmd");
+        return 0;
     }
-    return 0 unless progress_continue();
-    progress_update(96);
+#     return 0 unless progress_continue();
+#     progress_update(96);
 
     print "done\n";
 
     # This allows for an arbitrary callback to be registered.
-    # It will get a reference to all the variables that have been defined for the image
+    # It will get a reference to all the variables that have been defined for
+    # the image
 
     if(ref($$vars{postinstall}) eq "CODE") {
-	unless( &{$$vars{postinstall}}($vars) ) {
-	    carp("Couldn't run postinstall"), 
-	    return 0;
-	}
+        unless( &{$$vars{postinstall}}($vars) ) {
+            carp("Couldn't run postinstall"), 
+            return 0;
+        }
     }
-    return 0 unless progress_continue();
-    progress_update(99);
     if(ref($$vars{postinstall}) eq "ARRAY") {
-	my $sub = shift(@{$$vars{postinstall}});
-	unless( &$sub($vars, @{$$vars{postinstall}}) ) {
-	    carp("Couldn't run postinstall");
-	    return 0;
-	}
+        my $sub = shift(@{$$vars{postinstall}});
+        unless( &$sub($vars, @{$$vars{postinstall}}) ) {
+            carp("Couldn't run postinstall");
+            return 0;
+        }
     }
-    return 0 unless progress_continue();
-    progress_update(100);
+
+    $image_params = $vars;
     return 1;
 }
 

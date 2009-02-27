@@ -1,10 +1,15 @@
 ------------------------------------------------------------
-System Installer v2.3.11 (not yet released).
+System Installer v2.3.11
 ------------------------------------------------------------
     - Update the list of requirements to build the package
       on RPM based systems.
     - mksiimage: fix a bug in sanity check; we check the image name only
       for commands that actually involve a specific image.
+    - Fix a problem when creating a new image: post image creation scripts
+      are now really executed.
+    - Deactivate the GUI progress bar since it was not working any more
+      (because we automatically and transparently deal with binary package
+      dependencies, it is very difficult to know the image creation progress).
 ------------------------------------------------------------
 System Installer v2.3.10 
 ------------------------------------------------------------
