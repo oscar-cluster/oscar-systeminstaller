@@ -48,10 +48,14 @@ sub addclients_window {
                 padding => "0",
                 numhosts => "",
                 noshow => {},
-                # This is the dummy postinstall.  Postinstalls MUST return true, lest the sky falls
-                postinstall => sub {return 1},
                 @_,
                );
+
+    # This is the dummy postinstall.  Postinstalls MUST return true, lest the
+    # sky falls
+    if (!defined ($vars{postinstall})) {
+        $vars{postinstall} =  sub {return 1};
+    }
 
     # Get the list of images and remove the default selection
     my @allimages= list_image();
@@ -61,18 +65,18 @@ sub addclients_window {
             if ($img->name eq $vars{imgname}) {
                     $defimage=$vars{imgname};
             } else {
-                push(@mostimages,$img->name);
+                push(@mostimages, $img->name);
             }
     }
-    # If the default selection wasn't found, just use 
-    # the first defined image.
+
+    # If the default selection wasn't found, just use the first defined image.
     $defimage = shift(@mostimages) unless $defimage;
 
     unless( $defimage ) {
         error_window($window,"You must build at least one image!");
         $window->Unbusy();
         return;
-	}
+    }
 
 
     my %defaults = %vars;
@@ -84,10 +88,15 @@ sub addclients_window {
 
     #
     #  First line:  What is your image name?
-    # 
+    #
 
-    my $imagebox=label_listbox_line($addclient_window, "Image Name", $defimage, \@mostimages,
-                     helpbutton($addclient_window, 'Image Name Addclients')) unless $noshow{imgname};
+    my $imagebox=label_listbox_line($addclient_window,
+                                    "Image Name",
+                                    $defimage,
+                                    \@mostimages,
+                                    helpbutton($addclient_window, 
+                                               'Image Name Addclients')
+                                   ) unless $noshow{imgname};
     #
     #  Second line: What is your domain name?
     #
@@ -212,17 +221,23 @@ sub run_addclients {
                       return undef);
 
     if(ref($$vars{postinstall}) eq "CODE") {
-        &{$$vars{postinstall}}($vars)  or (carp("Couldn't run postinstall"), 
-                                          error_window($window,"There was an error running the post addclients script, please check your logs for more info"),
-                                          $window->Unbusy(),
-                                          return 0);
+        &{$$vars{postinstall}}($vars)
+            or (carp("Couldn't run postinstall"),
+                error_window($window,"There was an error running the post ".
+                                     "addclients script, please check your ".
+                                     "logs for more info"),
+                $window->Unbusy(),
+                return undef);
     }
     if(ref($$vars{postinstall}) eq "ARRAY") {
         my $sub = shift(@{$$vars{postinstall}});
-        &$sub($vars, @{$$vars{postinstall}}) or (carp("Couldn't run postinstall"),
-                                                 error_window($window,"There was an error running the post addclients script, please check your logs for more info"),
-                                                 $window->Unbusy(),
-                                                 return 0);
+        &$sub($vars, @{$$vars{postinstall}}) 
+            or (carp("Couldn't run postinstall"),
+                error_window($window,"There was an error running the post ".    
+                                     "addclients script, please check your ".
+                                     "logs for more info"),
+                $window->Unbusy(),
+                return undef);
     }
 
     done_window($window, "Successfully created clients for image \"$imagename\"");
