@@ -4,7 +4,7 @@ use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
 # The global version is stored here so that it can be used by 
 # the man page string in rewriting POD2MAN_EXE
 
-my $version = "2.3.11";
+my $version = "2.3.12";
 my $release = "1";
 my $releasex = "1";
 
@@ -69,17 +69,6 @@ img_install ::
 \tinstall tksis/images/monitor.xpm \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
 \tinstall tksis/images/image.xpm \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
 
-distinfo_install ::
-
-\t for file in `find distinfo | grep -v CVS`; do \\
-\t\t if [[ -d \$\$file ]]; then \\
-\t\t\t install -d \$(DESTDIR)\$(PREFIX)/share/systeminstaller/\$\$file; \\
-\t\t else \\
-\t\t\t install \$\$file \$(DESTDIR)\$(PREFIX)/share/systeminstaller/\$\$file; \\
-\t\t fi; \\
-\t done
-
-
 manifest :
 
 \t if [[ -f MANIFEST ]]; then \\
@@ -94,7 +83,7 @@ manext_install ::
 \t\$(POD2MAN5_EXE) SIS.pod \$(DESTINSTALLMAN1DIR)/../man1/SIS.1 && \\
 \tcd ..
 
-install :: all pure_install doc_install ext_install manext_install img_install distinfo_install
+install :: all pure_install doc_install ext_install manext_install img_install 
 
 set_ver::
 \tperl -pi.bak -e 's/SIVERSION=.*/SIVERSION="$version";/' ./lib/SystemInstaller/Env.pm
