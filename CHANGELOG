@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.3.12
+------------------------------------------------------------
+    - Cleanup Makefile.PL.
+    - Fix a bug when passing the postinstall action during the client
+      definition.
+------------------------------------------------------------
 System Installer v2.3.11
 ------------------------------------------------------------
     - Update the list of requirements to build the package
