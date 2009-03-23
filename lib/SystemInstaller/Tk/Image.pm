@@ -917,7 +917,7 @@ sub add2rsyncd {
 
 sub make_pkglist {
     my ($os) = @_;
-    my @opkgs = list_selected_packages();
+    my @opkgs = OSCAR::Database::list_selected_packages();
     my $outfile = "/tmp/oscar-install-rpmlist.$$";
     my @errors;
     local *OUTFILE;
