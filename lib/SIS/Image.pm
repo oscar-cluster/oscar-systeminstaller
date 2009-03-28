@@ -32,7 +32,6 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 sub new {
     my $class = shift;
     my $name = shift;
-    print STDERR "Prout $class, $name\n";
     my @init = map {"_" . $_ => undef} @ATTR;
     my %this = (
                 _vars => {
