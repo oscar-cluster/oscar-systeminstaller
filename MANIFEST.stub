@@ -62,6 +62,7 @@ lib/SIS/Client.pm
 lib/SIS/Adapter.pm
 lib/SIS/Image.pm
 lib/SIS/DB.pm
+lib/SIS/NewDB.pm
 lib/Util/IP.pm
 t/package_packmansmart.t
 t/package.t
