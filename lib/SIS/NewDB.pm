@@ -210,9 +210,9 @@ sub del_client {return del_common("client",@_)}
 sub del_adapter {return del_common("adapter",@_)}
 
 
-# sub set_image {return sisset('SIS::Image',@_)}
-# sub set_client {return sisset('SIS::Client',@_)}
-# sub set_adapter {return sisset('SIS::Adapter',@_)}
+sub set_image {return sisset('SIS::Image',@_)}
+sub set_client {return sisset('SIS::Client',@_)}
+sub set_adapter {return sisset('SIS::Adapter',@_)}
 
 
 
