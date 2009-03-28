@@ -15,6 +15,10 @@ package SIS::NewDB;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Copyright (c) Erich Focht <efocht@hpce.nec.com> , 2006
+# Copyright (c) 2009        Geoffroy Vallee <valleegr@ornl.gov>
+#                           Oak Ridge National Laboratory
+#                           All rights reserved.
+
 #
 # $Id$
 
@@ -92,6 +96,8 @@ use Carp;
 use Data::Dumper;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
+use OSCAR::Database_generic;
+use Data::Dumper;
 use base qw(Exporter);
 use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
 
@@ -250,8 +256,8 @@ sub list_common {
 
     my @result;
     my (%options,@errors);
-    $options{debug}=1;
-    print "SQL query: $sql\n" if $debug;
+#     $options{debug}=1;
+#     print "SQL query: $sql\n" if $debug;
     die "$0:Failed to query values via << $sql >>"
         if (!do_select($sql,\@result, \%options, @errors));
 

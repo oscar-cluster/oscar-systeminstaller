@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.4.0 (not yet released).
+------------------------------------------------------------
+    - Switch the new database interface: we now assume the OSCAR database (ODA)
+      has the write information.
+    - Fix the mksiimage script.
+------------------------------------------------------------
 System Installer v2.3.13
 ------------------------------------------------------------
     - Support ODA 1.4.2 (API modifications).

@@ -23,13 +23,16 @@
 #
 #   Copyright (c) 2005,2006 Erich Focht <efocht@hpce.nec.com>
 #   All rights reserved.
+#   Copyright (c) 2009      Geoffroy Vallee <valleegr@ornl.gov>
+#                           Oak Ridge National Laboratory
+#                           All rights reserved.
 
 use strict;
 use vars qw($config $VERSION);
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use lib "/usr/lib/systeminstaller";
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Partition;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose verbose logger_file); 
@@ -78,12 +81,18 @@ if ($config->Help){
         exit 0;
 }
 
-&verbose("Checking for existing image.");
-my $image=list_image(name=>$config->name);
-unless ($image) {
-	my $iname = $config->name;
-	croak("Image $iname does not exist\n");
+&verbose("Checking for existing image (".$config->name.").");
+my @image=list_image(name=>$config->name);
+# list_image returns an array of hashes' references. In our case, we are 
+# supposed to get a single answer to the query
+if (scalar (@image) != 1) {
+    my $iname = $config->name;
+    croak("Image $iname does not exist\n");
 }
+my $image_data = $image[0];
+verbose "Image path: ".$image_data->{'location'} ."\n";
+verbose "Image arch: ".$image_data->{'arch'}."\n";
+
 if ($config->Add) {
     my $partfh;
     my $partfn;
@@ -91,13 +100,12 @@ if ($config->Add) {
     if ($config->get('file') ne '') {
         # Read in the file if given
         my $fn=$config->get('file');
-	&verbose("Opening partition file.");
-	unless (open(PARTITION_FILE, "<$fn")) {
-                croak("Partition file, $fn, not found!");
+        &verbose("Opening partition file.");
+        unless (open(PARTITION_FILE, "<$fn")) {
+            croak("Partition file, $fn, not found!");
         }
         $partfh=*PARTITION_FILE;
         $partfn=$fn;
-        
     } else {
         $partfh=*STDIN;
         $partfn="STDIN";
@@ -124,42 +132,45 @@ if ($config->Add) {
 } # Add
 
 if ($config->List) {
-    	&verbose("Listing partition information.");
-        if (! $config->name) {
-            carp("name is a required parameter\n");
-            &usage;
-        }
-        my $aiconffile=$image->location."/etc/systemimager/autoinstallscript.conf";
-        
-        my $aiconf = XMLin($aiconffile,  forcearray => 1 );
-	unless ($aiconf) {
-                 croak("Partition information not defined for $image->name image.\n");
-	}
+    &verbose("Listing partition information.");
+    if (! $config->name) {
+        carp("name is a required parameter\n");
+        &usage;
+    }
+    my $aiconffile;
+    my $aiconffile=$image_data->{'location'}
+                   ."/etc/systemimager/autoinstallscript.conf";
 
-        if ($config->parse) {
-                print "#Partition/Disk information\n";
-        } else {
-                print "\nDisk and Partition information\n";
-        }
-        foreach my $disk (@{$aiconf->{disk}}) {
-                if ($config->parse) {
-                        print "#Device:Units:LabelType\n";
-                        print "$disk->{dev}:$disk->{unit_of_measurement}:$disk->{label_type}\n";
-                        print "#PartNum:Size:PartType\n";
-                } else {
-                        print "-------------------------------------------------------------\n";
-                        printf "Disk: %-15.15s Units: %-5.5s Label type: %-10.10s\n",$disk->{dev}, $disk->{unit_of_measurement},$disk->{label_type};
-                        print "-------------------------------------------------------------\n";
-                        print "Part Num   Size            Part Type\n";
-                        print "-------------------------------------------------------------\n";
-                }
-                foreach my $part (@{$disk->{part}}) {
-                        if ($config->parse) {
-                                print "$part->{num}:$part->{size}:$part->{p_type}\n";
-                        } else {
-                                printf "%-10.10s %-15.15s %-15.15s\n",$part->{num},$part->{size},$part->{p_type};
-                        }
-                }
+    my $aiconf = XMLin($aiconffile,  forcearray => 1 );
+    unless ($aiconf) {
+        croak("Partition information not defined for ".$image_data->{'name'}.
+              " image.\n");
+    }
+
+    if ($config->parse) {
+            print "#Partition/Disk information\n";
+    } else {
+            print "\nDisk and Partition information\n";
+    }
+    foreach my $disk (@{$aiconf->{disk}}) {
+            if ($config->parse) {
+                    print "#Device:Units:LabelType\n";
+                    print "$disk->{dev}:$disk->{unit_of_measurement}:$disk->{label_type}\n";
+                    print "#PartNum:Size:PartType\n";
+            } else {
+                    print "-------------------------------------------------------------\n";
+                    printf "Disk: %-15.15s Units: %-5.5s Label type: %-10.10s\n",$disk->{dev}, $disk->{unit_of_measurement},$disk->{label_type};
+                    print "-------------------------------------------------------------\n";
+                    print "Part Num   Size            Part Type\n";
+                    print "-------------------------------------------------------------\n";
+            }
+            foreach my $part (@{$disk->{part}}) {
+                    if ($config->parse) {
+                            print "$part->{num}:$part->{size}:$part->{p_type}\n";
+                    } else {
+                            printf "%-10.10s %-15.15s %-15.15s\n",$part->{num},$part->{size},$part->{p_type};
+                    }
+            }
         }
         if ($config->parse) {
                 print "#Filesystem information\n";

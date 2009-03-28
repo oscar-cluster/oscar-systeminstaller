@@ -36,7 +36,7 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
 use File::Basename;
 use OSCAR::Utils;
-use SIS::DB;
+use SIS::NewDB;
 use SIS::Image;
 use SIS::Client;
 use SystemInstaller::Env;
@@ -371,14 +371,16 @@ my @images = &list_image;
 if ($config->parse){
         print "#Name:Path:Arch\n";
 } else {
-        printf ("%-15.15s %-25.25s %-10.10s\n","Name","Path","Arch");
-        print "------------------------------------------------------------------------\n";
+        printf ("%-15.15s %-55.55s %-10.10s\n","Name","Path","Arch");
+        print "-------------------------------------------------------------------------------\n";
 }
 foreach $image (@images) {
+#         require OSCAR::Utils;
+#         OSCAR::Utils::print_hash ("", "", $image);
         if ($config->parse){
-	        print $image->name.":".$image->location.":".$image->arch."\n";
+	        print $image->{'name'}.":".$image->{'location'}.":".$image->{'arch'}."\n";
         } else {
-	        printf ("%-15.15s %-25.25s %-10.10s\n",$image->name,$image->location,$image->arch);
+	        printf ("%-15.15s %-55.55s %-10.10s\n",$image->{'name'},$image->{'location'},$image->{'arch'});
         }
 }
 exit 0;
