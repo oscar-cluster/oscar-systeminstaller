@@ -19,6 +19,7 @@ package SystemInstaller::Utils;
 #                    All rights reserved.
 
 use strict;
+use AppConfig;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use Carp;
