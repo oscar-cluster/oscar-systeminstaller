@@ -1,4 +1,8 @@
 ------------------------------------------------------------
+System Installer v2.4.1
+------------------------------------------------------------
+    - Fix the GUI when using the new DB backend.
+------------------------------------------------------------
 System Installer v2.4.0
 ------------------------------------------------------------
     - Switch the new database interface: we now assume the OSCAR database (ODA)
