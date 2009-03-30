@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.0 (not yet released).
+System Installer v2.4.0
 ------------------------------------------------------------
     - Switch the new database interface: we now assume the OSCAR database (ODA)
       has the write information.
