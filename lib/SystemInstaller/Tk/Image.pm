@@ -845,7 +845,7 @@ sub add_image_build ($$) {
     print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
 
     # Default command options
-    $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+    my $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
 
     $cmd = $cmd . " -iseries-vdisk=$$vars{vdiskdev}" if ( $$vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) );
 
