@@ -349,18 +349,18 @@ if ($config->Delete) {
 
     &verbose("Checking for clients");
     foreach my $image (@images) {
-            if (my @C=list_client(imagename => $image->name)) {
-                    my $iname=$image->name;
+            if (my @C=list_client(imagename => $image->{'name'})) {
+                    my $iname=$image->{'name'};
                     carp("Image $iname is assigned to clients.\n");
                     next;
             }
        	&verbose("Deleting image.");
-	if (&del_image($image->name)) {
-                my $iname=$image->name;
+	if (&del_image($image->{'name'})) {
+                my $iname=$image->{'name'};
 		carp("Image deletion failed for image $iname.\n");
 	}
     	&verbose("Updating database.");
-        &SIS::DB::del_image($image->name);
+        &SIS::DB::del_image($image->{'name'});
     }
     exit 0;
 }
