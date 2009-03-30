@@ -834,11 +834,11 @@ sub add_image_build ($$) {
 #     return 0 unless progress_continue();
 #     progress_update(92);
 
-    my $cmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
-    if( system($cmd) ) {
-        carp("Couldn't run command $cmd");
-        return 0;
-    }
+#    my $cmd = "mksidisk -A --name $$vars{imgname} --file $$vars{diskfile}";
+#    if( system($cmd) ) {
+#        carp("Couldn't run command $cmd");
+#        return 0;
+#    }
 #     return 0 unless progress_continue();
 #     progress_update(94);
 
