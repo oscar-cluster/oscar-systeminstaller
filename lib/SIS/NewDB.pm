@@ -93,11 +93,13 @@ value.
 
 use strict;
 use Carp;
-use Data::Dumper;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Database_generic;
+use GDBM_File;
 use Data::Dumper;
+use MLDBM qw(GDBM_File);
+use Fcntl;
 use base qw(Exporter);
 use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
 
@@ -110,25 +112,25 @@ $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)/);
              exists_client list_client set_client del_client
              exists_adapter list_adapter set_adapter del_adapter);
 
-# $DBPATH = $ENV{SIS_DBPATH} || "/var/lib/sis";
-# if($ENV{SIS_DBTYPE} and ($ENV{SIS_DBTYPE} eq "Storable")) {
-#     $MLDBM::Serializer = "Storable";
-# }
-# 
-# $DBMAP = {
-#           'SIS::Client' => {
-#                             file => 'client',
-#                            },
-#           'SIS::Image' => {
-#                            file => 'image',
-#                           },
-#           'SIS::Adapter' => {
-#                              file => 'adapter',
-#                             },
-#           'SIS::Trigger' => {
-#                              file => 'trigger',
-#                             },
-#          };
+$DBPATH = $ENV{SIS_DBPATH} || "/var/lib/sis";
+if($ENV{SIS_DBTYPE} and ($ENV{SIS_DBTYPE} eq "Storable")) {
+    $MLDBM::Serializer = "Storable";
+}
+
+$DBMAP = {
+          'SIS::Client' => {
+                            file => 'client',
+                           },
+          'SIS::Image' => {
+                           file => 'image',
+                          },
+          'SIS::Adapter' => {
+                             file => 'adapter',
+                            },
+          'SIS::Trigger' => {
+                             file => 'trigger',
+                            },
+         };
 # 
 # # lisp has the tendency to us p as a typable replacement for ?
 # 
@@ -449,14 +451,14 @@ sub convert_results_oda2sis {
 #     }
 # }
 # 
-# sub _dbfile {
-#     my $type = shift;
-#     my $file = $DBPATH . "/" . $DBMAP->{$type}->{file};
-#     if(-e $file) {
-#         return $file;
-#     }
-#     croak("Can't find db file $file!");
-# }
+sub _dbfile {
+    my $type = shift;
+    my $file = $DBPATH . "/" . $DBMAP->{$type}->{file};
+    if(-e $file) {
+        return $file;
+    }
+    croak("Can't find db file $file!");
+}
 # 
 # sub sisget {
 #     my $type = shift;
@@ -471,20 +473,20 @@ sub convert_results_oda2sis {
 #     return @obj;
 # }
 # 
-# sub sisset {
-#     my $type = shift;
-#     my @obj = @_;
-#     my %dbh = ();
-#     my $file = _dbfile($type);
-#     my $rc = tie (%dbh, 'MLDBM', $file, GDBM_WRCREAT(), 0640) or croak("Couldn't open MLDBM $file: $!");
-#     foreach my $o (@obj) {
-#         $dbh{$o->primkey} = $o;
-#     }
-#     # This must be done to get rid of the untie warning
-#     undef $rc;
-#     untie %dbh;
-#     return 1;
-# }
+sub sisset {
+    my $type = shift;
+    my @obj = @_;
+    my %dbh = ();
+    my $file = _dbfile($type);
+    my $rc = tie (%dbh, 'MLDBM', $file, GDBM_WRCREAT(), 0640) or croak("Couldn't open MLDBM $file: $!");
+    foreach my $o (@obj) {
+        $dbh{$o->primkey} = $o;
+    }
+    # This must be done to get rid of the untie warning
+    undef $rc;
+    untie %dbh;
+    return 1;
+}
 # 
 # sub sisdel {
 #     my $type = shift;
