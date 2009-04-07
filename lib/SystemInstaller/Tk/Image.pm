@@ -787,6 +787,7 @@ sub add_image_build ($$) {
     # and forth between OSCAR base Perl modules and SystemInstaller. We should
     # cleanup the image creation, the interaction with the GUI and the post
     # image creation scripts.
+    require OSCAR::ImageMgt;
     if (OSCAR::ImageMgt::create_image ($$vars{imgname}, %$vars)) {
         carp "ERROR: Impossible to create the image";
         return 0;
