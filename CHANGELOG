@@ -1,4 +1,8 @@
 ------------------------------------------------------------
+System Installer v2.4.2 (not yet released)
+------------------------------------------------------------
+    - Update the build configuration file (add fedora core).
+------------------------------------------------------------
 System Installer v2.4.1
 ------------------------------------------------------------
     - Fix the GUI when using the new DB backend.
