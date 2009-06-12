@@ -846,7 +846,15 @@ sub add_image_build ($$) {
     print "Added Disk Table for $$vars{imgname} based on $$vars{diskfile}\n";
 
     # Default command options
-    my $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+    # GV (TODO), 2009/12/06: For some reasons, it is currently impossible to
+    # access $main::config, so we hardcode the path. That should be fixed.
+    my $script = "/usr/sbin/si_mkautoinstallscript";
+    if (! -f $script) {
+        carp "ERROR: $script not available, is SystemImager installed?";
+        return 0;
+    } 
+    my $cmd = "/usr/sbin/si_mkautoinstallscript -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
+    # my $cmd = $main::config->mkaiscript . " -quiet --autodetect-disks -image $$vars{imgname} -force -ip-assignment $$vars{ipmeth} -post-install $$vars{piaction}";
 
     $cmd = $cmd . " -iseries-vdisk=$$vars{vdiskdev}" if ( $$vars{vdiskdev} =~ (/\/dev\/[a-zA-Z]*/) );
 
