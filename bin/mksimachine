@@ -25,7 +25,7 @@ use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Machine qw(synchosts linkscript);
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
@@ -247,7 +247,7 @@ if ($config->Update) {
 		        printf ("%-15.15s %-20.20s %-15.15s %-15.15s\n",$mach->name,$mach->hostname,$mach->route,$mach->imagename);
                 }
 	}
-	my @adapters=list_adapter();
+	my @adapters = list_adapter();
 	if (@adapters) {
                 if ($config->parse){
 		        print "#Adapter definitions\n";
@@ -264,7 +264,12 @@ if ($config->Update) {
                         $cmac=~s/://g;
 		        print $adap->client.":".$adap->devname.":".$adap->ip.":".$adap->netmask.":".$cmac."\n";
                 } else {
-		        printf ("%-15.15s %-5.5s %-15.15s %-15.15s %-20.20s\n",$adap->client,$adap->devname,$adap->ip,$adap->netmask,$adap->mac);
+		        printf ("%-15.15s %-5.5s %-15.15s %-15.15s %-20.20s\n",
+                        $adap->{client},
+                        $adap->{devname},
+                        $adap->{ip},
+                        $adap->{netmask},
+                        $adap->{mac});
                 }
 	}
 }

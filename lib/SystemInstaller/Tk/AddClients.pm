@@ -14,8 +14,14 @@ package SystemInstaller::Tk::AddClients;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+#   Copyright (c) 2009  Oak Ridge National Laboratory.
+#                       Geoffroy R. Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
+
+
 use base qw(Exporter);
 use vars qw(@EXPORT %oldvars);
+use lib "/usr/lib/systeminstaller";
 use Data::Dumper;
 use AppConfig;
 use POSIX;
@@ -26,7 +32,7 @@ use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Utils;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use strict;
 
 @EXPORT = qw(addclients_window);
@@ -62,10 +68,10 @@ sub addclients_window {
     my @mostimages;
     my $defimage;
     foreach my $img (@allimages) {
-            if ($img->name eq $vars{imgname}) {
+            if ($img->{name} eq $vars{imgname}) {
                     $defimage=$vars{imgname};
             } else {
-                push(@mostimages, $img->name);
+                push(@mostimages, $img->{name});
             }
     }
 
@@ -260,7 +266,7 @@ sub nexthostnum($)
 
 sub nextip()
 {
-    my @allip = map { $_->ip } list_adapter();
+    my @allip = map { $_->{ip} } list_adapter();
     if( @allip ) {
         my $lastip = hex( (sort map { sprintf "%.2x%.2x%.2x%.2x", split /\./, $_ } @allip)[-1] );
         my $x;

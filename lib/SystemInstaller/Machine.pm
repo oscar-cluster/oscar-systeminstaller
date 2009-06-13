@@ -15,6 +15,10 @@ package SystemInstaller::Machine;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #   Sean Dague <japh@us.ibm.com>
+#   Copyright (c) 2009 Oak Ridge National Laboratory.
+#                      Geoffroy R. Vallee <valleegr@ornl.gov>
+#                      All rights reserved.
+
 
 use strict;
 use vars qw($VERSION @EXPORT);
@@ -24,8 +28,8 @@ use SIS::Adapter;
 use SIS::Image;
 use SIS::DB;
 use SystemInstaller::Log qw (verbose);
+use SystemInstaller::Utils;
 use File::Copy;
-use Data::Dumper;
 use Carp;
 
 @EXPORT = qw(get_machine_listing synchosts linkscript);
@@ -70,7 +74,7 @@ sub adapter_devs {
 sub sortclients(@) {
 	return map { $_->[0] }
 	       sort { $a->[1] cmp $b->[1] || ($a->[2]||-1) <=> ($b->[2]||-1) }
-	       map { [$_, $_->name =~ /^([\D]+)([\d]*)$/] }
+	       map { [$_, $_->{name} =~ /^([\D]+)([\d]*)$/] }
 	       @_;
 }
 
@@ -159,7 +163,7 @@ sub synchosts {
 	foreach my $dev (@devlist) {
 	    print TMP "\n# $dev addresses\n";
 	    foreach my $mach (sortclients @machinelist) {
-                my $name=$mach->name;
+                my $name=$mach->{name};
 		if ($dev eq "eth0") {
 		    if ($ADAPTERS{$dev}{$name}) {
 	                printf TMP "%-20.20s %s\t%s\n",
@@ -191,33 +195,36 @@ sub synchosts {
 
 
 # Return: 1 if success, 0 else.
-sub linkscript {
-        my $client=shift;
-        my $script_dir = $main::config->autoinstall_script_dir;
-        my $orig_file = $client->imagename . ".master";
-        my $dest_file = "$script_dir/" . $client->name . ".sh";
+sub linkscript ($) {
+    my $client = shift;
+    my %si_config = SystemInstaller::Utils::get_si_config ();
+    my $script_dir = $si_config{'autoinstall_script_dir'};
+    my $orig_file = $client->{imagename} . ".master";
+    my $dest_file = "$script_dir/" . $client->{name} . ".sh";
 
-        if (! -f "$script_dir/$orig_file") {
-            carp "ERROR: Impossible to create the symlink, $orig_file does not exist";
-            return 0;
-        }
+    if (! -f "$script_dir/$orig_file") {
+        carp "ERROR: Impossible to create the symlink, $orig_file does not exist";
+        return 0;
+    }
 
-        if (! -d $script_dir) {
-            carp "ERROR: Destination directory does not exist";
-            return 0;
-        }
+    if (! -d $script_dir) {
+        carp "ERROR: Destination directory does not exist";
+        return 0;
+    }
 
-        if (-f $dest_file) {
-            carp "ERROR: Impossible to create the symlink the destination ".
-                 "file ($dest_file) already exists";
-            return 0;
-        }
+    if (-f $dest_file) {
+        carp "ERROR: Impossible to create the symlink the destination ".
+             "file ($dest_file) already exists";
+        return 0;
+    }
 
 #        chdir($script_dir);
-        if (! symlink($orig_file, $dest_file)) {
-                carp("Unable to create new script link for machine ".$client->name);
-                return 0;
-        }
-        return 1;
+    if (! symlink($orig_file, $dest_file)) {
+         carp("Unable to create new script link for machine ".
+              $client->{name} . "(orig: $orig_file, dest: $dest_file)");
+         return 0;
+    }
+
+    return 1;
 }
 1;

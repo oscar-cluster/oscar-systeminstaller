@@ -91,9 +91,14 @@ value.
 
 =cut
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
 use strict;
 use Carp;
-use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Database;
 use OSCAR::Database_generic;
 use GDBM_File;
@@ -145,29 +150,29 @@ $DBMAP = {
 # }
 
 my %sis2oda = (
-	       image => {
-		   arch => "Images.architecture",
-		   name => "Images.name",
-		   location => "Images.path",
-	       },
-	       adapter => {
-		   client  => "Nodes.name:Nodes.id=Nics.node_id",
-		   mac     => "Nics.mac",
-		   ip      => "Nics.ip",
-		   netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
-		   devname => "Nics.name" ,
-	       },
-	       client => {
-		   #EF: route is probably the Networks.gateway entry.
-		   route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
-		   hostname => "Nodes.hostname",
-		   domainname => "Nodes.dns_domain",
-		   arch => "Images.architecture:Nodes.image_id=Images.id",
-		   imagename => "Images.name:Nodes.image_id=Images.id",
-		   name => "Nodes.name",
-		   proccount => "Nodes.cpu_num",
-	       },
-	       );
+                image => {
+                    arch => "Images.architecture",
+                    name => "Images.name",
+                    location => "Images.path",
+                },
+                adapter => {
+                    client  => "Nodes.name:Nodes.id=Nics.node_id",
+                    mac     => "Nics.mac",
+                    ip      => "Nics.ip",
+                    netmask => "Networks.netmask:Networks.n_id=Nics.network_id",
+                    devname => "Nics.name" ,
+                },
+                client => {
+                    #EF: route is probably the Networks.gateway entry.
+                    route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
+                    hostname => "Nodes.hostname",
+                    domainname => "Nodes.dns_domain",
+                    arch => "Images.architecture:Nodes.image_id=Images.id",
+                    imagename => "Images.name:Nodes.image_id=Images.id",
+                    name => "Nodes.name",
+                    proccount => "Nodes.cpu_num",
+                },
+           );
 
 
 # 
@@ -221,45 +226,49 @@ sub set_adapter {return sisset('SIS::Adapter',@_)}
 ##########################################################################
 
 sub list_common {
-    my ($table,%args) = @_;
+    my ($table, %args) = @_;
 
-    my (%tables,@fields,%fields_as,@conditions);
+    my (%tables, @fields, %fields_as, @conditions);
     for my $sisk (keys(%{$sis2oda{$table}})) {
-	my ($field,$condition) = split(":",$sis2oda{$table}->{$sisk});
-	my ($tab,$f) = split(/\./,$field);
-	if ($f) {
-	    my $as = lc($tab."__".$f);
-	    $fields_as{$as} = $field;
-	    push @fields, "$field AS $as";
-	} else {
-	    push @fields, $field;
-	}
-	$tables{$tab} = 1;
-	# check tables in conditions fields
-	my @conds = split(" AND ",$condition);
-	for my $c (@conds) {
-	    my ($f1,$f2) = split(/=/,$c);
-	    my ($tab1,$n1) = split(/\./,$f1);
-	    $tables{$tab1} = 1;
-	    my ($tab2,$n2) = split(/\./,$f2);
-	    $tables{$tab2} = 1;
-	    push @conditions, $c;
-	}
+        my ($field, $condition) = split(":",$sis2oda{$table}->{$sisk});
+        print "Field: $field\n";
+        my ($tab, $f) = split(/\./,$field);
+        if ($f) {
+            my $as = lc($tab."__".$f);
+            $fields_as{$as} = $field;
+            push @fields, "$field AS $as";
+        } else {
+            push @fields, $field;
+        }
+        $tables{$tab} = 1;
+        # check tables in conditions fields
+        my @conds = split(" AND ", $condition);
+        for my $c (@conds) {
+            my ($f1,$f2) = split(/=/, $c);
+            my ($tab1,$n1) = split(/\./, $f1);
+            $tables{$tab1} = 1;
+            my ($tab2,$n2) = split(/\./, $f2);
+            $tables{$tab2} = 1;
+            push (@conditions, $c);
+        }
     }
-	
 
+    if (scalar (@fields) == 0) {
+        carp "ERROR: No fields found (table: $table)";
+        return undef;
+    }
     my $sql = "SELECT ".join(", ",@fields)." FROM ".join(", ",keys(%tables));
 
     &convert_sis2oda(\%args, $table);
     my @where = map { "$_='".$args{$_}."'" } keys(%args);
     if (@where || @conditions) {
-	$sql .= " WHERE " . join(" AND ", @where, @conditions);
+        $sql .= " WHERE " . join(" AND ", @where, @conditions);
     }
 
     my @result;
     my (%options,@errors);
-#     $options{debug}=1;
-#     print "SQL query: $sql\n" if $debug;
+    $options{debug} = 0;
+    print "SQL query: $sql\n" if $debug;
     die "$0:Failed to query values via << $sql >>"
         if (!do_select($sql,\@result, \%options, @errors));
 
@@ -286,8 +295,8 @@ sub del_common {
     my @selection;
     eval "\@selection = list_$table(%args)";
     if (!scalar(@selection)) {
-	print "Selection had no result. Returning.\n" if ($debug);
-	return 0;
+        print "Selection had no result. Returning.\n" if ($debug);
+        return 0;
     }
 
     my @keys = map { $_->{$siskey} } @selection;
@@ -480,7 +489,7 @@ sub sisset {
     my $file = _dbfile($type);
     my $rc = tie (%dbh, 'MLDBM', $file, GDBM_WRCREAT(), 0640) or croak("Couldn't open MLDBM $file: $!");
     foreach my $o (@obj) {
-        $dbh{$o->primkey} = $o;
+        $dbh{$o->{primkey}} = $o;
     }
     # This must be done to get rid of the untie warning
     undef $rc;

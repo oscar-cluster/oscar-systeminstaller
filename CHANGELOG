@@ -2,8 +2,7 @@
 System Installer v2.4.2 (not yet released)
 ------------------------------------------------------------
     - Update the build configuration file (add fedora core).
-    - Fix a problem with the GUI when creating an image (did not find the
-      si_mkautoinstallscript path).
+    - Finish the port to the new databased interface.
 ------------------------------------------------------------
 System Installer v2.4.1
 ------------------------------------------------------------

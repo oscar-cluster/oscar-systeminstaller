@@ -19,6 +19,9 @@ package SIS::Client;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #   Sean Dague <sean@dague.net>
+#   Copyright (c) 2009  Oak Ridge National Laboratory.
+#                       Geoffroy R. Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 
 use strict;
 use vars qw($VERSION @ATTR); 
@@ -30,16 +33,31 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 @ATTR = qw(route hostname domainname arch imagename name proccount);
 
 sub new {
-    my $class = shift;
-    my $name = shift;
-    my @init = map {"_" . $_ => undef} @ATTR;
-    my %this = (
-                _vars => {
-                          @init,
-                          _name => $name,
-                         },
-               );
-    bless \%this, $class;
+    my ($class, $name) = @_;
+    my $self = { 
+                route       =>  undef,
+                hostname    =>  undef,
+                domainname  =>  undef,
+                arch        =>  undef,
+                imagename   =>  undef,
+                name        =>  $name,
+                proccount   =>  undef,
+                @_,
+    };
+
+    #map {"_" . $_ => undef} @ATTR; };
+
+    #my $name = shift;
+    #my @init = map {"_" . $_ => undef} @ATTR;
+    #my %this = (
+    #            _vars => {
+    #                      @init,
+    #                      _name => $name,
+    #                     },
+    #           );
+    bless ($self, $class);
+
+    return $self;
 }
 
 sub primkey {

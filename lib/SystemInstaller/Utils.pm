@@ -24,7 +24,7 @@ use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use Carp;
 
-@EXPORT = qw(init_si_config);
+@EXPORT = qw(init_si_config get_si_config);
 
 sub init_si_config {
     my $config = new AppConfig(
@@ -48,6 +48,15 @@ sub init_si_config {
     $config->file("/etc/systemimager/systemimager.conf", 
                   "/etc/systeminstaller/tksis.conf");
     return $config;
+}
+
+sub get_si_config () {
+    require OSCAR::ConfigFile;
+
+    my $si_conffile = "/etc/systemimager/systemimager.conf";
+    my %config = OSCAR::ConfigFile::get_all_values ($si_conffile);
+
+    return (%config);
 }
 
 1;

@@ -21,7 +21,7 @@ package SystemInstaller::Env;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
-#   Michael Chase-Salerno <salernom@us.ibm.com>             
+#   Michael Chase-Salerno <salernom@us.ibm.com>
 use strict;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT $config);
@@ -107,7 +107,7 @@ sub get_version {
         # This just returns the version number, looks silly,
         # but the string below is replaced during the build
         # process with the proper version.
-        my $SIVERSION="2.3.10";
+        my $SIVERSION="2.3.13";
         return $SIVERSION;
 }
 

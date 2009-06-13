@@ -3,6 +3,9 @@
 #   $Header: /cvsroot/systeminstaller/systeminstaller/bin/mksirange,v 1.18 2003/04/11 20:44:29 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
+#   Copyright (c) 2009  Oak Ridge National Laboratory.
+#                       Geoffroy R. Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -25,16 +28,19 @@ use lib "/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl","/usr/l
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use SystemInstaller::Machine qw(linkscript synchosts);
+use SystemInstaller::Utils;
 use Util::IP;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);
 use File::Copy;
 use Data::Dumper;
+
+my $si_config = init_si_config();
 
 #Set the path
 $ENV{PATH}=$config->binpath .":" . $ENV{PATH};
@@ -107,7 +113,7 @@ foreach my $cobj (@clist) {
 }
 my @alist=list_adapter();
 foreach my $aobj (@alist) {
-        $defip{$aobj->ip}=1;
+        $defip{$aobj->{ip}}=1;
 }
 my $cnum=$config->start;
 if ($config->pad) {
@@ -141,22 +147,24 @@ if ($config->pad) {
 my @ALIST;
 my $nb_errors = 0;
 foreach my $ipaddr (@IPLIST) {
-        &verbose("Defining objects.");
+        my $node_name = $config->basename.$cnum;
+        print ("Defining objects for $node_name\n");
         my $clientdef = new SIS::Client($config->basename.$cnum);
-        $clientdef->hostname($config->basename.$cnum.".".$config->domain);
-        $clientdef->domainname($config->domain);
-        $clientdef->imagename($config->image);
-        $clientdef->route($config->gateway);
-       
-        if (SystemInstaller::Machine::linkscript($clientdef)){
+        $clientdef->{hostname} = ($config->basename.$cnum.".".$config->domain);
+        $clientdef->{domainname} = $config->domain;
+        $clientdef->{imagename} = $config->image;
+        $clientdef->{route} = $config->gateway;
+
+        if (SystemInstaller::Machine::linkscript($clientdef) == 1){
                 set_client($clientdef);
-               	my $adapdef = new SIS::Adapter("eth0");
+                my $adapdef = new SIS::Adapter("eth0");
                 $adapdef->client($config->basename.$cnum);
                 $adapdef->ip($ipaddr);
                 $adapdef->netmask($config->netmask);
                 push(@ALIST,$adapdef);
         } else {
-	        carp("Client " . $config->basename.$cnum ." definition failed.\n");
+            carp("ERROR: Client " . $config->basename.$cnum . 
+                 " definition failed.\n");
             $nb_errors++;
         }
 	$cnum++;
