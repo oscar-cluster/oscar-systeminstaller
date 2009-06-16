@@ -26,7 +26,7 @@ package SIS::Client;
 use strict;
 use vars qw($VERSION @ATTR); 
 use base qw(SIS::Component);
-use SIS::DB;
+use SIS::NewDB;
 
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 

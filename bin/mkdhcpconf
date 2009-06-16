@@ -31,7 +31,7 @@ use lib "/usr/lib/systemconfig";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
 use Net::Netmask;
@@ -107,8 +107,8 @@ if ($config->bootfile) {
 my $dhcpdver=&dhcpd_version;
 
 &verbose("Resolving machine list.");
-my @machinelist = list_client();
-my @adaplist = list_adapter();
+my @machinelist = SIS::NewDB::list_client();
+my $adaplist = SIS::NewDB::list_adapter(undef);
 
 # collect all domain names
 # - first take those passed on the command line
@@ -120,9 +120,9 @@ for my $dom (split(" ",$HINFO{domain})) {
     $all_domains{$dom} = 1;
 }
 foreach my $mach (@machinelist) {
-    if ($mach->domainname) {
-	my $k = $mach->domainname;
-	$all_domains{$k} = 1;
+    if ($mach->{domainname}) {
+        my $k = $mach->{domainname};
+        $all_domains{$k} = 1;
     }
 }
 $HINFO{domain} = join(" ",keys(%all_domains));
@@ -132,15 +132,15 @@ $HINFO{domain} = join(" ",keys(%all_domains));
 
 # write host specific entries
 foreach my $mach (@machinelist) {
-    foreach my $adapter (@adaplist){
-	if (($mach->name eq $adapter->client) && ($adapter->mac) ) {
+    foreach my $adapter (@$adaplist){
+	if (($mach->{name} eq $adapter->{client}) && ($adapter->{mac}) ) {
 	    &write_entry($mach, $adapter);
 	}
     }
 }
 # interface definitions for appliance adapters
-foreach my $adapter (@adaplist){
-    if (($adapter->client =~ /^__.*__$/) && ($adapter->mac) ) {
+foreach my $adapter (@$adaplist){
+    if (($adapter->{client} =~ /^__.*__$/) && ($adapter->{mac}) ) {
 	&write_appl_entry($adapter);
     }
 }
@@ -246,17 +246,17 @@ sub write_appl_entry {
 
 sub write_entry {
 	my ($mach, $adapter) = @_;
-	print OUTFILE "\t\thost ".$adapter->client."{\n";
-	print OUTFILE "\t\t\thardware ethernet ".$adapter->mac.";\n";
-	print OUTFILE "\t\t\tfixed-address ".$adapter->ip.";\n";
+	print OUTFILE "\t\thost ".$adapter->{client}."{\n";
+	print OUTFILE "\t\t\thardware ethernet ".$adapter->{mac}.";\n";
+	print OUTFILE "\t\t\tfixed-address ".$adapter->{ip}.";\n";
         # print OUTFILE "\t\t\tfilename \"".$config->bootfile."\";\n";    
         print OUTFILE "\t\t\tfilename \"".
-	    $bootfile{arch_of_machine($mach->name)}."\";\n";    
-        print OUTFILE "\t\t\toption routers ". $mach->route .";\n" if $mach->route;
+	    $bootfile{arch_of_machine($mach->{name})}."\";\n";    
+        print OUTFILE "\t\t\toption routers ". $mach->{route} .";\n" if $mach->{route};
 	# add default search domains to that of the client node
 	# (doesn't matter if they are the same)
-	if ($mach->domainname) {
-	    print OUTFILE "\t\t\toption domain-name \"".$mach->domainname."\";\n";
+	if ($mach->{domainname}) {
+	    print OUTFILE "\t\t\toption domain-name \"".$mach->{domainname}."\";\n";
 	}
 	print OUTFILE "\t\t\tnext-server oscar_server;\n";
         print OUTFILE "\t\t}\n";
@@ -268,8 +268,8 @@ sub arch_of_machine {
     if (scalar @machine == 0) {
 	return `uname -m`;
     }
-    my @image = list_image(name => $machine[0]->imagename);
-    my $arch = $image[0]->arch;
+    my @image = list_image(name => $machine[0]->{imagename});
+    my $arch = $image[0]->{arch};
     return $arch;
 }
     

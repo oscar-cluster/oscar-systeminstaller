@@ -33,7 +33,7 @@ use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
 use Exporter;
 use SystemInstaller::Log qw(verbose); 
 use SystemInstaller::Image;
-use SIS::DB;
+use SIS::NewDB;
 use lib "/usr/lib/systemconfig";
 use Initrd::Generic;
 use Data::Dumper;
@@ -268,7 +268,17 @@ sub build_aiconf_file {
 	# so let's use devfs install style.
 	# (triggers /dev to be mounted during node installation)
 	# - detect architecture of install image
-	my $instarch = list_image(location => $image_dir)->arch;
+    my @images = list_image(location => $image_dir);
+    if (scalar (@images) != 1) {
+        carp "ERROR: We did not get exactly one image for $image_dir, this ".
+             "is not normal";
+        return 1;
+    }
+    my $instarch = $images[0]->{arch};
+    if (!OSCAR::Utils::is_a_valid_string ($instarch)) {
+        carp "ERROR: Impossible to detect the arch of the $images[0] image";
+        return 1;
+    }
 	$instarch =~ s/i.86/i386/;
     # added to support ppc64-ps3
     $instarch = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");

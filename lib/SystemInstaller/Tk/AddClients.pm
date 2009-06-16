@@ -220,13 +220,18 @@ sub run_addclients {
             $cmd .= " --$hashkeys{$key}=$$vars{$key}";
         }
     }
+    $cmd .= " --verbose";
 
-    !system($cmd) or (carp("Couldn't run mksirange: ($cmd) $!"),
-                      error_window($window,"Couldn't run mksirange: $!"),
-                      $window->Unbusy(),
-                      return undef);
+    print "[INFO] Exeecuting: $cmd\n";
+    if (system($cmd)) {
+        carp ("ERROR: Couldn't run mksirange: ($cmd) $!");
+        error_window($window,"Couldn't run mksirange: $!");
+        $window->Unbusy();
+        return undef;
+    }
 
-    if(ref($$vars{postinstall}) eq "CODE") {
+    print "Ref: ".ref($vars->{postinstall})."\n";
+    if(ref($vars->{postinstall}) eq "CODE") {
         &{$$vars{postinstall}}($vars)
             or (carp("Couldn't run postinstall"),
                 error_window($window,"There was an error running the post ".
@@ -260,14 +265,17 @@ sub nexthostnum($)
 {
     my $bn = quotemeta shift;
 
-    my @hosts = grep { /^$bn\d/ } map { $_->name } list_client();
+    my @hosts = grep { /^$bn\d/ } map { $_->{name} } SIS::NewDB::list_client();
     return 1 + (sort { $a <=> $b } map { /(\d+)$/ } @hosts)[-1] if @hosts;
 }
 
 sub nextip()
 {
-    my @allip = map { $_->{ip} } list_adapter();
-    if( @allip ) {
+    my $ips = SIS::NewDB::list_adapter(undef);
+    print "All IP: \n";
+    print Dumper $ips;
+    my @allip = map { $_->{ip} } @$ips;
+    if (scalar (@allip)) {
         my $lastip = hex( (sort map { sprintf "%.2x%.2x%.2x%.2x", split /\./, $_ } @allip)[-1] );
         my $x;
         do {

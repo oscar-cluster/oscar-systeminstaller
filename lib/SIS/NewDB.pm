@@ -22,74 +22,6 @@ package SIS::NewDB;
 #
 # $Id$
 
-=head1 NAME
-
-SIS::NewDB - ODA Interface for client, image, and adapter objects
-
-=head1 SYNOPSIS
-
-  use SIS::NewDB;
-
-  my @clients = list_client();
-  my $name = $clients[0]->name();
-  del_client($name);
-  my $newname = "test";
-  $clients[0]->name($newname) or croak("Can't set name on client");
-  set_client($clients[0]);
-
-=head1 DESCRIPTION
-
-The SIS::NewDB interface gives one access to the OSCAR mysql database.
-There exists 4 functions for every object type: exists_X, list_X, set_X, del_X.  (These will be discussed in detail later).
-
-=head1 ENVIRONMENTAL VARIABLES
-
-The behavior of this module may be changed by setting certain
-environmental variables before calling use.
-
-=head1 FUNCTIONS
-
-=over 4
-
-=head2 exists_X
-
-exists_X($name) - does this object exist?
-
-returns true if the object with that name exists, false otherwise.
-This is used for quick lookups to see if something is defined.  (note:
-exists_adapter is different, and needs ($devname, $client) passed to
-it) 
-
-=head2 list_X
-
-list_X([n1 => v1, ...])  - return list of objects of type X that
-satisfy criteria n1 => v1.
-
-If called with no args, it returns the list of all the objects of type
-X.  With args, it will return the list of objects that satisfy the
-criteria listed (like 'imagename => myimage').
-
-If called in scalar context, and if the criteria matches only one
-object, it will return the single object instead of the list.  If
-called in scalar context, if the criteria matches multiple objects,
-the function will return 'undef'.
-
-=head2 set_X
-
-set_X($object1[, $object2...]) - store objects of type X.
-
-=head2 del_X
-
-del_X($primkey) - detele object of type X by key using $primkey as the
-value.
-
-=back
-
-=head1 AUTHORS
-
-  Copyright 2006 Erich Focht <efocht@hpce.nec.com>
-
-=cut
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -101,6 +33,8 @@ use strict;
 use Carp;
 use OSCAR::Database;
 use OSCAR::Database_generic;
+use OSCAR::NodeMgt;
+use OSCAR::Network;
 use GDBM_File;
 use Data::Dumper;
 use MLDBM qw(GDBM_File);
@@ -111,11 +45,21 @@ use vars qw($VERSION $DBPATH $DBMAP @EXPORT);
 my $debug = 1;
 
 
-$VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)/);
+# $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)/);
 
-@EXPORT = qw(exists_image list_image set_image del_image
-             exists_client list_client set_client del_client
-             exists_adapter list_adapter set_adapter del_adapter);
+@EXPORT = qw(
+            exists_image
+            list_image
+            set_image del_image
+            exists_client
+            list_client
+            set_client
+            del_client
+            exists_adapter
+            list_adapter
+            set_adapter
+            del_adapter
+            );
 
 $DBPATH = $ENV{SIS_DBPATH} || "/var/lib/sis";
 if($ENV{SIS_DBTYPE} and ($ENV{SIS_DBTYPE} eq "Storable")) {
@@ -164,13 +108,14 @@ my %sis2oda = (
                 },
                 client => {
                     #EF: route is probably the Networks.gateway entry.
-                    route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
-                    hostname => "Nodes.hostname",
-                    domainname => "Nodes.dns_domain",
-                    arch => "Images.architecture:Nodes.image_id=Images.id",
-                    imagename => "Images.name:Nodes.image_id=Images.id",
                     name => "Nodes.name",
-                    proccount => "Nodes.cpu_num",
+#                     route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
+                    hostname => "Nodes.hostname",
+#                     domainname => "Nodes.dns_domain",
+#                     arch => "Images.architecture:Nodes.image_id=Images.id",
+                    imagename => "Images.name:Images.id=Nodes.image_id",
+#                     name => "Nodes.name",
+#                     proccount => "Nodes.cpu_num",
                 },
            );
 
@@ -193,7 +138,21 @@ my %key_fields = (
 
 
 sub list_image { return list_common("image",@_)}
-sub list_adapter { return list_common("adapter",@_)}
+
+sub list_adapter ($) {
+    my $optref = shift;
+
+    my $res = OSCAR::Network::get_network_adapter ($optref);
+    if (!defined ($res)) {
+        print "[INFO] Impossible to get the adapters\n";
+        return undef;
+    }
+
+    return $res;
+}
+
+# Return: an array of hash, each element of the array being details about a 
+#         given client. Undef if error.
 sub list_client { return list_common("client",@_)}
 
 sub exists_image {
@@ -208,7 +167,8 @@ sub exists_client {
 }
 sub exists_adapter {
     my ($name, $client) = @_;
-    my @images = list_adapter(devname => $name, client => $client);
+    my %h = (devname => $name, client => $client);
+    my @images = list_adapter(\%h);
     return scalar(@images);
 }
 # 
@@ -218,10 +178,38 @@ sub del_adapter {return del_common("adapter",@_)}
 
 
 sub set_image {return sisset('SIS::Image',@_)}
-sub set_client {return sisset('SIS::Client',@_)}
-sub set_adapter {return sisset('SIS::Adapter',@_)}
+# sub set_client {return sisset('SIS::Client',@_)}
 
+# This function accepts arguments created by the  SIS::Client class.
+# for instance:
+# my $client_template = new SIS::Client($config->basename.$cnum);
+sub set_client ($) {
+    my $ref = shift;
 
+    if (!defined $ref) {
+        carp "ERROR: No clients to add";
+        return -1;
+    }
+
+    if (OSCAR::NodeMgt::add_clients ($ref)) {
+        carp "ERROR: Impossible to add clients";
+        return -1;
+    }
+    return 0;
+}
+
+sub set_adapter (@) {
+    my @alist = @_;
+
+    print "Data to store:\n";
+    print Dumper @alist;
+    if (OSCAR::Network::set_network_adapter (\@alist)) {
+        carp "ERROR: Impossible to set the adapters";
+        return -1;
+    }
+
+    return 0;
+}
 
 ##########################################################################
 
@@ -231,7 +219,7 @@ sub list_common {
     my (%tables, @fields, %fields_as, @conditions);
     for my $sisk (keys(%{$sis2oda{$table}})) {
         my ($field, $condition) = split(":",$sis2oda{$table}->{$sisk});
-        print "Field: $field\n";
+#         print "Field: $field\n";
         my ($tab, $f) = split(/\./,$field);
         if ($f) {
             my $as = lc($tab."__".$f);
@@ -242,14 +230,16 @@ sub list_common {
         }
         $tables{$tab} = 1;
         # check tables in conditions fields
-        my @conds = split(" AND ", $condition);
-        for my $c (@conds) {
-            my ($f1,$f2) = split(/=/, $c);
-            my ($tab1,$n1) = split(/\./, $f1);
-            $tables{$tab1} = 1;
-            my ($tab2,$n2) = split(/\./, $f2);
-            $tables{$tab2} = 1;
-            push (@conditions, $c);
+        if (defined ($condition)) {
+            my @conds = split(" AND ", $condition);
+            for my $c (@conds) {
+                my ($f1,$f2) = split(/=/, $c);
+                my ($tab1,$n1) = split(/\./, $f1);
+                $tables{$tab1} = 1;
+                my ($tab2,$n2) = split(/\./, $f2);
+                $tables{$tab2} = 1;
+                push (@conditions, $c);
+            }
         }
     }
 
@@ -268,7 +258,7 @@ sub list_common {
     my @result;
     my (%options,@errors);
     $options{debug} = 0;
-    print "SQL query: $sql\n" if $debug;
+#     print "SQL query: $sql\n" if $debug;
     die "$0:Failed to query values via << $sql >>"
         if (!do_select($sql,\@result, \%options, @errors));
 
@@ -512,4 +502,76 @@ sub sisset {
 #     return 1;
 # }
 
-42;
+1;
+
+__END__
+
+=head1 NAME
+
+SIS::NewDB - ODA Interface for client, image, and adapter objects
+
+=head1 SYNOPSIS
+
+  use SIS::NewDB;
+
+  my @clients = list_client();
+  my $name = $clients[0]->name();
+  del_client($name);
+  my $newname = "test";
+  $clients[0]->name($newname) or croak("Can't set name on client");
+  set_client($clients[0]);
+
+=head1 DESCRIPTION
+
+The SIS::NewDB interface gives one access to the OSCAR mysql database.
+There exists 4 functions for every object type: exists_X, list_X, set_X, del_X.  (These will be discussed in detail later).
+
+=head1 ENVIRONMENTAL VARIABLES
+
+The behavior of this module may be changed by setting certain
+environmental variables before calling use.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=head2 exists_X
+
+exists_X($name) - does this object exist?
+
+returns true if the object with that name exists, false otherwise.
+This is used for quick lookups to see if something is defined.  (note:
+exists_adapter is different, and needs ($devname, $client) passed to
+it) 
+
+=head2 list_X
+
+list_X([n1 => v1, ...])  - return list of objects of type X that
+satisfy criteria n1 => v1.
+
+If called with no args, it returns the list of all the objects of type
+X.  With args, it will return the list of objects that satisfy the
+criteria listed (like 'imagename => myimage').
+
+If called in scalar context, and if the criteria matches only one
+object, it will return the single object instead of the list.  If
+called in scalar context, if the criteria matches multiple objects,
+the function will return 'undef'.
+
+=head2 set_X
+
+set_X($object1[, $object2...]) - store objects of type X.
+
+=head2 del_X
+
+del_X($primkey) - detele object of type X by key using $primkey as the
+value.
+
+=back
+
+=head1 AUTHORS
+
+  Copyright 2006 Erich Focht <efocht@hpce.nec.com>
+  Copyright 2009 Geoffroy Vallee <valleegr@ornl.gov>
+
+=cut

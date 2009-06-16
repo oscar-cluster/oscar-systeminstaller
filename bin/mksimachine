@@ -92,92 +92,104 @@ if ($config->Help){
 
 my @machinelist;
 unless ($config->Add){
-        &verbose("Resolving machine list.");
-        if ( $config->all ) {
-	        @machinelist = list_client();
-        } elsif ($config->name) {
-	        my @names=split(/,/,$config->name);
-	        foreach my $name (@names){
-		        my @mach = list_client(name=>$name);
-		        if (scalar(@mach)) {
-			        push(@machinelist,@mach);
-		        } else {
-			        carp("Machine ".$name." does not exist.\n");
-		        }
-	        }
+    &verbose("Resolving machine list.");
+    if ( $config->all ) {
+        print "[INFO] Getting data about all the nodes...\n";
+        @machinelist = SIS::NewDB::list_client();
+    } elsif ($config->name) {
+        my @names=split(/,/,$config->name);
+        foreach my $name (@names){
+            print "[INFO] Getting data about $name...\n";
+            my @mach = SIS::NewDB::list_client(name=>$name);
+            if (scalar(@mach)) {
+                push(@machinelist,@mach);
+            } else {
+                carp("ERROR: Machine ".$name." does not exist.\n");
+            }
         }
+    } else {
+        print "[INFO] Getting data about all the nodes...\n";
+        @machinelist = SIS::NewDB::list_client();
+    }
 }
 
 if ($config->Update) {
-	foreach my $mach (@machinelist) {
-		if ($config->image) {
-			&verbose("Updating autoinstall script link.");
-			if  (! unlink($config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->name . ".sh")){
-				carp("Unable to delete old script link for machine ".$mach->name);
-			} 
-                        if (! symlink($config->image . ".master",$config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->name . ".sh")) {
-				carp("Unable to create new script link for machine ".$mach->name);
-			}
-		}
+foreach my $mach (@machinelist) {
+    if ($config->image) {
+        &verbose("Updating autoinstall script link.");
+        if  (! unlink($config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->name . ".sh")){
+            carp("Unable to delete old script link for machine ".$mach->name);
+        }
+        my $file1 = $config->image . ".master";
+        my $file2 = $config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->name . ".sh";
+        if (! symlink($file1, $file2)) {
+            carp("Unable to create new script link for machine ".$mach->name);
+        }
+    }
 
-		if (($config->ipaddress) || ($config->netmask) || ($config->MACaddress)) {
-			&verbose("Updating adapter database");
-                        my @adap=list_adapter(devname=>"eth0",client=>$mach->name);
-	       		if ($config->ipaddress) {
-				$adap[0]->ip($config->ipaddress);
-			}
-			if ($config->netmask) {
-				$adap[0]->netmask($config->netmask);
-			}
-			if ($config->MACaddress) {
-				$adap[0]->mac($config->MACaddress);
-			}
-                        set_adapter(@adap);
-		}
-		if (($config->domain) || ($config->gateway) || ($config->image))  {
-			&verbose("Updating machine database");
-			if ($config->domain) {
-				$mach->domainname($config->domain);
-				$mach->hostname($mach->name.".".$config->domain);
-			}
-			if ($config->gateway) {
-				$mach->route($config->gateway);
-			}
-			if ($config->image) {
-				$mach->imagename($config->image);
-			}
-                        set_client($mach);
-		}
-	}
-	# Re-sync the /etc/hosts file
-	&synchosts;
+    if (($config->ipaddress) || ($config->netmask) || ($config->MACaddress)) {
+        &verbose("Updating adapter database");
+        my %h = (devname=>"eth0",client=>$mach->name);
+        my @adap=list_adapter(\%h);
+        if ($config->ipaddress) {
+            $adap[0]->ip($config->ipaddress);
+        }
+        if ($config->netmask) {
+            $adap[0]->netmask($config->netmask);
+        }
+        if ($config->MACaddress) {
+            $adap[0]->mac($config->MACaddress);
+        }
+        if (SIS::NewDB::set_adapter(@adap)) {
+            die "ERROR: Impossible to set adapters";
+        }
+    }
+    if (($config->domain) || ($config->gateway) || ($config->image))  {
+        &verbose("Updating machine database");
+        if ($config->domain) {
+            $mach->domainname($config->domain);
+            $mach->hostname($mach->name.".".$config->domain);
+        }
+        if ($config->gateway) {
+            $mach->route($config->gateway);
+        }
+        if ($config->image) {
+            $mach->imagename($config->image);
+        }
+                    set_client($mach);
+    }
+}
+# Re-sync the /etc/hosts file
+&synchosts;
 
 } elsif ($config->Delete) {
-	my @delhosts;
-        my @deladaps;
-        my %ADAPTERS;
-        &verbose("Getting adapters");
-        my @adaps=list_adapter();
-        foreach my $a (@adaps) {
-                my $c=$a->client;
-                push(@{$ADAPTERS{$c}},$a);
-        }
+    my @delhosts;
+    my @deladaps;
+    my %ADAPTERS;
+    &verbose("Getting adapters");
+    my @adaps = SIS::NewDB::list_adapter(undef);
+    print "Toto: ".Dumper @adaps;
+    foreach my $a (@adaps) {
+        print "titi: ".Dumper $a;
+        my $c=@$a[0]->{client};
+        push(@{$ADAPTERS{$c}},$a);
+    }
 	foreach my $mach (@machinelist) {
-		if  (! unlink($config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->name . ".sh")){
-			carp("Unable to delete old script link for machine ".$mach->name.", continuing...");
+		if  (! unlink($config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->{name} . ".sh")){
+			carp("Unable to delete old script link for machine ".$mach->{name}.", continuing...");
 		}
-	        push @delhosts,$mach->name;
+	        push @delhosts,$mach->{name};
 			
-                if ($ADAPTERS{$mach->name}) {
-                        my @adapters=@{$ADAPTERS{$mach->name}};
+                if ($ADAPTERS{$mach->{name}}) {
+                        my @adapters=@{$ADAPTERS{$mach->{name}}};
                         push(@deladaps,@adapters);
                 }
 	}
 	&verbose("Deleting machines");
-        my @keys=map{$_->primkey} @machinelist;
+        my @keys=map{$_->{primkey}} @machinelist;
         del_client(@keys);
 	&verbose("Deleting adapters");
-        @keys=map{$_->primkey} @deladaps;
+        @keys=map{$_->{primkey}} @deladaps;
         del_adapter(@keys);
 	# Resync the /etc/hosts file.
 	&verbose("Syncing /etc/hosts");
@@ -195,11 +207,13 @@ if ($config->Update) {
                 carp("Client name is malformed.\n");
                 exit 1;
         }
-        if (my @C=list_adapter(ip=>$config->ipaddress)) {
+        my %h = (ip=>$config->ipaddress);
+        if (my @C = list_adapter(\%h)) {
                 carp("IP address " . $config->ipaddress ." is assigned to another client.\n");
                 exit 1;
         }
-        if (($config->MACaddress) && (my @C=list_adapter(mac=>$config->MACaddress)) ) {
+        my %h2 = (mac=>$config->MACaddress);
+        if (($config->MACaddress) && (my @C = list_adapter(\%h2)) ) {
                 carp("MAC address " . $config->MACaddress ." is assigned to another client.\n");
                 exit 1;
         }
@@ -228,7 +242,7 @@ if ($config->Update) {
 
 }else { #Must be list
 	&verbose("Listing machine data.");
-	my @machines = list_client();
+	my @machines = SIS::NewDB::list_client();
 	my $mach;
 	if (@machines) {
                 if ($config->parse){
@@ -242,13 +256,14 @@ if ($config->Update) {
 	}
 	foreach $mach (@machines) {
                 if ($config->parse){
-		        print $mach->name.":".$mach->hostname.":".$mach->route.":".$mach->imagename."\n";
+		        print $mach->{name}.":".$mach->{hostname}.":".$mach->{route}.":".$mach->{imagename}."\n";
                 } else {
-		        printf ("%-15.15s %-20.20s %-15.15s %-15.15s\n",$mach->name,$mach->hostname,$mach->route,$mach->imagename);
+		        printf ("%-15.15s %-20.20s %-15.15s %-15.15s\n",$mach->{name},$mach->{hostname},$mach->{route},$mach->{imagename});
                 }
 	}
-	my @adapters = list_adapter();
-	if (@adapters) {
+	my $adapters_ref = SIS::NewDB::list_adapter(undef);
+    print Dumper $adapters_ref;
+	if (defined $adapters_ref) {
                 if ($config->parse){
 		        print "#Adapter definitions\n";
 		        print "#Machine:Adap:IP address:Netmask:MAC\n";
@@ -258,11 +273,12 @@ if ($config->Update) {
 		        print "------------------------------------------------------------------------\n";
                 }
 	}
-	foreach my $adap (@adapters) {
+	foreach my $adap (@$adapters_ref) {
+        next if !defined ($adap);
                 if ($config->parse){
-                        my $cmac=$adap->mac;
+                        my $cmac=$adap->{mac};
                         $cmac=~s/://g;
-		        print $adap->client.":".$adap->devname.":".$adap->ip.":".$adap->netmask.":".$cmac."\n";
+		        print $adap->{client}.":".$adap->{devname}.":".$adap->{ip}.":".$adap->{netmask}.":".$cmac."\n";
                 } else {
 		        printf ("%-15.15s %-5.5s %-15.15s %-15.15s %-20.20s\n",
                         $adap->{client},

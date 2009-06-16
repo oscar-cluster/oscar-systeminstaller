@@ -26,7 +26,7 @@ use base qw(Exporter);
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Log qw (verbose);
 use SystemInstaller::Utils;
 use File::Copy;
@@ -47,7 +47,8 @@ sub get_machine_listing {
     my %results = ();
     
     foreach my $machine (@machines) {
-        my $adapter = list_adapter(client=>$machine->name, devname=>"eth0");
+        my %h = (client=>$machine->name, devname=>"eth0");
+        my $adapter = SIS::NewDB::list_adapter(\%h);
         $results{$machine->name} = {
                                       HOST => $machine->hostname,
                                       DOMAIN => $machine->domainname,
@@ -60,11 +61,11 @@ sub get_machine_listing {
 
 sub adapter_devs {
     my %dev;
-    my @adapterlist = list_adapter();
+    my $adapterlist = list_adapter(undef);
 
-    foreach my $adap (@adapterlist) {
-	my $d = $adap->devname;
-	$dev{$d} = 1;
+    foreach my $adap (@$adapterlist) {
+        my $d = $adap->{devname};
+        $dev{$d} = 1;
     }
     return sort(keys(%dev));
 }
@@ -103,21 +104,22 @@ sub hnamedev {
 }
 
 sub synchosts {
-	my @delhosts=@_;
-	my @machinelist = list_client();
-	my @adapterlist = list_adapter();
-	my @devlist = adapter_devs();
-        my %ADAPTERS;
-	my %APPLIANCES;
-        &verbose("Parsing adapters");
-        foreach my $adap (@adapterlist) {
-	    my $name = $adap->client;
-	    $ADAPTERS{$adap->devname}{$name} = $adap->ip;
-	    if ($name =~ /^__(.*)__$/) {
-		my $client = $1;
-		$APPLIANCES{$client} = $adap->ip;
-	    }
+    my @delhosts=@_;
+    my @machinelist = list_client();
+    my $adapterlist = list_adapter(undef);
+    my @devlist = adapter_devs();
+    my %ADAPTERS;
+    my %APPLIANCES;
+
+    &verbose("Parsing adapters");
+    foreach my $adap (@$adapterlist) {
+        my $name = $adap->{client};
+        $ADAPTERS{$adap->{devname}}{$name} = $adap->{ip};
+        if ($name =~ /^__(.*)__$/) {
+            my $client = $1;
+            $APPLIANCES{$client} = $adap->ip;
         }
+    }
 	&verbose("Syncing /etc/hosts/ to database.");
 	open (HOSTS,"/etc/hosts");
 	open (TMP,">/tmp/hosts.$$");
@@ -213,9 +215,14 @@ sub linkscript ($) {
     }
 
     if (-f $dest_file) {
-        carp "ERROR: Impossible to create the symlink the destination ".
-             "file ($dest_file) already exists";
-        return 0;
+        print "[INFO] Deleting $dest_file\n";
+        unlink ($dest_file);
+        # We double check everything is fine
+        if (-f $dest_file) {
+            carp "ERROR: Impossible to create the symlink the destination ".
+                 "file ($dest_file) already exists";
+            return 0;
+        }
     }
 
 #        chdir($script_dir);

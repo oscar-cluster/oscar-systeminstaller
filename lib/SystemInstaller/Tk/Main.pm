@@ -28,7 +28,7 @@ use Tk::SISTree; # My fun SIS Tree Widget
 use SIS::Image;
 use SIS::Client;
 use SIS::Adapter;
-use SIS::DB;
+use SIS::NewDB;
 use Data::Dumper;
 use base qw(Exporter);
 use POSIX;
