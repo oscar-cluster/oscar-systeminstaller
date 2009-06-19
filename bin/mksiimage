@@ -315,7 +315,7 @@ if ($config->Update) {
 	&verbose("Getting old image data.");
         my @oldimage=list_image(name => $iname);
     	&verbose("Deleting image $iname from database.");
-        &SIS::DB::del_image($iname);
+        &SIS::NewDB::del_image($iname);
 
         $image = new SIS::Image($iname);
 
@@ -360,7 +360,7 @@ if ($config->Delete) {
 		carp("Image deletion failed for image $iname.\n");
 	}
     	&verbose("Updating database.");
-        &SIS::DB::del_image($image->{'name'});
+        &SIS::NewDB::del_image($image->{'name'});
     }
     exit 0;
 }
