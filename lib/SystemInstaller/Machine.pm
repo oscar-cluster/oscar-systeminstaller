@@ -49,11 +49,11 @@ sub get_machine_listing {
     foreach my $machine (@machines) {
         my %h = (client=>$machine->{name}, devname=>"eth0");
         my $adapter = SIS::NewDB::list_adapter(\%h);
-        $results{$machine->name} = {
-                                      HOST => $machine->hostname,
-                                      DOMAIN => $machine->domainname,
-                                      NUM_PROCS => $machine->proccount,
-                                      IPADDR => $adapter->ip
+        $results{$machine->{name}} = {
+                                      HOST => $machine->{hostname},
+                                      DOMAIN => $machine->{domainname},
+                                      NUM_PROCS => $machine->{proccount},
+                                      IPADDR => $adapter->{ip}
                                      };
     }
     return %results;
