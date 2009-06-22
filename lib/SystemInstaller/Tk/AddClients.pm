@@ -214,7 +214,7 @@ sub run_addclients {
     my @imagesel=$imagebox->curselection;
     my $imagename=$imagebox->get($imagesel[0]);
 
-    my $cmd = "mksirange --image $imagename ";
+    my $cmd = "/usr/bin/mksirange --image $imagename ";
     foreach my $key (keys %hashkeys) {
         if($$vars{$key}) {
             $cmd .= " --$hashkeys{$key}=$$vars{$key}";
