@@ -47,7 +47,7 @@ sub get_machine_listing {
     my %results = ();
     
     foreach my $machine (@machines) {
-        my %h = (client=>$machine->name, devname=>"eth0");
+        my %h = (client=>$machine->{name}, devname=>"eth0");
         my $adapter = SIS::NewDB::list_adapter(\%h);
         $results{$machine->name} = {
                                       HOST => $machine->hostname,
