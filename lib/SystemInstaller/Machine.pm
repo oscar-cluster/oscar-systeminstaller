@@ -39,9 +39,9 @@ sub get_machine_listing {
 
     my @machines;
     if ($image) {
-        @machines = list_client(imagename=>$image);
+        @machines = SIS::NewDB::list_client(imagename=>$image);
     } else {
-        @machines = list_client();
+        @machines = SIS::NewDB::list_client();
     }
 
     my %results = ();
@@ -49,19 +49,25 @@ sub get_machine_listing {
     foreach my $machine (@machines) {
         my %h = (client=>$machine->{name}, devname=>"eth0");
         my $adapter = SIS::NewDB::list_adapter(\%h);
+        if (!defined $adapter) {
+            carp "ERROR: Impossible to get adapter data (".
+                $machine->{name}.")";
+            return undef;
+        }
         $results{$machine->{name}} = {
                                       HOST => $machine->{hostname},
                                       DOMAIN => $machine->{domainname},
                                       NUM_PROCS => $machine->{proccount},
-                                      IPADDR => $adapter->{ip}
+                                      IPADDR => $adapter[0]->{ip}
                                      };
     }
+
     return %results;
 }
 
 sub adapter_devs {
     my %dev;
-    my $adapterlist = list_adapter(undef);
+    my $adapterlist = SIS::NewDB::list_adapter(undef);
 
     foreach my $adap (@$adapterlist) {
         my $d = $adap->{devname};
