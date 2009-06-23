@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 #   $Id$
 
 #   Copyright (c) 2001 International Business Machines
@@ -294,7 +297,7 @@ if ($config->Copy) {
                 exit 1;
 	}
     	&verbose("Updating database.");
-        my @oldimage=list_image(name => $config->source);
+        my @oldimage = SIS::NewDB::list_image(name => $config->source);
         $image = new SIS::Image($config->name);
         $image->location($config->path);
         $image->arch($oldimage[0]->arch);
@@ -313,7 +316,7 @@ if ($config->Update) {
 	}	    
 
 	&verbose("Getting old image data.");
-        my @oldimage=list_image(name => $iname);
+        my @oldimage = SIS::NewDB::list_image(name => $iname);
     	&verbose("Deleting image $iname from database.");
         &SIS::NewDB::del_image($iname);
 
@@ -338,10 +341,10 @@ if ($config->Delete) {
     my @images;
     if ($config->all) {
 	&verbose("Getting the list of images");
-	@images = &list_image;
+	@images = SIS::NewDB::list_image();
     } else {
 	&verbose("Checking for existing image");
-        @images=list_image(name => $config->name);
+        @images = SIS::NewDB::list_image(name => $config->name);
     }
     if (scalar(@images) == 0) {
             croak("Requested images not found.\n");
@@ -366,7 +369,7 @@ if ($config->Delete) {
 }
 
 &verbose("Querying database.");
-my @images = &list_image;
+my @images = SIS::NewDB::list_image();
 &verbose("Formatting output.");
 if ($config->parse){
         print "#Name:Path:Arch\n";

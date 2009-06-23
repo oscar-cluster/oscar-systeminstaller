@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 #   $Header: /cvsroot/systeminstaller/systeminstaller/bin/mksirange,v 1.18 2003/04/11 20:44:29 mchasal Exp $
 
 #   Copyright (c) 2001 International Business Machines
@@ -40,10 +43,10 @@ use AppConfig qw(:argcount);
 use File::Copy;
 use Data::Dumper;
 
-my $si_config = init_si_config();
+my %si_config = get_si_config();
 
 #Set the path
-$ENV{PATH}=$config->binpath .":" . $ENV{PATH};
+$ENV{PATH}=$si_config{'binpath'} .":" . $ENV{PATH};
 
 my $clientdef;
 
@@ -185,7 +188,8 @@ synchosts();
 
 exit 0; 
 
-sub check_args {
+# Return: 1 if success, 0 else.
+sub check_args () {
 
 	# Get verbose option
 	if ($config->verbose){
@@ -196,14 +200,15 @@ sub check_args {
 	&verbose("Checking arguments.");
 
 	if ($config->image) {
-		my $image=exists_image($config->image);
+        require OSCAR::ImageMgt;
+		my $image = OSCAR::ImageMgt::image_exists($config->image);
 		unless ($image){
 			carp("Image ". $config->image . " does not exist.");
 			return 0;
 		}
-                my $aiscript=$config->AUTOINSTALL_SCRIPT_DIR . "/". $config->image .".master";
-                unless(-e $aiscript) {
-                        carp("The autoinstall script for image ". $config->image . " does not exist.");
+        my $aiscript=$si_config{'autoinstall_script_dir'} . "/". $config->image .".master";
+        unless(-e $aiscript) {
+            carp("The autoinstall script for image does not exist ($aiscript).");
 			return 0;
 		}
 	}
@@ -213,10 +218,10 @@ sub check_args {
 			return 0;
 		}
 	}
-        unless ($config->start >= 0) {
-                carp("--start must be a positive integer.");
-                return 0;
-        }
+    unless ($config->start >= 0) {
+        carp("--start must be a positive integer.");
+        return 0;
+    }
 	return 1;
 
 }# check_args
