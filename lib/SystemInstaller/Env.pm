@@ -107,7 +107,7 @@ sub get_version {
         # This just returns the version number, looks silly,
         # but the string below is replaced during the build
         # process with the proper version.
-        my $SIVERSION="2.3.13";
+        my $SIVERSION="2.4.2svn20090612";
         return $SIVERSION;
 }
 

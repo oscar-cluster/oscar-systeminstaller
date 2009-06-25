@@ -58,7 +58,7 @@ sub get_machine_listing {
                                       HOST => $machine->{hostname},
                                       DOMAIN => $machine->{domainname},
                                       NUM_PROCS => $machine->{proccount},
-                                      IPADDR => $adapter[0]->{ip}
+                                      IPADDR => @$adapter[0]->{ip}
                                      };
     }
 
