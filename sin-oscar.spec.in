@@ -100,7 +100,7 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/bin/tksis
 %dir %{_libdir}/systeminstaller/SystemInstaller/Tk
 %dir %{_libdir}/systeminstaller/Tk
-%dir %{_libdir}/systeminstaller/images
+%dir /usr/share/systeminstaller/images
 /usr/share/systeminstaller/images/*
 %doc %{_mandir}/man1/tksis*
 %{_libdir}/systeminstaller/SystemInstaller/Tk/*
