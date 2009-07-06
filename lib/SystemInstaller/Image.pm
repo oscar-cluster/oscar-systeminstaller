@@ -152,51 +152,66 @@ sub find_initrd ($$) {
 # Input: imagedir, root device, boot device
 # Return: 1 if success, 0 else.
 sub write_scconf ($$$) {
-        my $imagedir=shift;
-        my $root=shift;
-        my $boot=shift;
-        my $scfile="$imagedir/etc/systemconfig/systemconfig.conf";
+    my $imagedir=shift;
+    my $root=shift;
+    my $boot=shift;
+    my $scfile="$imagedir/etc/systemconfig/systemconfig.conf";
 
-        # Make sure we have all input
-        unless ($imagedir && $root && $boot) {
-                carp("Missing required input!");
-                return 0;
-        }
-        unless (open(SCFILE,">$scfile")) {
-                carp("Cannot open System Configurator conf file $scfile!");
-                return 0;
-        }
-        # Print the first part of the file, the static data and the boot 
-        # devices.
-        print SCFILE "# systemconfig.conf written by systeminstaller.\n";
-        print SCFILE "CONFIGBOOT = YES\nCONFIGRD = YES\n\n[BOOT]\n";
-        print SCFILE "\tROOTDEV = $root\n\tBOOTDEV = $boot\n";
+    # Make sure we have all input
+    if (! -d $imagedir) {
+        carp "ERROR: $imagedir does not exist";
+        return 0;
+    }
+    if (-f $scfile) {
+        print "[INFO] $scfile already exists, we exist successfully.\n";
+        return 1;
+    }
+    use OSCAR::Utils;
+    if (!OSCAR::Utils::is_a_valid_string ($root)) {
+        carp "ERROR: Invalid root device";
+        return 0;
+    }
+    if (!OSCAR::Utils::is_a_valid_string ($boot)) {
+        carp "ERROR: Invalid boot parameter";
+        return 0;
+    }
 
-        # Now find the kernels.
-        my @kernels = find_kernels($imagedir);
-        if (scalar (@kernels) == 0) {
-            carp "ERROR: Impossible to find kernels";
-            return 0;
-        }
-        my $i=0;
-        my $default=0;
+    unless (open(SCFILE,">$scfile")) {
+        carp("Cannot open System Configurator conf file $scfile!");
+        return 0;
+    }
+    # Print the first part of the file, the static data and the boot 
+    # devices.
+    print SCFILE "# systemconfig.conf written by systeminstaller.\n";
+    print SCFILE "CONFIGBOOT = YES\nCONFIGRD = YES\n\n[BOOT]\n";
+    print SCFILE "\tROOTDEV = $root\n\tBOOTDEV = $boot\n";
 
-        foreach (@kernels){
-                my ($path,$label)=split;
-                if (!$default) {
-                    print SCFILE "\tDEFAULTBOOT = $label\n\n";
-                    $default++;
-                }
-                print SCFILE "[KERNEL$i]\n";
-                print SCFILE "\tPATH = $path\n";
-                my $initrd = find_initrd ($imagedir, $label);
-                if (defined $initrd) {
-                    print SCFILE "\tINITRD = $initrd\n";
-                }
-                print SCFILE "\tLABEL = $label\n\n";
-                $i++;
+    # Now find the kernels.
+    my @kernels = find_kernels($imagedir);
+    if (scalar (@kernels) == 0) {
+        carp "ERROR: Impossible to find kernels";
+        return 0;
+    }
+    my $i=0;
+    my $default=0;
+
+    foreach (@kernels){
+        my ($path,$label)=split;
+        if (!$default) {
+            print SCFILE "\tDEFAULTBOOT = $label\n\n";
+            $default++;
         }
+        print SCFILE "[KERNEL$i]\n";
+        print SCFILE "\tPATH = $path\n";
+        my $initrd = find_initrd ($imagedir, $label);
+        if (defined $initrd) {
+            print SCFILE "\tINITRD = $initrd\n";
+        }
+        print SCFILE "\tLABEL = $label\n\n";
+        $i++;
+    }
     close SCFILE;
+
     return 1;
 } #write_scconf
 
