@@ -92,19 +92,19 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/systeminstaller
 %dir %{_libdir}/systeminstaller/SystemInstaller
 %dir /etc/systeminstaller
-%dir %{_sharedstatedir}/sis/
+%dir /var/lib/sis/
 %config /etc/systeminstaller/*
 
 %files x11
 %defattr(-,root,root)
 %{prefix}/bin/tksis
-%dir /usr/lib/systeminstaller/SystemInstaller/Tk
-%dir /usr/lib/systeminstaller/Tk
-%dir /usr/share/systeminstaller/images
+%dir %{_libdir}/systeminstaller/SystemInstaller/Tk
+%dir %{_libdir}/systeminstaller/Tk
+%dir %{_libdir}/systeminstaller/images
 /usr/share/systeminstaller/images/*
-%doc /usr/share/man/man1/tksis*
-/usr/lib/systeminstaller/SystemInstaller/Tk/*
-/usr/lib/systeminstaller/Tk/*
+%doc %{_mandir}/man1/tksis*
+%{_libdir}/systeminstaller/SystemInstaller/Tk/*
+%{_libdir}/systeminstaller/Tk/*
 
 %post
 for i in client image adapter; do
