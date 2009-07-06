@@ -3,6 +3,8 @@ System Installer v2.4.2 (not yet released)
 ------------------------------------------------------------
     - Update the build configuration file (add fedora core).
     - Finish the port to the new databased interface.
+    - Clean up the spec file so it also works on FC11 (patch from
+      Christophe Trophime).
 ------------------------------------------------------------
 System Installer v2.4.1
 ------------------------------------------------------------

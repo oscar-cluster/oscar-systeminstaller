@@ -20,7 +20,7 @@ Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, system
 Vendor: 		http://oscar.openclustergroup.org
 Packager: 		OSCAR developer team
 Prefix: 		%{prefix}
-Buildroot: 		/var/tmp/%{name}-%{version}-root
+Buildroot: 		$RPM_BUILD_ROOT
 AutoReqProv: 		no
 Provides: 		systeminstaller = %{version}
 
@@ -54,18 +54,18 @@ System Installer Perl Tk User Interface
 
 # No configure, no make, just copy files to the output dir.
 %build
-mkdir -p /var/tmp/%{name}-%{version}-root/usr/share/man/man5
-mkdir -p /var/tmp/%{name}-%{version}-root/usr/share/man/man1
-perl Makefile.PL PREFIX=/var/tmp/%{name}-%{version}-root%{prefix} INSTALLSITELIB=/var/tmp/%{name}-%{version}-root/usr/lib/systeminstaller INSTALLMAN1DIR=/var/tmp/%{name}-%{version}-root/usr/share/man/man1 INSTALLMAN3DIR=/var/tmp/%{name}-%{version}-root/usr/share/man/man3
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+perl Makefile.PL PREFIX=$RPM_BUILD_ROOT%{prefix} INSTALLSITELIB=$RPM_BUILD_ROOT%{_libdir}/systeminstaller INSTALLMAN1DIR=$RPM_BUILD_ROOT%{_mandir}/man1 INSTALLMAN3DIR=$RPM_BUILD_ROOT%{_mandir}/man3
 make
 #make test
 make install
-rm -rf /var/tmp/%{name}-%{version}-root/usr/lib/systeminstaller/auto*
-rm -f /var/tmp/%{name}-%{version}-root/var/lib/sis/*
+rm -rf $RPM_BUILD_ROOT%{_libdir}/systeminstaller/auto*
+rm -f $RPM_BUILD_ROOT%{_sharedstatedir}/sis/*
 
 %clean
 #rm -fr $RPM_BUILD_DIR/%{name}-%{version}
-rm -rf /var/tmp/%{name}-%{version}-root
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
@@ -77,22 +77,22 @@ rm -rf /var/tmp/%{name}-%{version}-root
 %doc samples/disktable
 %{prefix}/bin/mk*
 %{prefix}/bin/scconf*
-%doc /usr/share/man/man1/mk*
-%doc /usr/share/man/man1/SIS*
-%doc /usr/share/man/man5/systeminstaller*
-%doc /usr/share/man/man3/SIS*
-%doc /usr/share/man/man3/SystemInstaller::*
-/usr/lib/systeminstaller/SIS
-/usr/lib/systeminstaller/Util
-/usr/lib/systeminstaller/SystemInstaller/*pm
-/usr/lib/systeminstaller/SystemInstaller/Package
-/usr/lib/systeminstaller/SystemInstaller/PackageBest
-/usr/lib/systeminstaller/SystemInstaller/Image
-/usr/lib/systeminstaller/SystemInstaller/Partition
-%dir /usr/lib/systeminstaller
-%dir /usr/lib/systeminstaller/SystemInstaller
+%doc %{_mandir}/man1/mk*
+%doc %{_mandir}/man1/SIS*
+%doc %{_mandir}/man5/systeminstaller*
+%doc %{_mandir}/man3/SIS*
+%doc %{_mandir}/man3/SystemInstaller::*
+%{_libdir}/systeminstaller/SIS
+%{_libdir}/systeminstaller/Util
+%{_libdir}/systeminstaller/SystemInstaller/*pm
+%{_libdir}/systeminstaller/SystemInstaller/Package
+%{_libdir}/systeminstaller/SystemInstaller/PackageBest
+%{_libdir}/systeminstaller/SystemInstaller/Image
+%{_libdir}/systeminstaller/SystemInstaller/Partition
+%dir %{_libdir}/systeminstaller
+%dir %{_libdir}/systeminstaller/SystemInstaller
 %dir /etc/systeminstaller
-%dir /var/lib/sis/
+%dir %{_sharedstatedir}/sis/
 %config /etc/systeminstaller/*
 
 %files x11
