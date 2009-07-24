@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.4.3 (not yet released)
+------------------------------------------------------------
+    - [Ticket #559] Actually successfully delete a given image (patch from 
+      Thilo).
+
+------------------------------------------------------------
 System Installer v2.4.2 
 ------------------------------------------------------------
     - Update the build configuration file (add fedora core).

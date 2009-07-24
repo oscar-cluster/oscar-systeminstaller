@@ -303,10 +303,11 @@ sub del_common {
     my @result;
     my (%options,@errors);
     $options{debug}=1;
-    print "SQL query: $sql\n" if $debug;
-    #die "$0:Failed to query values via << $sql >>"
-    #    if (!do_select($sql,\@result, \%options, @errors));
-    return @result;
+    if (!do_update($sql, $maintable, \%options, @errors)) {
+        carp "ERROR: Impossible to do the update ($sql)\n";
+        return 0;
+    }
+    return 1;
 }
 
 #sub set_common {

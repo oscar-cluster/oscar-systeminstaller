@@ -363,7 +363,7 @@ if ($config->Delete) {
 		carp("Image deletion failed for image $iname.\n");
 	}
     	&verbose("Updating database.");
-        &SIS::NewDB::del_image($image->{'name'});
+        &SIS::NewDB::del_image(name => $image->{'name'});
     }
     exit 0;
 }
