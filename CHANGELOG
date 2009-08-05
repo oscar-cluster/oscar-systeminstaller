@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.4.4 (not yet released)
+------------------------------------------------------------
+    - Fix a problem with the spec file on CentOS-5 i386.
+
+------------------------------------------------------------
 System Installer v2.4.3
 ------------------------------------------------------------
     - [Ticket #559] Actually successfully delete a given image (patch from 

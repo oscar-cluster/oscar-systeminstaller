@@ -20,7 +20,7 @@ Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, system
 Vendor: 		http://oscar.openclustergroup.org
 Packager: 		OSCAR developer team
 Prefix: 		%{prefix}
-Buildroot: 		$RPM_BUILD_ROOT
+#Buildroot: 		$RPM_BUILD_ROOT
 AutoReqProv: 		no
 Provides: 		systeminstaller = %{version}
 
