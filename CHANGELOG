@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.3 (not yet released)
+System Installer v2.4.3
 ------------------------------------------------------------
     - [Ticket #559] Actually successfully delete a given image (patch from 
       Thilo).
