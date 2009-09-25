@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.4.4-1) hardy; urgency=low
+
+  * New upstream version.
+
+ -- Geoffroy Vallee <valleegr@ornl.gov>  Fri, 25 Sep 2009 03:05:10 -0400
+
 systeminstaller-oscar (2.4.3) hardy; urgency=low
 
   * New upstream version.
