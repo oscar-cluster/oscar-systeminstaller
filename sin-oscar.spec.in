@@ -1,4 +1,5 @@
 %define prefix          /usr
+%define libdir		%{prefix}/lib
 %define version         %version
 %define release         %release
 %define releasex        %releasex
@@ -56,11 +57,12 @@ System Installer Perl Tk User Interface
 %build
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-perl Makefile.PL PREFIX=$RPM_BUILD_ROOT%{prefix} INSTALLSITELIB=$RPM_BUILD_ROOT%{_libdir}/systeminstaller INSTALLMAN1DIR=$RPM_BUILD_ROOT%{_mandir}/man1 INSTALLMAN3DIR=$RPM_BUILD_ROOT%{_mandir}/man3
+# DO NOT USE %{_libdir}, this will install the libraries in /usr/lib which will create issues on RHEL-5!!!!!!
+perl Makefile.PL PREFIX=$RPM_BUILD_ROOT%{prefix} INSTALLSITELIB=$RPM_BUILD_ROOT%{libdir}/systeminstaller INSTALLMAN1DIR=$RPM_BUILD_ROOT%{_mandir}/man1 INSTALLMAN3DIR=$RPM_BUILD_ROOT%{_mandir}/man3
 make
 #make test
 make install
-rm -rf $RPM_BUILD_ROOT%{_libdir}/systeminstaller/auto*
+rm -rf $RPM_BUILD_ROOT%{libdir}/systeminstaller/auto*
 rm -f $RPM_BUILD_ROOT%{_sharedstatedir}/sis/*
 
 %clean
@@ -82,15 +84,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{_mandir}/man5/systeminstaller*
 %doc %{_mandir}/man3/SIS*
 %doc %{_mandir}/man3/SystemInstaller::*
-%{_libdir}/systeminstaller/SIS
-%{_libdir}/systeminstaller/Util
-%{_libdir}/systeminstaller/SystemInstaller/*pm
-%{_libdir}/systeminstaller/SystemInstaller/Package
-%{_libdir}/systeminstaller/SystemInstaller/PackageBest
-%{_libdir}/systeminstaller/SystemInstaller/Image
-%{_libdir}/systeminstaller/SystemInstaller/Partition
-%dir %{_libdir}/systeminstaller
-%dir %{_libdir}/systeminstaller/SystemInstaller
+%{libdir}/systeminstaller/SIS
+%{libdir}/systeminstaller/Util
+%{libdir}/systeminstaller/SystemInstaller/*pm
+%{libdir}/systeminstaller/SystemInstaller/Package
+%{libdir}/systeminstaller/SystemInstaller/PackageBest
+%{libdir}/systeminstaller/SystemInstaller/Image
+%{libdir}/systeminstaller/SystemInstaller/Partition
+%dir %{libdir}/systeminstaller
+%dir %{libdir}/systeminstaller/SystemInstaller
 %dir /etc/systeminstaller
 %dir /var/lib/sis/
 %config /etc/systeminstaller/*
@@ -98,13 +100,13 @@ rm -rf $RPM_BUILD_ROOT
 %files x11
 %defattr(-,root,root)
 %{prefix}/bin/tksis
-%dir %{_libdir}/systeminstaller/SystemInstaller/Tk
-%dir %{_libdir}/systeminstaller/Tk
+%dir %{libdir}/systeminstaller/SystemInstaller/Tk
+%dir %{libdir}/systeminstaller/Tk
 %dir /usr/share/systeminstaller/images
 /usr/share/systeminstaller/images/*
 %doc %{_mandir}/man1/tksis*
-%{_libdir}/systeminstaller/SystemInstaller/Tk/*
-%{_libdir}/systeminstaller/Tk/*
+%{libdir}/systeminstaller/SystemInstaller/Tk/*
+%{libdir}/systeminstaller/Tk/*
 
 %post
 for i in client image adapter; do
@@ -123,6 +125,9 @@ fi
 
 
 %changelog
+* Wed Oct 07 2009 Geoffroy Vallee <valleegr@ornl.gov> 
+- Force the installation of Perl modules in /usr/lib on x86_64 platforms rather
+  than /usr/lib64 since the code is expecting them in /usr/lib.
 * Fri Nov 28 2008 Geoffroy Vallee <valleegr@ornl.gov>
 - Change the dependency "packman-depman" to "packman"
 * Thu Nov 11 2007 Erich Focht -> 2.3.7-1
