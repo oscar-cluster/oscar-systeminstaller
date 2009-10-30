@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.5 (not yet released).
+System Installer v2.4.5.
 ------------------------------------------------------------
     - Propagate an API modification of OSCAR::ConfigFile.
 

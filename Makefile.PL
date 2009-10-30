@@ -4,8 +4,8 @@ use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
 # The global version is stored here so that it can be used by 
 # the man page string in rewriting POD2MAN_EXE
 
-my $version = "2.4.4";
-my $release = "2";
+my $version = "2.4.5";
+my $release = "1";
 my $releasex = "1";
 
 sub MY::postamble {
