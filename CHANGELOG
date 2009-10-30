@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.4.5 (not yet released).
+------------------------------------------------------------
+    - Propagate an API modification of OSCAR::ConfigFile.
+
+------------------------------------------------------------
 System Installer v2.4.4 
 ------------------------------------------------------------
     - Fix a problem with the spec file on CentOS-5 i386.

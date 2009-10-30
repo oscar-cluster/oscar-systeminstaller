@@ -54,7 +54,7 @@ sub get_si_config () {
     require OSCAR::ConfigFile;
 
     my $si_conffile = "/etc/systemimager/systemimager.conf";
-    my %config = OSCAR::ConfigFile::get_all_values ($si_conffile);
+    my %config = OSCAR::ConfigFile::get_all_values ($si_conffile, undef);
 
     return (%config);
 }
