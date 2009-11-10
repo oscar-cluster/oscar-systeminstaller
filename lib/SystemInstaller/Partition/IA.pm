@@ -357,7 +357,11 @@ sub build_sfdisk_file {
         foreach my $dev (keys(%{$DISKS{PARTITIONS}})) {
                 # Figure out the diskname
                 my $diskname=$dev;
-                $diskname=~s/[0-9]*$//;
+                if ($dev=~/c[0-9]+d[0-9]+p[0-9]*$/) {
+                    $diskname=~s/p[0-9]*$//;
+                } else {
+                    $diskname=~s/[0-9]*$//;
+                }
                 $diskname=~s/^\/dev\///;
                 my $parnum=$dev;
                 $parnum=~s/\/dev\/$diskname//;

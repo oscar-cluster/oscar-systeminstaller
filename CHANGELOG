@@ -3,6 +3,8 @@ System Installer v2.4.6 (not yet released)
 ------------------------------------------------------------
     - More asserts to try to avoid segfaults.
     - Improve command output.
+    - Fix partitionning using when using CCISS controllers 
+      (patch from Olivier Lahaye).
 
 ------------------------------------------------------------
 System Installer v2.4.5.
