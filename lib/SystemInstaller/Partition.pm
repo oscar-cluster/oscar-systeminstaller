@@ -274,10 +274,14 @@ sub parse_dev {
         my %DEV=();
         $DEV{DEVICE}=shift;
 
-        # Get the drive,(eg hda)
+        # Get the drive,(eg hda or cciss/c0d0)
         $DEV{DRIVE}=$DEV{DEVICE};
         $DEV{DRIVE}=~s/\/dev\///;
-        $DEV{DRIVE}=~s/[0-9]*$//;
+        if ($DEV{DRIVE}=~/c[0-9]+d[0-9]+p[0-9]*$/) {
+            $DEV{DRIVE}=~s/p[0-9]*$//;
+        } else {
+            $DEV{DRIVE}=~s/[0-9]*$//;
+        }
         # Get the drive type, (hd)
         $DEV{TYPE}=$DEV{DRIVE};
         $DEV{TYPE}=~s/[a-z]$//;
