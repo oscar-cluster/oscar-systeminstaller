@@ -874,14 +874,18 @@ sub add_image_build ($$) {
 
     if(ref($$vars{postinstall}) eq "CODE") {
         unless( &{$$vars{postinstall}}($vars) ) {
-            carp("Couldn't run postinstall"), 
+            carp("ERROR: Couldn't run postinstall"), 
             return 0;
         }
     }
     if(ref($$vars{postinstall}) eq "ARRAY") {
         my $sub = shift(@{$$vars{postinstall}});
+        if (!defined ($sub)) {
+            carp ("ERROR: the postinstall function is not defined");
+            return 0;
+        }
         unless( &$sub($vars, @{$$vars{postinstall}}) ) {
-            carp("Couldn't run postinstall");
+            carp("ERROR: Couldn't run postinstall");
             return 0;
         }
     }

@@ -284,6 +284,11 @@ sub build_aiconf_file {
     $instarch = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");
 	# detect version of install kernel
 	my $instkdir = "/usr/share/systemimager/boot/$instarch/standard";
+    if (! -d $instkdir) {
+        carp "ERROR: Kernels are not installed ($instkdir)";
+        return 1;
+    }
+
 	my $kvers = kernel_version($instkdir . "/kernel");
 	if ($kvers =~ /^2\.6\./) {
 		print AICONF "\t<boel devstyle=\"udev\" />\n";

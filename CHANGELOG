@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.4.6 (not yet released)
+------------------------------------------------------------
+    - More asserts to try to avoid segfaults.
+    - Improve command output.
+
+------------------------------------------------------------
 System Installer v2.4.5.
 ------------------------------------------------------------
     - Propagate an API modification of OSCAR::ConfigFile.

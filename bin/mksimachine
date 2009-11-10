@@ -174,9 +174,12 @@ foreach my $mach (@machinelist) {
         my $c=@$a[0]->{client};
         push(@{$ADAPTERS{$c}},$a);
     }
+    my $file;
 	foreach my $mach (@machinelist) {
-		if  (! unlink($config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->{name} . ".sh")){
-			carp("Unable to delete old script link for machine ".$mach->{name}.", continuing...");
+        $file = $config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->{name} . ".sh";
+		if  (-f $file && ! unlink($file)){
+			carp("WARNING: Unable to delete old script link for machine "
+                 .$mach->{name}."($file), continuing...");
 		}
 	        push @delhosts,$mach->{name};
 			
