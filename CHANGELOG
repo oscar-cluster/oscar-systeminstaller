@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.6 (not yet released)
+System Installer v2.4.6
 ------------------------------------------------------------
     - More asserts to try to avoid segfaults.
     - Improve command output.
@@ -7,7 +7,7 @@ System Installer v2.4.6 (not yet released)
       (patch from Olivier Lahaye).
 
 ------------------------------------------------------------
-System Installer v2.4.5.
+System Installer v2.4.5
 ------------------------------------------------------------
     - Propagate an API modification of OSCAR::ConfigFile.
 
