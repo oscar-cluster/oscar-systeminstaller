@@ -35,6 +35,7 @@ use OSCAR::Database;
 use OSCAR::Database_generic;
 use OSCAR::NodeMgt;
 use OSCAR::Network;
+use OSCAR::Utils;
 use GDBM_File;
 use Data::Dumper;
 use MLDBM qw(GDBM_File);
@@ -172,9 +173,9 @@ sub exists_adapter {
     return scalar(@images);
 }
 # 
-sub del_image { return del_common("image",@_)}
-sub del_client {return del_common("client",@_)}
-sub del_adapter {return del_common("adapter",@_)}
+sub del_image   { return del_common("image", @_)   }
+sub del_client  { return del_common("client", @_)  }
+sub del_adapter { return del_common("adapter", @_) }
 
 
 sub set_image {return sisset('SIS::Image',@_)}
@@ -266,17 +267,22 @@ sub list_common {
     return @result;
 }
 
-
+# Return: 1 if success, 0 else.
 sub del_common {
-    my ($table,%args) = @_;
+    my ($table, %args) = @_;
     my $maintable = $main_table{$table};
     my $siskey = (keys(%{$key_fields{$table}}))[0];
     my $odakey = $maintable . "." . $key_fields{$table}->{$siskey};
 
+    if (!OSCAR::Utils::is_a_valid_string ($maintable)) {
+        carp "ERROR: Impossible to get the maintable";
+        return 0;
+    }
+
     if (!scalar(keys(%args))) {
-	print "No records selected. Refusing to delete all records in".
-	    " table  $maintable\n";
-	return 0;
+        carp "ERROR: No records selected. Refusing to delete all records in".
+             " table  $maintable";
+        return 0;
     }
 
     # - get the selection output by list_*
@@ -285,28 +291,27 @@ sub del_common {
     my @selection;
     eval "\@selection = list_$table(%args)";
     if (!scalar(@selection)) {
-        print "Selection had no result. Returning.\n" if ($debug);
+        carp "ERROR: Selection had no result. Returning";
         return 0;
     }
 
     my @keys = map { $_->{$siskey} } @selection;
 
-
     my $sql = "DELETE FROM $maintable";
-
 
     my @where = map { "$odakey='".$_."'" } @keys;
     if (@where) {
-	$sql .= " WHERE " . join(" OR ", @where);
+        $sql .= " WHERE " . join(" OR ", @where);
     }
 
     my @result;
     my (%options,@errors);
-    $options{debug}=1;
+    $options{debug} = 1;
     if (!do_update($sql, $maintable, \%options, @errors)) {
-        carp "ERROR: Impossible to do the update ($sql)\n";
+        carp "ERROR: Impossible to do the update ($sql)";
         return 0;
     }
+
     return 1;
 }
 

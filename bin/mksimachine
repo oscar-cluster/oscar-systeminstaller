@@ -188,12 +188,18 @@ foreach my $mach (@machinelist) {
                         push(@deladaps,@adapters);
                 }
 	}
-	&verbose("Deleting machines");
-        my @keys=map{$_->{primkey}} @machinelist;
-        del_client(@keys);
-	&verbose("Deleting adapters");
+	&verbose("Deleting machines...");
+        my @keys = map{$_->{primkey}} @machinelist;
+        if (SIS::NewDB::del_client(@keys) == 0) {
+            carp "ERROR: Impossible to delete a client";
+            exit 1;
+        }
+	&verbose("Deleting adapters...");
         @keys=map{$_->{primkey}} @deladaps;
-        del_adapter(@keys);
+        if (SIS::NewDB::del_adapter(@keys) == 0) {
+            carp "ERROR: Impossible to delete an adapter";
+            exit 1;
+        }
 	# Resync the /etc/hosts file.
 	&verbose("Syncing /etc/hosts");
         &synchosts(@delhosts);
