@@ -168,9 +168,7 @@ foreach my $mach (@machinelist) {
     my %ADAPTERS;
     &verbose("Getting adapters");
     my @adaps = SIS::NewDB::list_adapter(undef);
-    print "Toto: ".Dumper @adaps;
     foreach my $a (@adaps) {
-        print "titi: ".Dumper $a;
         my $c=@$a[0]->{client};
         push(@{$ADAPTERS{$c}},$a);
     }
@@ -271,7 +269,6 @@ foreach my $mach (@machinelist) {
                 }
 	}
 	my $adapters_ref = SIS::NewDB::list_adapter(undef);
-    print Dumper $adapters_ref;
 	if (defined $adapters_ref) {
                 if ($config->parse){
 		        print "#Adapter definitions\n";
