@@ -279,8 +279,10 @@ sub parse_dev {
         $DEV{DRIVE}=~s/\/dev\///;
         if ($DEV{DRIVE}=~/c[0-9]+d[0-9]+p[0-9]*$/) {
             $DEV{DRIVE}=~s/p[0-9]*$//;
+            $DEV{PARTNUM}=~s/\/dev\/$DEV{DRIVE}p*//;
         } else {
             $DEV{DRIVE}=~s/[0-9]*$//;
+            $DEV{PARTNUM}=~s/\/dev\/$DEV{DRIVE}//;
         }
         # Get the drive type, (hd)
         $DEV{TYPE}=$DEV{DRIVE};
@@ -290,7 +292,6 @@ sub parse_dev {
         $DEV{DLETTER}=~s/$DEV{TYPE}//;
         # Get the partition number
         $DEV{PARTNUM}=$DEV{DEVICE};
-        $DEV{PARTNUM}=~s/\/dev\/$DEV{DRIVE}//;
 
         return %DEV;
 } #parse_dev
