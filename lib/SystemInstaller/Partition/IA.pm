@@ -99,6 +99,16 @@ sub get_partition_flags (%) {
     return $flags;
 }
 
+sub get_extended_partition_id ($) {
+    my $disk = @_;
+
+    if ($disk =~ /\/dev\/cciss\/c[0-9]+d[0-9][0-9]*$/) {
+        return "p5";
+    } else {
+        return "5";
+    }
+}
+
 
 # Create an autoinstallscript.conf file to be used
 # be used by SystemImager's mkautoinstallscript.
@@ -145,6 +155,7 @@ sub build_aiconf_file {
         print AICONF "label_type=\"$DISKS{LABEL_TYPE}\" ";
         print AICONF "unit_of_measurement=\"$DISKS{UNITS}\">\n";
         my $extparcreated=0;
+        my $extpartid = get_extended_partition_id ($disk);
         # First do the primary partitions
         # TODO: This will not work with gpt partitions.
         foreach my $parnum (1..4) {
@@ -167,7 +178,7 @@ sub build_aiconf_file {
                 }
                 print AICONF "/>\n";
             } elsif ((! $extparcreated ) 
-                    && (defined $DISKS{PARTITIONS}{$disk."5"}) ){
+                    && (defined $DISKS{PARTITIONS}{$disk.$extpartid}) ){
                 print AICONF "\t\t<part num=\"$parnum\" size=\"\*\" ";
                 print AICONF "p_type=\"extended\" ";
                 print AICONF "/>\n";
