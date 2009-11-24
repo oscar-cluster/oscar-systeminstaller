@@ -160,7 +160,7 @@ sub build_aiconf_file {
         # TODO: This will not work with gpt partitions.
         foreach my $parnum (1..4) {
             my $parname=$disk.$parnum;
-            if (defined $partition_name) {
+            if (defined $DISKS{PARTITIONS}{$parname}) {
                 print AICONF "\t\t<part num=\"$DISKS{PARTITIONS}{$parname}{PNUM}\" ";
                 print AICONF "size=\"$DISKS{PARTITIONS}{$parname}{SIZE}\" ";
                 if ($DISKS{PARTITIONS}{$parname}{TYPE} == 5) {
