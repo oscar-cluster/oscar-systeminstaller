@@ -74,8 +74,8 @@ sub create_partition_file {
     return 0;
 } #read_partition_file
 
-sub get_partition_flags (%) {
-    my (%DISKS) = @_;
+sub get_partition_flags ($%) {
+    my ($parname, %DISKS) = @_;
     my $flags;
 
     if ($DISKS{PARTITIONS}{$parname}{BOOTABLE} ) {
@@ -172,7 +172,7 @@ sub build_aiconf_file {
                 if ($DISKS{PARTITIONS}{$parname}{TYPE} == 41) {
                     print AICONF "id=\"$DISKS{PARTITIONS}{$parname}{TYPE}\" ";
                 }
-                $flags = get_partition_flags ($DISKS);
+                $flags = get_partition_flags ($parname, %DISKS);
                 if ($flags) {
                     print AICONF "flags=\"$flags\" ";
                 }
@@ -191,7 +191,7 @@ sub build_aiconf_file {
                 print AICONF "\t\t<part num=\"$DISKS{PARTITIONS}{$parname}{PNUM}\" ";
                 print AICONF "size=\"$DISKS{PARTITIONS}{$parname}{SIZE}\" ";
                 print AICONF "p_type=\"logical\" ";
-                $flags = get_partition_flags ($DISKS);
+                $flags = get_partition_flags ($parname, %DISKS);
                 if ($flags) {
                     print AICONF "flags=\"$flags\" ";
                 }
