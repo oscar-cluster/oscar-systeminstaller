@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.7 (not yet released)
+System Installer v2.4.7
 ------------------------------------------------------------
     - Remove debugging info.
     - Improve the support of CCISS controllers.
