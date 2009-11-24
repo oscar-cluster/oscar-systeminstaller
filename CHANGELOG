@@ -3,6 +3,7 @@ System Installer v2.4.7 (not yet released)
 ------------------------------------------------------------
     - Remove debugging info.
     - Improve the support of CCISS controllers.
+    - First set of modifications to support again client removal.
 
 ------------------------------------------------------------
 System Installer v2.4.6

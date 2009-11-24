@@ -22,6 +22,7 @@ use strict;
 use vars qw($config $VERSION);
 $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 use lib "/usr/lib/systeminstaller";
+use OSCAR::NodeMgt;
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
@@ -104,7 +105,7 @@ unless ($config->Add){
             if (scalar(@mach)) {
                 push(@machinelist,@mach);
             } else {
-                carp("ERROR: Machine ".$name." does not exist.\n");
+                die("ERROR: Machine ".$name." does not exist.\n");
             }
         }
     } else {
@@ -163,45 +164,51 @@ foreach my $mach (@machinelist) {
 &synchosts;
 
 } elsif ($config->Delete) {
-    my @delhosts;
-    my @deladaps;
-    my %ADAPTERS;
-    &verbose("Getting adapters");
-    my @adaps = SIS::NewDB::list_adapter(undef);
-    foreach my $a (@adaps) {
-        my $c=@$a[0]->{client};
-        push(@{$ADAPTERS{$c}},$a);
-    }
-    my $file;
-	foreach my $mach (@machinelist) {
-        $file = $config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->{name} . ".sh";
-		if  (-f $file && ! unlink($file)){
-			carp("WARNING: Unable to delete old script link for machine "
-                 .$mach->{name}."($file), continuing...");
-		}
-	        push @delhosts,$mach->{name};
-			
-                if ($ADAPTERS{$mach->{name}}) {
-                        my @adapters=@{$ADAPTERS{$mach->{name}}};
-                        push(@deladaps,@adapters);
-                }
-	}
-	&verbose("Deleting machines...");
-        my @keys = map{$_->{primkey}} @machinelist;
-        if (SIS::NewDB::del_client(@keys) == 0) {
-            carp "ERROR: Impossible to delete a client";
-            exit 1;
-        }
-	&verbose("Deleting adapters...");
-        @keys=map{$_->{primkey}} @deladaps;
-        if (SIS::NewDB::del_adapter(@keys) == 0) {
-            carp "ERROR: Impossible to delete an adapter";
-            exit 1;
-        }
+#    my @delhosts;
+#    my @deladaps;
+#    my %ADAPTERS;
+#    &verbose("Getting adapters");
+#    my @adaps = SIS::NewDB::list_adapter(undef);
+#    foreach my $a (@adaps) {
+#        my $c=@$a[0]->{client};
+#        push(@{$ADAPTERS{$c}},$a);
+#    }
+#    my $file;
+#	foreach my $mach (@machinelist) {
+#        $file = $config->AUTOINSTALL_SCRIPT_DIR ."/". $mach->{name} . ".sh";
+#		if  (-f $file && ! unlink($file)){
+#			carp("WARNING: Unable to delete old script link for machine "
+#                 .$mach->{name}."($file), continuing...");
+#		}
+#	        push @delhosts,$mach->{name};
+#			
+#                if ($ADAPTERS{$mach->{name}}) {
+#                        my @adapters=@{$ADAPTERS{$mach->{name}}};
+#                        push(@deladaps,@adapters);
+#                }
+#	}
+#	&verbose("Deleting machines...");
+#        my @keys = map{$_->{primkey}} @machinelist;
+#        print "Machines to delete:\n";
+#        print Dumper @machinelist;
+#        if (SIS::NewDB::del_client(@machinelist) == 0) {
+#            carp "ERROR: Impossible to delete a client";
+#            exit 1;
+#        }
+#	&verbose("Deleting adapters...");
+#        @keys=map{$_->{primkey}} @deladaps;
+#        if (SIS::NewDB::del_adapter(@deladaps) == 0) {
+#            carp "ERROR: Impossible to delete an adapter";
+#            exit 1;
+#        }
 	# Resync the /etc/hosts file.
-	&verbose("Syncing /etc/hosts");
-        &synchosts(@delhosts);
+#	&verbose("Syncing /etc/hosts");
+#        &synchosts(@delhosts);
 
+    my @machines_to_delete = split(/,/,$config->name);
+    if (OSCAR::NodeMgt::delete_clients (@machines_to_delete)) {
+        die "ERROR: Impossible to delete clients";
+    }
 } elsif ($config->Sync) {
 	# Just sync up the /etc/hosts file.
 	&synchosts;
