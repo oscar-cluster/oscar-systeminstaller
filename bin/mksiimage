@@ -495,7 +495,9 @@ usage: $progname [ operation ] <options>
     --Get, -g               get an image from a running client
     --Delete, -d            delete an image definition
     --Copy, -c              copy an image
+    --Update, -u            update an image
     --List                  list all image definitions
+    --Help, -h              this help. For more info: man mksiimage
 
   options
     --name <name>           image name
@@ -505,6 +507,7 @@ usage: $progname [ operation ] <options>
     --distro <distro id>    identifier of the target Linux distribution
     --location <directory>  location of the packages
     --arch <architecture>   architecture of the image
+    --nobuild               don’t actually build the image. Only define image into DB
     --client <name or ip>   the client to get the image from
     --user <username>       the ssh user name for getting an image if needed
     --source <image>        the image to make a copy of.
