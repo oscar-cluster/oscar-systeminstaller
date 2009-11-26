@@ -2,6 +2,7 @@
 System Installer v2.4.9 (not yet released)
 ------------------------------------------------------------
     - Improve the help output of the mksiimage command.
+    - Continue to fix issues with CCISS controllers.
 
 ------------------------------------------------------------
 System Installer v2.4.8 

@@ -99,13 +99,13 @@ sub get_partition_flags ($%) {
     return $flags;
 }
 
-sub get_extended_partition_id ($) {
-    my $disk = @_;
+sub get_device_partition ($$) {
+    my ($disk, $partnum) = @_;
 
     if ($disk =~ /\/dev\/cciss\/c[0-9]+d[0-9][0-9]*$/) {
-        return "p5";
+        return $disk."p".$partnum;
     } else {
-        return "5";
+        return $disk.$partnum;
     }
 }
 
@@ -155,11 +155,11 @@ sub build_aiconf_file {
         print AICONF "label_type=\"$DISKS{LABEL_TYPE}\" ";
         print AICONF "unit_of_measurement=\"$DISKS{UNITS}\">\n";
         my $extparcreated=0;
-        my $extpartid = get_extended_partition_id ($disk);
+        my $extpartid = get_device_partition ($disk, "5");
         # First do the primary partitions
         # TODO: This will not work with gpt partitions.
         foreach my $parnum (1..4) {
-            my $parname=$disk.$parnum;
+            my $parname = get_device_partition ($disk, $parnum);
             if (defined $DISKS{PARTITIONS}{$parname}) {
                 print AICONF "\t\t<part num=\"$DISKS{PARTITIONS}{$parname}{PNUM}\" ";
                 print AICONF "size=\"$DISKS{PARTITIONS}{$parname}{SIZE}\" ";
