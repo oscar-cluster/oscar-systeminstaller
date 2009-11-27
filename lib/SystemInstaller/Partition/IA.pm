@@ -178,7 +178,7 @@ sub build_aiconf_file {
                 }
                 print AICONF "/>\n";
             } elsif ((! $extparcreated ) 
-                    && (defined $DISKS{PARTITIONS}{$disk.$extpartid}) ){
+                    && (defined $DISKS{PARTITIONS}{$extpartid}) ){
                 print AICONF "\t\t<part num=\"$parnum\" size=\"\*\" ";
                 print AICONF "p_type=\"extended\" ";
                 print AICONF "/>\n";
