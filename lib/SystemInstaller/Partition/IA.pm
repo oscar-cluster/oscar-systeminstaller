@@ -109,6 +109,43 @@ sub get_device_partition ($$) {
     }
 }
 
+# Create <part= tag.
+#
+# Input: pnum, partition numer
+#        psize, partition size (string) or "\*"
+#        ptype, eiter "primary", "logical" "extended" or "41"
+#        pflag, flags
+# Return: 0 if success, -1 else.
+sub do_partition ($$$$) {
+    my ($pnum, $psize, $ptype, $pflags) = @_ ;
+
+    if (!defined $pnum || !defined $psize || !defined $ptype 
+        || !defined $pflags) {
+        carp "ERROR: At least one invalid argument for the preparation ".
+             "of the partition";
+        return -1;
+    }
+
+    my $pid;
+    if ($$ptype eq "41") {
+        $pid = 41;
+        $ptype = "primary";
+    }
+    print AICONF "\t\t<part num=\"$pnum\" ";
+    print AICONF "size=\"$$psize\" ";
+    print AICONF "p_type=\"$$ptype\" ";
+    if($pid == 41) {
+        print AICONF "id=\"41\"";
+    }
+    if(defined($$pflags) && !($$pflags eq "")) {
+        print AICONF "flags=\"$$pflags\" ";
+    }
+    print AICONF "/>\n";
+
+    return 0;
+}
+
+
 
 # Create an autoinstallscript.conf file to be used
 # be used by SystemImager's mkautoinstallscript.
@@ -154,51 +191,102 @@ sub build_aiconf_file {
         print AICONF "\t<disk dev=\"$disk\" ";
         print AICONF "label_type=\"$DISKS{LABEL_TYPE}\" ";
         print AICONF "unit_of_measurement=\"$DISKS{UNITS}\">\n";
-        my $extparcreated=0;
-        my $extpartid = get_device_partition ($disk, "5");
-        # First do the primary partitions
-        # TODO: This will not work with gpt partitions.
-        foreach my $parnum (1..4) {
-            my $parname = get_device_partition ($disk, $parnum);
-            if (defined $DISKS{PARTITIONS}{$parname}) {
-                print AICONF "\t\t<part num=\"$DISKS{PARTITIONS}{$parname}{PNUM}\" ";
-                print AICONF "size=\"$DISKS{PARTITIONS}{$parname}{SIZE}\" ";
-                if ($DISKS{PARTITIONS}{$parname}{TYPE} == 5) {
-                    print AICONF "p_type=\"extended\" ";
-                    $extparcreated++;
+
+        my $has_logicals = 0;
+        my $extended_part_num;
+        my $highest_logical = 0;
+        # 1st, check for incompatible layouts if we use msdos partition table.
+        if ($DISKS{LABEL_TYPE} eq "msdos") {
+            my $primary_count = 0;
+            # Cycle thru partitions,; count primaries and see if we have 
+            # logicals
+            foreach my $partname ( @{$DISKS{DRIVES}{$disk}} ) {
+                if ($DISKS{PARTITIONS}{$partname}{PNUM} > 4) {
+                    $has_logicals++;
+                    if ($DISKS{PARTITIONS}{$partname}{PNUM} > $highest_logical) {
+                        $highest_logical = $DISKS{PARTITIONS}{$partname}{PNUM};
+                    }
                 } else {
-                    print AICONF "p_type=\"primary\" ";
+                    $primary_count++;
                 }
-                if ($DISKS{PARTITIONS}{$parname}{TYPE} == 41) {
-                    print AICONF "id=\"$DISKS{PARTITIONS}{$parname}{TYPE}\" ";
-                }
-                $flags = get_partition_flags ($parname, %DISKS);
-                if ($flags) {
-                    print AICONF "flags=\"$flags\" ";
-                }
-                print AICONF "/>\n";
-            } elsif ((! $extparcreated ) 
-                    && (defined $DISKS{PARTITIONS}{$extpartid}) ){
-                print AICONF "\t\t<part num=\"$parnum\" size=\"\*\" ";
-                print AICONF "p_type=\"extended\" ";
-                print AICONF "/>\n";
-                $extparcreated++;
             }
-        }
-        # Now the logical partitions
-        foreach my $parname (@{$DISKS{DRIVES}{$disk}}) {
-            if ($DISKS{PARTITIONS}{$parname}{PNUM} > 4) {
-                print AICONF "\t\t<part num=\"$DISKS{PARTITIONS}{$parname}{PNUM}\" ";
-                print AICONF "size=\"$DISKS{PARTITIONS}{$parname}{SIZE}\" ";
-                print AICONF "p_type=\"logical\" ";
-                $flags = get_partition_flags ($parname, %DISKS);
-                if ($flags) {
-                    print AICONF "flags=\"$flags\" ";
+
+            # Check if we have room for extended partition (if required)
+            if ($has_logicals > 0) {
+                # check 4 primary + extended impossible layout.
+                if ($primary_count == 4) {
+                    carp "ERROR: $DISKS{FILENAME} layout incompatible with ".
+                        "label_type=msdos. Use gpt or use less primary ".
+                        "partitions";
+                    return 1;
                 }
-                print AICONF "/>\n";
+                # Check that all logical partitions are contiguous or die.
+                if ($highest_logical != ($has_logicals + 4)) {
+                    carp "ERROR: $DISKS{FILENAME} layout incompatible with ".
+                        "label_type=msdos. Logical partitions (Part id > 4) ".
+                        "must be contiguous";
+                    return 1;
+                }
+                # Determine which partition device name is available for 
+                # extended partition (if required) cycle thru ids 1 to 4 and see
+                # if a slot is available.
+                foreach my $parnum (1..4) {
+                    my $partname = get_partition_device ($disk,$parnum);
+                    # If we find a slot
+                    if (! defined ($DISKS{PARTITIONS}{$partname})) { 
+                        $extended_part_num = $parnum ;
+                        last ;
+                    }
+                }
             }
+        } elsif (scalar @{$DISKS{DRIVES}{$disk}} > 128) {
+            # TODO: Handle less probable cases
+            carp "ERROR: $DISKS{FILENAME} layout incompatible with ".
+                "label_type=$DISKS{LABEL_TYPE}: partition count exceeded: ".
+                "max=128 (gpt)";
+            return 1;
         }
-        print AICONF "\t</disk>\n";
+
+        # Do all partitions at once. Be carefull when PNUM becomes > 4
+        my $partition_type;
+        my $size_star = 0;
+        foreach my $parname ( sort @{$DISKS{DRIVES}{$disk}} ) {
+            if (($DISKS{LABEL_TYPE} eq "msdos") 
+                && $DISKS{PARTITIONS}{$parname}{PNUM} > 4) {
+            # on msdos partition table, if pnum >4 we need to be carefull
+                if (defined($extended_part_num)) {
+                    # We need to create $extended_part_num (not yet created)
+                    if (do_partition ($extended_part_num, 
+                                    "\*",
+                                    "extended",
+                                    undef)) {
+                        carp "ERROR: Impossible to prepare a partition"
+                        return 1;
+                    }
+                    undef $extended_part_num; # Done, we won't go here again.
+                }
+                $partition_type = "logical" ; # msdos & PNUM > 4
+            } else {
+                $partition_type = "primary" ; # PNUM <= 4 or not msdos
+            }
+            if ("$DISKS{PARTITIONS}{$parname}{SIZE}" eq "\*") {
+                $size_star++;
+            }
+            if ($size_star > 1) {
+                carp "ERROR: $DISKS{FILENAME} layout problem: You cannot have ".
+                    "more than one partition size set to \"\*\"";
+                return 1;
+            }
+            $flags = get_partition_flags ($parname, %DISKS);
+            if (do_partition ($DISKS{PARTITIONS}{$parname}{PNUM},
+                    $DISKS{PARTITIONS}{$parname}{SIZE},
+                    $partition_type,
+                    $flags )) {
+                carp "ERROR: Impossible to create a partition";
+                return 1;
+            }
+            print AICONF "\t</disk>\n";
+        } # end foreach $disk
     }
 
     # Write RAID structures - EF -
