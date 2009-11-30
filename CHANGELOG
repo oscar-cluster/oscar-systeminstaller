@@ -1,8 +1,12 @@
 ------------------------------------------------------------
-System Installer v2.4.9 (not yet released)
+System Installer v2.4.9
 ------------------------------------------------------------
-    - Improve the help output of the mksiimage command.
-    - Continue to fix issues with CCISS controllers.
+    - Improve the help output of the mksiimage command (patch from Olivier 
+      Lahaye).
+    - Continue to fix issues with CCISS controllers (patch from Olivier
+      Lahaye).
+    - Improve the disk partitioning capability, e.g., support of GTP 
+      partitions (patch from Olivier Lahaye).
 
 ------------------------------------------------------------
 System Installer v2.4.8 
