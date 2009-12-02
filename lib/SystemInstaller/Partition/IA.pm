@@ -25,6 +25,14 @@ package SystemInstaller::Partition::IA;
 #                 Added RAID1 support. (c) 2005 NEC HPCE
 #                 Generalized to RAID0,1,5,6.
 
+# Copyright (c) 2009 CEA (Commissariat à l'Énergie Atomique)
+#                    Olivier Lahaye <olivier.lahaye@cea.fr>
+#                    All rights reserved
+
+# Copyright (c) 2009    Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
+#                       All rights reserved.
+
 use vars qw($VERSION);
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
