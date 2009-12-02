@@ -122,13 +122,12 @@ sub get_device_partition ($$) {
 # Input: pnum, partition numer
 #        psize, partition size (string) or "\*"
 #        ptype, eiter "primary", "logical" "extended" or "41"
-#        pflag, flags
+#        pflag, flags (can be undef, optional).
 # Return: 0 if success, -1 else.
 sub do_partition ($$$$) {
     my ($pnum, $psize, $ptype, $pflags) = @_ ;
 
-    if (!defined $pnum || !defined $psize || !defined $ptype 
-        || !defined $pflags) {
+    if (!defined $pnum || !defined $psize || !defined $ptype) {
         carp "ERROR: At least one invalid argument for the preparation ".
              "of the partition";
         return -1;
