@@ -261,14 +261,14 @@ sub build_aiconf_file {
         foreach my $parname ( sort @{$DISKS{DRIVES}{$disk}} ) {
             if (($DISKS{LABEL_TYPE} eq "msdos") 
                 && $DISKS{PARTITIONS}{$parname}{PNUM} > 4) {
-            # on msdos partition table, if pnum >4 we need to be carefull
+                # on msdos partition table, if pnum >4 we need to be carefull
                 if (defined($extended_part_num)) {
                     # We need to create $extended_part_num (not yet created)
                     if (do_partition ($extended_part_num, 
                                     "\*",
                                     "extended",
                                     undef)) {
-                        carp "ERROR: Impossible to prepare a partition"
+                        carp "ERROR: Impossible to prepare a partition";
                         return 1;
                     }
                     undef $extended_part_num; # Done, we won't go here again.
