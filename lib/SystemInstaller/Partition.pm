@@ -32,21 +32,19 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use base qw(Exporter);
 @EXPORT=qw(read_partition_info partition_setup change_disk_type);
 
-use FindBin qw($Bin);
-use lib "$Bin/../lib";
+use lib "/usr/lib/systeminstaller";
 use SIS::Image;
-use SIS::DB;
+use SIS::NewDB;
 use SystemInstaller::Log qw(verbose);
 use SystemInstaller::Partition::IA;
 use Data::Dumper;
 use Carp;
 
-
-sub read_partition_info {
 # Reads in the partition info from the user and converts it
-# to the %DISKS structure.
-# Input:        filehandle to the partition info (may be STDIN)
-# Output:       filled %DISKS structure.
+# # to the %DISKS structure.
+# # Input:        filehandle to the partition info (may be STDIN)
+# # Output:       filled %DISKS structure.
+sub read_partition_info ($$) {
         my ($fh)=shift;
         my $fn=shift;
         my %DISKS=();
@@ -260,7 +258,6 @@ sub change_disk_type {
 
 } #change_disk_type
 
-sub parse_dev {
 # Breaks a device into its components
 # Input:        Device name (eg /dev/hda1)
 # Output:       A hash with the following
@@ -271,12 +268,16 @@ sub parse_dev {
 #                   DLETTER     #Drive letter (a)
 #                   PARTNUM     #Part number (1)
 #               )
+sub parse_dev ($) {
         my %DEV=();
         $DEV{DEVICE}=shift;
+
+        print "Parsing $DEV{DEVICE}\n";
 
         # Get the drive,(eg hda or cciss/c0d0)
         $DEV{DRIVE}=$DEV{DEVICE};
         $DEV{DRIVE}=~s/\/dev\///;
+        $DEV{PARTNUM}=$DEV{DEVICE};
         if ($DEV{DRIVE}=~/c[0-9]+d[0-9]+p[0-9]*$/) {
             $DEV{DRIVE}=~s/p[0-9]*$//;
             # Get the partition number
@@ -284,7 +285,7 @@ sub parse_dev {
         } else {
             $DEV{DRIVE}=~s/[0-9]*$//;
             # Get the partition number
-            $DEV{PARTNUM}=~s/\/dev\/$DEV{DRIVE}//;
+            $DEV{PARTNUM}=~s/\/dev\/$DEV{DRIVE}*//;
         }
         # Get the drive type, (hd)
         $DEV{TYPE}=$DEV{DRIVE};
@@ -312,21 +313,22 @@ sub partition_setup {
               return 1;
         }
 
-	&verbose("Determining which routine to call based on architecture.");
-	if ($image->arch =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
-        	if (&SystemInstaller::Partition::IA::create_partition_file($image->location,%DISKS)) {
+	&verbose("Determining which routine to call based on architecture (".$image->{arch}.")");
+    print("Determining which routine to call based on architecture (".$image->{arch}.")");
+	if ($image->{arch} =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
+        	if (&SystemInstaller::Partition::IA::create_partition_file($image->{location}, %DISKS)) {
 			return 1;
 		}
-	} elsif ( ($image->arch =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
-		if (&SystemInstaller::Partition::IA::create_partition_file($image->location,%DISKS)) {
+	} elsif ( ($image->{arch} =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
+		if (&SystemInstaller::Partition::IA::create_partition_file($image->{location}, %DISKS)) {
 			return 1;
 		}
 	} else {
-		print STDERR "$image->arch is not a recognized architecture\n";
+		print STDERR "ERROR: $image->arch is not a recognized architecture\n";
 		return 1;
 	}
         &verbose("Writing updateclient exclude file");
-        unless (&write_exclude_file($image->location,%DISKS)) {
+        unless (&write_exclude_file($image->{location},%DISKS)) {
 		carp("Failed to write exclude file to image");
 		return 1;
         }
@@ -431,6 +433,9 @@ sub get_id {
     }
 
 } # get_id
+
+
+1;
 
 =head1 NAME
 
