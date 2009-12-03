@@ -124,10 +124,10 @@ if ($config->Add) {
     }
 
     &verbose("Performing partition set up.");
-    if (&partition_setup($config->name,%DISKS)) {
-            croak("Partition setup failed!");
+    if (SystemInstaller::Partition::partition_setup($config->name, %DISKS)) {
+        die ("ERROR: Partition setup failed!");
     } else {
-            exit 0;
+        exit 0;
     }
 } # Add
 

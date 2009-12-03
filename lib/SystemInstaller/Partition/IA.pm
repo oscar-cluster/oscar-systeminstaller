@@ -144,18 +144,18 @@ sub do_partition ($$$$) {
     }
 
     my $pid;
-    if ($$ptype eq "41") {
+    if ($ptype eq "41") {
         $pid = 41;
         $ptype = "primary";
     }
     print AICONF "\t\t<part num=\"$pnum\" ";
-    print AICONF "size=\"$$psize\" ";
-    print AICONF "p_type=\"$$ptype\" ";
+    print AICONF "size=\"$psize\" ";
+    print AICONF "p_type=\"$ptype\" ";
     if($pid == 41) {
         print AICONF "id=\"41\"";
     }
-    if(defined($$pflags) && !($$pflags eq "")) {
-        print AICONF "flags=\"$$pflags\" ";
+    if(defined($pflags) && !($pflags eq "")) {
+        print AICONF "flags=\"$pflags\" ";
     }
     print AICONF "/>\n";
 
@@ -309,7 +309,6 @@ sub build_aiconf_file {
                 return 1;
             }
             $flags = get_partition_flags ($parname, %DISKS);
-            print "Partition number: ".$DISKS{PARTITIONS}{$parname}{PNUM}."\n";
             if (!defined ($DISKS{PARTITIONS}{$parname}{PNUM})) {
                 my $data = Dumper $DISKS{PARTITIONS}{$parname};
                 carp "ERROR: partition number is not defined for: $data";

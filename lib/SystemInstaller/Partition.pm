@@ -272,8 +272,6 @@ sub parse_dev ($) {
         my %DEV=();
         $DEV{DEVICE}=shift;
 
-        print "Parsing $DEV{DEVICE}\n";
-
         # Get the drive,(eg hda or cciss/c0d0)
         $DEV{DRIVE}=$DEV{DEVICE};
         $DEV{DRIVE}=~s/\/dev\///;
@@ -297,7 +295,6 @@ sub parse_dev ($) {
         return %DEV;
 } #parse_dev
 
-sub partition_setup {
 # Create partition_file that includes the drive type, architecture, and
 #  partition information.  Then call architecture specific routines to create
 #  partition input file.
@@ -305,30 +302,31 @@ sub partition_setup {
 # Input:        image name, %DISKS structure
 # Returns:      1 if failure, 0 if ok
 #
+sub partition_setup {
+    my ($name, %DISKS) = @_;
+    
+    verbose ("Setting up a partition in image $name\n");
+    my @image = SIS::NewDB::list_image(name=>$name);
+    unless (scalar (@image) == 1) {
+        carp("ERROR: Image $name does not exist\n");
+        return 1;
+    }
 
-        my ($name,%DISKS) = @_;
-        my $image=list_image(name=>$name);
-        unless ($image) {
-              carp("Image $name does not exist\n");
-              return 1;
-        }
-
-	&verbose("Determining which routine to call based on architecture (".$image->{arch}.")");
-    print("Determining which routine to call based on architecture (".$image->{arch}.")");
-	if ($image->{arch} =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
-        	if (&SystemInstaller::Partition::IA::create_partition_file($image->{location}, %DISKS)) {
+	verbose("Determining which routine to call based on architecture (".$image[0]->{arch}.")");
+	if ($image[0]->{arch} =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
+        if (SystemInstaller::Partition::IA::create_partition_file($image[0]->{location}, %DISKS)) {
 			return 1;
 		}
-	} elsif ( ($image->{arch} =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
-		if (&SystemInstaller::Partition::IA::create_partition_file($image->{location}, %DISKS)) {
+	} elsif ( ($image[0]->{arch} =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
+		if (&SystemInstaller::Partition::IA::create_partition_file($image[0]->{location}, %DISKS)) {
 			return 1;
 		}
 	} else {
-		print STDERR "ERROR: $image->arch is not a recognized architecture\n";
+		print STDERR "ERROR: ".$image[0]->arch." is not a recognized architecture\n";
 		return 1;
 	}
         &verbose("Writing updateclient exclude file");
-        unless (&write_exclude_file($image->{location},%DISKS)) {
+        unless (&write_exclude_file($image[0]->{location},%DISKS)) {
 		carp("Failed to write exclude file to image");
 		return 1;
         }
