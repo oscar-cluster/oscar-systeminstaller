@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.10 (not yet released)
+System Installer v2.4.10 
 ------------------------------------------------------------
     - Clean up the code for the management of partitions within an image.
     - Fix a few issues when dealing with images' partitions.
