@@ -321,8 +321,8 @@ sub build_aiconf_file {
                 carp "ERROR: Impossible to create a partition";
                 return 1;
             }
-            print AICONF "\t</disk>\n";
-        } # end foreach $disk
+        } 
+        print AICONF "\t</disk>\n";
     }
 
     # Write RAID structures - EF -
