@@ -32,6 +32,7 @@ use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
 use SIS::NewDB;
+use OSCAR::Network;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
 use Net::Netmask;
@@ -78,9 +79,9 @@ open(OUTFILE,">$ofn") or croak("Could not open output file.");
 # Get some info about the local host.
 &verbose("Getting local host info.");
 my %HINFO;
-($HINFO{ip},$HINFO{bcast},$HINFO{mask})=&find_internal_ip($config->interface);
-my $block=new Net::Netmask ($HINFO{ip},$HINFO{mask});
-$HINFO{net}=$block->base();
+($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = find_internal_ip($config->interface);
+my $block = new Net::Netmask ($HINFO{ip},$HINFO{mask});
+$HINFO{net} = $block->base();
 
 $HINFO{host} = (uname)[1];
 if ($config->domain) {
@@ -94,12 +95,12 @@ if ($config->domain) {
 my %bootfile;
 if ($config->bootfile) {
     foreach (split(/,/,$config->bootfile)) {
-	my ($bname,$arch) = split(/:/);
-	if (!$arch) {
-	    $arch = `uname -m`;
+        my ($bname,$arch) = split(/:/);
+        if (!$arch) {
+            $arch = `uname -m`;
             chomp $arch;
-	}
-	$bootfile{$arch} = $bname;
+        }
+        $bootfile{$arch} = $bname;
     }
 }
 
@@ -110,22 +111,33 @@ my $dhcpdver=&dhcpd_version;
 my @machinelist = SIS::NewDB::list_client();
 my $adaplist = SIS::NewDB::list_adapter(undef);
 
-# collect all domain names
-# - first take those passed on the command line
-# - add domains of all defined machines
-my %all_domains;
-for my $dom (split(" ",$HINFO{domain})) {
-    $dom =~ s/^\.//;
-    next if ($dom eq "");
-    $all_domains{$dom} = 1;
-}
-foreach my $mach (@machinelist) {
-    if ($mach->{domainname}) {
-        my $k = $mach->{domainname};
-        $all_domains{$k} = 1;
+# On a private netwrok (rfc1918) it makes no sense to configure a
+# DNS entry as nodes will have no entry to a DNS server.
+# this would result with dns config on clients that will leads to
+# dns resolving atttempts and timeouts or errors.
+
+if (OSCAR::Network::is_head_nic_private()) {
+    undef $HINFO{domain};
+    undef $config->{nameservers};
+    &verbose("Headnode iface is rfc1918; dns config ignored");
+} else {
+    # collect all domain names
+    # - first take those passed on the command line
+    # - add domains of all defined machines
+    my %all_domains;
+    for my $dom (split(" ",$HINFO{domain})) {
+        $dom =~ s/^\.//;
+        next if ($dom eq "");
+        $all_domains{$dom} = 1;
     }
+    foreach my $mach (@machinelist) {
+        if ($mach->{domainname}) {
+            my $k = $mach->{domainname};
+            $all_domains{$k} = 1;
+        }
+    }
+    $HINFO{domain} = join(" ",keys(%all_domains));
 }
-$HINFO{domain} = join(" ",keys(%all_domains));
 
 &verbose("Printing file preamble");
 &preamble(%HINFO);
@@ -147,13 +159,13 @@ foreach my $adapter (@$adaplist){
 
 print OUTFILE "\t}\n}\n";
 &verbose("Adding other networks");
-my @INTS=&find_ints;
+my @INTS = &find_ints;
 foreach my $int (@INTS) {
-	unless (($int eq "lo")||($int =~ /:\d+$/)||($int eq $config->interface)){
-		my ($ip,$bcast,$mask)=&find_internal_ip($int);
+	unless (($int eq "lo") || ($int =~ /:\d+$/) || ($int eq $config->interface)) {
+		my ($ip,$bcast,$mask) = find_internal_ip($int);
 		$mask ||= "255.255.255.0"; # ensure non-null mask
-		my $block=new Net::Netmask ($ip,$mask);
-		my $net=$block->base();
+		my $block = new Net::Netmask ($ip,$mask);
+		my $net = $block->base();
 		print OUTFILE "\n# This entry ignores requests on $int...\n";
 		print OUTFILE "subnet $net netmask $mask {\n\tnot authoritative;\n}\n";
 	}
@@ -164,7 +176,7 @@ exit 0;
 
 sub preamble {
 	my %HINFO = @_;
-	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$idst)= localtime(time);
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$idst) = localtime(time);
 	$year=($year+1900);
 	$mon=($mon+1);
 	print OUTFILE <<PREAMBLE;
@@ -178,7 +190,9 @@ PREAMBLE
 	print OUTFILE "deny unknown-clients;\n";
 	print OUTFILE "option subnet-mask $HINFO{mask};\n";
 	print OUTFILE "option broadcast-address $HINFO{bcast};\n";
-	print OUTFILE "option domain-name \"$HINFO{domain}\";\n";
+    if ($HINFO{domain}) {
+	    print OUTFILE "option domain-name \"$HINFO{domain}\";\n";
+    }
 	if ($config->gateway) {
 		print OUTFILE "option routers ".$config->gateway.";\n";
 	}

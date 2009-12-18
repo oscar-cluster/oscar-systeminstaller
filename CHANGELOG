@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.4.11 (not yet released)
+------------------------------------------------------------
+    - Do not try to setup DNS within the DHCP configuration on a private
+      network (patch from Olivier Lahaye).
+
+------------------------------------------------------------
 System Installer v2.4.10 
 ------------------------------------------------------------
     - Clean up the code for the management of partitions within an image.
