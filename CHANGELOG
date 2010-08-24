@@ -3,6 +3,7 @@ System Installer v2.4.11 (not yet released)
 ------------------------------------------------------------
     - Do not try to setup DNS within the DHCP configuration on a private
       network (patch from Olivier Lahaye).
+    - Improve the management of the /etc/hosts when adding new clients.
 
 ------------------------------------------------------------
 System Installer v2.4.10 

@@ -109,6 +109,7 @@ sub hnamedev {
     }
 }
 
+# Return: 0 if success, -1 else.
 sub synchosts {
     my @delhosts=@_;
     my @machinelist = list_client();
@@ -127,78 +128,91 @@ sub synchosts {
         }
     }
 	&verbose("Syncing /etc/hosts/ to database.");
-	open (HOSTS,"/etc/hosts");
-	open (TMP,">/tmp/hosts.$$");
+#	open (HOSTS,"/etc/hosts");
+#	open (TMP,">/tmp/hosts.$$");
 	# First find all of the SIS entries and remove them.
-	&verbose("Removing old SIS entries");
-	my $below_line = 0;
-	while (<HOSTS>) {
-		my $found=0;
-		my ($ip,$lhost,$shost)=split;
-		if ($lhost && !$shost) {
-		    $shost = $lhost;
-		}
-                if ($_ =~ /.*managed by SIS.*/) {
-                        $found=1;
-			$below_line = 1;
-                }
-		for my $d (@devlist) {
-		    my $hname = hnamedev($d, $shost);
-		    if ($ADAPTERS{$d}{$hname}) {
-			$found=1;
-		    }
-		}
-		if ($APPLIANCES{$shost}) {
-		    $found=1;
-		}
-		foreach my $mach (@delhosts) {
-			if ($shost eq $mach) {
-				$found=1;
-			}
-		}
-		unless ($found || $below_line) {
-			unless ($_ =~ /^$/ || $_ =~ /^\#/) {
-				print TMP $_;
-			}
-		}
-	}
-	close(HOSTS);
+#	&verbose("Removing old SIS entries");
+#	my $below_line = 0;
+#	while (<HOSTS>) {
+#		my $found=0;
+#		my ($ip,$lhost,$shost)=split;
+#		if ($lhost && !$shost) {
+#		    $shost = $lhost;
+#		}
+#                if ($_ =~ /.*managed by SIS.*/) {
+#                        $found=1;
+#			$below_line = 1;
+#                }
+#		for my $d (@devlist) {
+#		    my $hname = hnamedev($d, $shost);
+#		    if ($ADAPTERS{$d}{$hname}) {
+#			$found=1;
+#		    }
+#		}
+#		if ($APPLIANCES{$shost}) {
+#		    $found=1;
+#		}
+#		foreach my $mach (@delhosts) {
+#			if ($shost eq $mach) {
+#				$found=1;
+#			}
+#		}
+#		unless ($found || $below_line) {
+#			unless ($_ =~ /^$/ || $_ =~ /^\#/) {
+#				print TMP $_;
+#			}
+#		}
+#	}
+#	close(HOSTS);
 
 	# Now put the entries that are in the DB in the file.
 	&verbose("Re-adding currently defined machines.");
-
-	print TMP "\n# These entries are managed by SIS, please don't modify them.\n";
+    my @data = ();
+    my $s;
+    require OSCAR::FileUtils;
 	foreach my $dev (@devlist) {
-	    print TMP "\n# $dev addresses\n";
 	    foreach my $mach (sortclients @machinelist) {
-                my $name=$mach->{name};
+        my $name=$mach->{name};
 		if ($dev eq "eth0") {
 		    if ($ADAPTERS{$dev}{$name}) {
-	                printf TMP "%-20.20s %s\t%s\n",
-			$ADAPTERS{$dev}{$name}, $mach->hostname, $name;
+                 $s = sprintf ("%-20.20s %s\t%s",
+                              $ADAPTERS{$dev}{$name},
+                              $mach->hostname,
+                              $name);
+                 push (@data, $s);
 		    }
 		} else {
 		    my $dname = devhname($dev, $name);
 		    if ($ADAPTERS{$dev}{$name}) {
-	                printf TMP "%-20.20s %s\n",
-			$ADAPTERS{$dev}{$name}, $dname;
+	            $s = sprintf ("%-20.20s %s",
+			                  $ADAPTERS{$dev}{$name},
+                              $dname);
+                push (@data, $s);
 		    }
 		}
 	    }
 	}
 	if (scalar(keys(%APPLIANCES))) {
-	    print TMP "\n# Appliance IPs\n";
+#	    print TMP "\n# Appliance IPs\n";
 	    foreach my $appl (sort(keys(%APPLIANCES))) {
-		printf TMP "%-20.20s %s\n", $APPLIANCES{$appl}, $appl;
+		    $s = fprintf ("%-20.20s %s", $APPLIANCES{$appl}, $appl);
+            push (@data, $s);
 	    }
 	}
-	close(TMP);
-	&verbose("Moving temp file to actual location.");
-	move("/tmp/hosts.$$","/etc/hosts");
+    if (OSCAR::FileUtils::replace_block_in_file ("/etc/hosts",
+                                                 "OSCAR hosts",
+                                                 \@data)) {
+        carp "ERROR: Impossible to update the hosts in /etc/hosts";
+        return -1;
+    }
+#	close(TMP);
+#	&verbose("Moving temp file to actual location.");
+#	move("/tmp/hosts.$$","/etc/hosts");
 	&verbose("Copying hosts file to scripts directory.");
         my $aidir=$main::config->autoinstall_script_dir;
         copy("/etc/hosts",$aidir);
 	
+    return 0;
 } #synchosts
 
 
