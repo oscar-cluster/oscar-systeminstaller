@@ -63,6 +63,7 @@ use strict;
 # those parameters during the different phases of the GUI.
 use vars qw ($image_params);
 
+# Return: 0 if success, 1 else.
 sub createimage_basic_window ($%) {
     my $config = SystemInstaller::Utils::init_si_config();
 
@@ -79,13 +80,13 @@ sub createimage_basic_window ($%) {
     #
     my @images = &listimages;
     if( grep {$vars{imgname} eq $_} @images ) {
-    my $last = 0;
-    foreach (@images) {
-        if( /^\Q$vars{imgname}\E(\d+)$/ ) {
-        $last = $1 if $1 > $last;
+        my $last = 0;
+        foreach (@images) {
+            if( /^\Q$vars{imgname}\E(\d+)$/ ) {
+                $last = $1 if $1 > $last;
+            }
         }
-    }
-    $vars{imgname} .= $last + 1;
+        $vars{imgname} .= $last + 1;
     }
 
     my %defaults = %vars;
@@ -105,11 +106,13 @@ sub createimage_basic_window ($%) {
     my $osid = $os->{distro}."-".$os->{distro_version}."-".$os->{arch};
     my $i = 0;
     while ($i < scalar(@distros)) {
-        print "$i: $distros[$i]\n";
-        if ($distros[$i] eq $osid) {
-            my $d = $distros[$i];
-            delete ($distros[$i]);
-            unshift (@distros, $d);
+        if (OSCAR::Utils::is_a_valid_string ($distros[$i])) {
+            print "$i: $distros[$i]\n";
+            if ($distros[$i] eq $osid) {
+                my $d = $distros[$i];
+                delete ($distros[$i]);
+                unshift (@distros, $d);
+            }
         }
         $i++;
     }
@@ -160,19 +163,30 @@ sub createimage_basic_window ($%) {
     # Select the target distribution
     #
     $labeltext = "Target Distribution";
-    $vars{distro} = $distros[0];
+    my $target_distro = undef;
+
+
+    # We parse the array of distros to remove undefined values
+    my @available_distros = ();
+    foreach my $elt (@distros) {
+        if (OSCAR::Utils::is_a_valid_string ($elt)) {
+            push (@available_distros, $elt);
+        }
+    }
+
+    $vars{distro} = $available_distros[0];
     my $label2 = $image_window->Label(-text => "Target Distribution",
                       -anchor => "w");
     my $default = $vars{distro};
 
     my $distrooption = $image_window->Optionmenu(
-        -options => \@distros,
+        -options => \@available_distros,
         -command => sub {
             my $dist = shift;
             print "Selection: $dist\n";
             $vars{'distro'} = $dist;
         },
-        -variable => \$vars{distro});
+        -variable => \$vars{'distro'});
     $distrooption->setOption($default) if $default;
 
     my @morewidgets2 = helpbutton($image_window,
