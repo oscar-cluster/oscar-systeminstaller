@@ -1,5 +1,5 @@
 ------------------------------------------------------------
-System Installer v2.4.11 (not yet released)
+System Installer v2.4.11
 ------------------------------------------------------------
     - Do not try to setup DNS within the DHCP configuration on a private
       network (patch from Olivier Lahaye).
