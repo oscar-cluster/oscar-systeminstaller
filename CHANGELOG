@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.4.12 (not yet released)
+------------------------------------------------------------
+    - Make some error messages more explicit.
+
+------------------------------------------------------------
 System Installer v2.4.11
 ------------------------------------------------------------
     - Do not try to setup DNS within the DHCP configuration on a private

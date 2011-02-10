@@ -37,6 +37,7 @@ use strict;
 
 @EXPORT = qw(addclients_window);
 
+my $log_file = "/var/log/oscar/oscar_wizard.log";
 
 sub addclients_window {
     my $config = SystemInstaller::Utils::init_si_config();
@@ -236,7 +237,7 @@ sub run_addclients {
             or (carp("Couldn't run postinstall"),
                 error_window($window,"There was an error running the post ".
                                      "addclients script, please check your ".
-                                     "logs for more info"),
+                                     "logs for more info (usually $log_file)"),
                 $window->Unbusy(),
                 return undef);
     }
@@ -246,7 +247,7 @@ sub run_addclients {
             or (carp("Couldn't run postinstall"),
                 error_window($window,"There was an error running the post ".    
                                      "addclients script, please check your ".
-                                     "logs for more info"),
+                                     "logs for more info (usually $log_file)"),
                 $window->Unbusy(),
                 return undef);
     }
