@@ -163,11 +163,17 @@ my @INTS = &find_ints;
 foreach my $int (@INTS) {
 	unless (($int eq "lo") || ($int =~ /:\d+$/) || ($int eq $config->interface)) {
 		my ($ip,$bcast,$mask) = find_internal_ip($int);
-		$mask ||= "255.255.255.0"; # ensure non-null mask
-		my $block = new Net::Netmask ($ip,$mask);
-		my $net = $block->base();
-		print OUTFILE "\n# This entry ignores requests on $int...\n";
-		print OUTFILE "subnet $net netmask $mask {\n\tnot authoritative;\n}\n";
+        if ( $ip =~ /^(?:\s|\t)*$/ ) {
+            # interface not configured ($ip is empty string)
+            print OUTFILE "\n# Interface $int is not configured\n";
+        } else {
+            $mask ||= "255.255.255.0"; # ensure non-null mask
+            my $block = new Net::Netmask ($ip,$mask);
+            my $net = $block->base();
+            print OUTFILE "\n# This entry ignores requests on $int...\n";
+            print OUTFILE "subnet $net netmask $mask ".
+                          "{\n\tnot authoritative;\n}\n";
+        }
 	}
 }
 close(OUTFILE);
@@ -204,7 +210,8 @@ PREAMBLE
 		print OUTFILE "option option-143 \"9000\"; # Also for flamethrower\n";
 	}
 	if ($dhcpdver >= 3) {
-		print OUTFILE "ddns-update-style none; # For dhpcd version 3\n";
+		print OUTFILE  "ddns-update-style none; ".
+                       "# For dhpcd version 3 and higher\n";
 	}
 	print OUTFILE "\n";
 
@@ -230,7 +237,8 @@ sub find_ints {
 sub dhcpd_version {
         # Gets the version number of dhcpd.
         my $vstring=`/usr/sbin/dhcpd --version 2>&1`;
-        my ($stuff,$version)=split(/-V/,$vstring);
+        # handles dhcp-V3.x and dhcp-4.x formats (no V).
+        my ($version) = ($vstring =~ /\d+(?:\.\d+)+/g);
         my ($major,$minor)=split(/\./,$version);
         return $major;
 } # dhcpd_version        
@@ -238,7 +246,7 @@ sub dhcpd_version {
 sub find_internal_ip {
     my $interface = shift;
     # normally I hate sub processes, but for this I make an exception
-    my $string = qx/\/sbin\/ifconfig $interface | grep inet/;
+    my $string = qx/LC_ALL=C \/sbin\/ifconfig $interface | grep inet/;
 
     if($string =~ /addr:([\d\.]+).*cast:([\d\.]+).*ask:([\d\.]+)/) {
         return $1,$2,$3;
