@@ -37,13 +37,19 @@ sub footprint {
 # Look at a directory and determine if it looks like rpms.
 # Input:        Directory name
 # Returns:      Boolean of match
-	my $class=shift;
-        my $imgdir=shift;
+    my $class=shift;
+    my $imgdir=shift;
 
-        if (-e "$imgdir/boot/") {
-                return 1;
-        }
-        return 0;
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($imgdir,"/bin/arch");
+    if ($arch =~ m/(x86_64|i386)/) {
+        return 1;
+    }
+
+    #if (-e "$imgdir/boot/") { # Bad test; dir also exists on other systems.
+    #        return 1;
+    #}
+
+    return 0;
 
 } #footprint
 

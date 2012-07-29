@@ -39,12 +39,19 @@ sub footprint {
 # Look at a directory and determine if it looks like rpms.
 # Input:        Package path, image path
 # Returns:      Boolean of match
-	my $class=shift;
-        my $imgpath=shift;
-        if (-e "$imgpath/boot/efi") {
-                        return 1;
-        }
-        return 0;
+    my $class=shift;
+    my $imgdir=shift;
+
+    # determine architecture (using OS_Detect)
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($imgdir,"/bin/arch");
+#    if (-e "$imgpath/boot/efi") { # OL:bad test: efi is also available on x86_64 systems.
+#       return 1;
+#    }
+    if ($arch eq "ia64") {
+        return 1;
+    }
+
+    return 0;
 
 } #footprint
 

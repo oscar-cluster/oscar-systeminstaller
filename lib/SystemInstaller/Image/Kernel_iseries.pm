@@ -38,13 +38,18 @@ sub footprint {
 # Look at a directory and determine if it looks like rpms.
 # Input:        Directory name
 # Returns:      Boolean of match
-	my $class=shift;
-        my $imgdir=shift;
+    my $class=shift;
+    my $imgdir=shift;
 
-        if (-d "/proc/iSeries") {
-                return 1;
-        }
-        return 0;
+    my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($imgdir,"/bin/arch");
+    if ($arch eq "ppc64") {
+        return 1;
+    }
+    #if (-d "/proc/iSeries") { # OL:Bad test: if head is an iSeries, doesn't iplies image is iSeries as well
+    #        return 1;
+    #}
+
+    return 0;
 
 } #footprint
 

@@ -6,6 +6,7 @@ System Installer v2.4.12 (not yet released)
       Lahaye for the RHEL6 support).
     - Add the support for initramfs (path from Olivier Lahaye
       for the RHEL6 support).
+    - Fix the detection of the kernel on CentOS 6.
 
 ------------------------------------------------------------
 System Installer v2.4.11

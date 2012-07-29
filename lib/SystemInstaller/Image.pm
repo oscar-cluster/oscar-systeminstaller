@@ -54,9 +54,13 @@ use Carp;
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
+# OL: Kernel detection is using OS_Detect on $imagepath/bin/ach file in
+# order to guess the image architecture. This is stupid as we have the info
+# in OSCAR database. There are no possible reasons to find a different arch
+# from what is stated in the database...
 use SystemInstaller::Image::Kernel_x86;
 use SystemInstaller::Image::Kernel_ia64;
-use SystemInstaller::Image::Kernel_iseries;
+use SystemInstaller::Image::Kernel_iseries; # Should be Kernel_ppc64;
 
 use SystemInstaller::Log qw(verbose get_verbose);
 
@@ -71,7 +75,7 @@ sub init_image {
 	mkpath(["$root/etc/systemimager/partitionschemes"]);
 	mkpath(["$root/etc/systemconfig"]);
 	# Check that something worked.
-	unless (-d "$root/usr/lib" ){
+	unless (-d "$root/etc/systemconfig" ){
 		return 1;
 	}
 	return 0;
