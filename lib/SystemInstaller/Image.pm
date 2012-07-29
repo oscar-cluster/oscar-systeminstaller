@@ -138,7 +138,8 @@ sub find_initrd ($$) {
     opendir (DIR, "$imagepath/boot")
         or (carp "ERROR: Could not read directory $imagepath!", return undef);
     for my $f (readdir DIR) {
-        if ($f =~ /initrd(.*)$label(.*)/) {
+        # initrd or initramfs must be matched.
+        if ($f =~ /initr(.*)$label(.*)/) {
             closedir (DIR);
             return "/boot/$f";
         }
