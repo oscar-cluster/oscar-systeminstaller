@@ -1,6 +1,7 @@
 ------------------------------------------------------------
 System Installer v2.4.12 (not yet released)
 ------------------------------------------------------------
+    - Add missing nodes infos required by oscar and add GPU support.
     - Make some error messages more explicit.
     - Fix issues with newer version of DHCP (patch from Olivier
       Lahaye for the RHEL6 support).

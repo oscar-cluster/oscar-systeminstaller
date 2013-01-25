@@ -112,11 +112,14 @@ my %sis2oda = (
                     name => "Nodes.name",
 #                     route => "Networks.gateway:Nics.node_id=Nodes.id AND Networks.n_id=Nics.network_id",
                     hostname => "Nodes.hostname",
-#                     domainname => "Nodes.dns_domain",
+                    # domainname required by SystemInstaller::Image::get_machine_listing()
+                    domainname => "Nodes.dns_domain",
 #                     arch => "Images.architecture:Nodes.image_id=Images.id",
                     imagename => "Images.name:Images.id=Nodes.image_id",
 #                     name => "Nodes.name",
-#                     proccount => "Nodes.cpu_num",
+                    # proccount required by SystemInstaller::Image::get_machine_listing() and torque api-post-deploy
+                    proccount => "Nodes.cpu_num",
+                    gpucount => "Nodes.gpu_num",
                 },
            );
 

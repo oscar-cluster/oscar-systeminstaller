@@ -58,6 +58,7 @@ sub get_machine_listing {
                                       HOST => $machine->{hostname},
                                       DOMAIN => $machine->{domainname},
                                       NUM_PROCS => $machine->{proccount},
+                                      NUM_GPUS => $machine->{gpucount},
                                       IPADDR => @$adapter[0]->{ip}
                                      };
     }

@@ -125,6 +125,8 @@ fi
 
 
 %changelog
+* Wed Nov 28 2012 Olivier Lahaye <olivier.lahaye@cea.fr>
+- New upstream release.
 * Wed Oct 07 2009 Geoffroy Vallee <valleegr@ornl.gov> 
 - Force the installation of Perl modules in /usr/lib on x86_64 platforms rather
   than /usr/lib64 since the code is expecting them in /usr/lib.
