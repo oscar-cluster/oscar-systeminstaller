@@ -79,7 +79,8 @@ open(OUTFILE,">$ofn") or croak("Could not open output file.");
 # Get some info about the local host.
 &verbose("Getting local host info.");
 my %HINFO;
-($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = find_internal_ip($config->interface);
+#($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = find_internal_ip($config->interface);
+($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = OSCAR::Network::interface2ip($config->interface);
 my $block = new Net::Netmask ($HINFO{ip},$HINFO{mask});
 $HINFO{net} = $block->base();
 
@@ -162,7 +163,8 @@ print OUTFILE "\t}\n}\n";
 my @INTS = &find_ints;
 foreach my $int (@INTS) {
 	unless (($int eq "lo") || ($int =~ /:\d+$/) || ($int eq $config->interface)) {
-		my ($ip,$bcast,$mask) = find_internal_ip($int);
+		# my ($ip,$bcast,$mask) = find_internal_ip($int);
+		my ($ip,$bcast,$mask) = OSCAR::Network::interface2ip($int);
         if ( $ip =~ /^(?:\s|\t)*$/ ) {
             # interface not configured ($ip is empty string)
             print OUTFILE "\n# Interface $int is not configured\n";
@@ -243,16 +245,16 @@ sub dhcpd_version {
         return $major;
 } # dhcpd_version        
 
-sub find_internal_ip {
-    my $interface = shift;
-    # normally I hate sub processes, but for this I make an exception
-    my $string = qx/LC_ALL=C \/sbin\/ifconfig $interface | grep inet/;
-
-    if($string =~ /addr:([\d\.]+).*cast:([\d\.]+).*ask:([\d\.]+)/) {
-        return $1,$2,$3;
-    }
-    return undef;
-} #find_internal_ip
+#sub find_internal_ip {
+#    my $interface = shift;
+#    # normally I hate sub processes, but for this I make an exception
+#    my $string = qx/LC_ALL=C \/sbin\/ifconfig $interface | grep inet/;
+#
+#    if($string =~ /addr:([\d\.]+).*cast:([\d\.]+).*ask:([\d\.]+)/) {
+#        return $1,$2,$3;
+#    }
+#    return undef;
+#} #find_internal_ip
 
 sub write_appl_entry {
 	my ($adapter) = @_;
