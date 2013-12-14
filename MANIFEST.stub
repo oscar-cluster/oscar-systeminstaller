@@ -55,8 +55,8 @@ lib/SystemInstaller/Tk/Image.pm
 lib/SystemInstaller/Tk/GetImage.pm
 lib/SystemInstaller/Tk/Help.pm
 lib/SystemInstaller/Tk/VdiskPreinst.pm
+lib/SystemInstaller/Tk/SISTree.pm
 lib/SystemInstaller/Utils.pm
-lib/Tk/SISTree.pm
 lib/SIS/Component.pm
 lib/SIS/Client.pm
 lib/SIS/Adapter.pm

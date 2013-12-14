@@ -1,4 +1,4 @@
-package Tk::SISTree;
+package SystemInstaller::Tk::SISTree;
 
 use vars qw($VERSION);
 $VERSION = '3.019'; # $Id$

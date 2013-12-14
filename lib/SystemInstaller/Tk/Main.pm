@@ -23,8 +23,8 @@ use SystemInstaller::Tk::Image qw(createimage_window add2rsyncd delfromrsyncd);
 use SystemInstaller::Tk::GetImage qw(creategetimage_window);
 use SystemInstaller::Tk::AddClients qw(addclients_window);
 use SystemInstaller::Tk::UpdateClient qw(updateclient_window);
+use SystemInstaller::Tk::SISTree; # My fun SIS Tree Widget
 use SystemInstaller::Env qw(get_version);
-use Tk::SISTree; # My fun SIS Tree Widget
 use SIS::Image;
 use SIS::Client;
 use SIS::Adapter;

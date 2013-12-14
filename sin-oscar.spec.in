@@ -22,7 +22,6 @@ Vendor: 		http://oscar.openclustergroup.org
 Packager: 		OSCAR developer team
 Prefix: 		%{prefix}
 #Buildroot: 		$RPM_BUILD_ROOT
-AutoReqProv: 		no
 Provides: 		systeminstaller = %{version}
 
 %package x11
@@ -36,7 +35,6 @@ Vendor: http://oscar.openclustergroup.org
 Packager: OSCAR developer team
 Prefix: %{prefix}
 Buildroot: /var/tmp/%{name}-%{version}-root
-AutoReqProv: no
 Provides: systeminstaller-x11 = %{version}
 
 %description
@@ -106,7 +104,6 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/systeminstaller/images/*
 %doc %{_mandir}/man1/tksis*
 %{libdir}/systeminstaller/SystemInstaller/Tk/*
-%{libdir}/systeminstaller/Tk/*
 
 %post
 for i in client image adapter; do
