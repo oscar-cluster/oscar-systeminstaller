@@ -57,13 +57,13 @@ lib/SystemInstaller/Tk/Help.pm
 lib/SystemInstaller/Tk/VdiskPreinst.pm
 lib/SystemInstaller/Tk/SISTree.pm
 lib/SystemInstaller/Utils.pm
+lib/SystemInstaller/Util/IP.pm
 lib/SIS/Component.pm
 lib/SIS/Client.pm
 lib/SIS/Adapter.pm
 lib/SIS/Image.pm
 lib/SIS/DB.pm
 lib/SIS/NewDB.pm
-lib/Util/IP.pm
 t/package_packmansmart.t
 t/package.t
 t/env.t

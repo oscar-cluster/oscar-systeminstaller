@@ -30,7 +30,7 @@
 use strict;
 use vars qw($config $VERSION);
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::NewDB;
 use SystemInstaller::Partition;

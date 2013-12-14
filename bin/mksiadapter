@@ -25,7 +25,7 @@
 use strict;
 use vars qw($config $VERSION);
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
@@ -33,7 +33,7 @@ use SIS::DB;
 use SystemInstaller::Env;
 use SystemInstaller::Machine qw(synchosts linkscript);
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
-use Util::IP;
+use SystemInstaller::Util::IP;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);

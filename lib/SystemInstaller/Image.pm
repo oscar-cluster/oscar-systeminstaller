@@ -27,7 +27,7 @@ package SystemInstaller::Image;
 
 
 use strict;
-use lib "/usr/lib/systeminstaller/";
+#use lib "/usr/lib/systeminstaller";
 
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);

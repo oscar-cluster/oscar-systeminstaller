@@ -32,6 +32,9 @@ Contributors to the OSCAR specific version:
   - bugfixes
 * Bernard Li <bli@bcgsc.ca>
   - bugfixes
+* Olivier Lahaye <olivier.lahaye@cea.fr>
+  - Add GPU support
+  - Migration to INSTALLDIRS=vendor
 * many others from the OSCAR Team
 
 ========================================================================

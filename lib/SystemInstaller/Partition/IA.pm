@@ -39,12 +39,12 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use strict;
 use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
 use Exporter;
-use lib "/usr/lib/systemconfig";
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systemconfig";
+#use lib "/usr/lib/systeminstaller";
 use SystemInstaller::Log qw(verbose); 
 use SystemInstaller::Image;
 use SIS::NewDB;
-use Initrd::Generic;
+use SystemConfig::Initrd::Generic;
 use Data::Dumper;
 use Carp;
  

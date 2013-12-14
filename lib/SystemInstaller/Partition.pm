@@ -32,7 +32,7 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 use base qw(Exporter);
 @EXPORT=qw(read_partition_info partition_setup change_disk_type);
 
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::NewDB;
 use SystemInstaller::Log qw(verbose);

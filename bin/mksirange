@@ -36,7 +36,7 @@ use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use SystemInstaller::Machine qw(linkscript synchosts);
 use SystemInstaller::Utils;
-use Util::IP;
+use SystemInstaller::Util::IP;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);

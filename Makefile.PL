@@ -1,10 +1,10 @@
 use ExtUtils::MakeMaker;
-use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
+#use lib '/usr/local/lib/systemimager/perl','/usr/lib/systemimager/perl';
 
 # The global version is stored here so that it can be used by 
 # the man page string in rewriting POD2MAN_EXE
 
-my $version = "2.4.11";
+my $version = "2.4.12";
 my $release = "1";
 my $releasex = "1";
 
@@ -109,8 +109,8 @@ WriteMakefile(
                 bin/scconf_tool
                 bin/scconf_kernel 
 				)],
-              'INSTALLBIN' => "/usr/bin",
-              'INSTALLSITELIB' => "/usr/lib/systeminstaller",
+#              'INSTALLBIN' => "/usr/bin",
+#              'INSTALLSITELIB' => "/usr/lib/systeminstaller",
               'PREREQ_PM' => {
 			      MLDBM => '2',
                               AppConfig => '1.52',

@@ -36,7 +36,7 @@ use strict;
 use vars qw($config $VERSION);
 
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
-use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
+#use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
 use File::Basename;
 use OSCAR::Utils;
 use SIS::NewDB;

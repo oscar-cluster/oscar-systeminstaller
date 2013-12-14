@@ -26,8 +26,8 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 
 use strict;
 use vars qw($config);
-use lib "/usr/lib/systeminstaller";
-use lib "/usr/lib/systemconfig";
+#use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systemconfig";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
@@ -35,7 +35,7 @@ use SIS::NewDB;
 use OSCAR::Network;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose);
-use Net::Netmask;
+use SystemConfig::Net::Netmask;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);
@@ -81,7 +81,7 @@ open(OUTFILE,">$ofn") or croak("Could not open output file.");
 my %HINFO;
 #($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = find_internal_ip($config->interface);
 ($HINFO{ip},$HINFO{bcast},$HINFO{mask}) = OSCAR::Network::interface2ip($config->interface);
-my $block = new Net::Netmask ($HINFO{ip},$HINFO{mask});
+my $block = new SystemConfig::Net::Netmask ($HINFO{ip},$HINFO{mask});
 $HINFO{net} = $block->base();
 
 $HINFO{host} = (uname)[1];
@@ -170,7 +170,7 @@ foreach my $int (@INTS) {
             print OUTFILE "\n# Interface $int is not configured\n";
         } else {
             $mask ||= "255.255.255.0"; # ensure non-null mask
-            my $block = new Net::Netmask ($ip,$mask);
+            my $block = new SystemConfig::Net::Netmask ($ip,$mask);
             my $net = $block->base();
             print OUTFILE "\n# This entry ignores requests on $int...\n";
             print OUTFILE "subnet $net netmask $mask ".

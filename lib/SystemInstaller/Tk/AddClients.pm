@@ -21,7 +21,7 @@ package SystemInstaller::Tk::AddClients;
 
 use base qw(Exporter);
 use vars qw(@EXPORT %oldvars);
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use Data::Dumper;
 use AppConfig;
 use POSIX;

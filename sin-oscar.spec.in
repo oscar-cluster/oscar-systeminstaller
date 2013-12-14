@@ -53,15 +53,28 @@ System Installer Perl Tk User Interface
 
 # No configure, no make, just copy files to the output dir.
 %build
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+%{__perl} Makefile.PL INSTALLDIRS=vendor
+
+%{__make} %{?_smp_mflags}
+
+#mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
+#mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 # DO NOT USE %{_libdir}, this will install the libraries in /usr/lib which will create issues on RHEL-5!!!!!!
-perl Makefile.PL PREFIX=$RPM_BUILD_ROOT%{prefix} INSTALLSITELIB=$RPM_BUILD_ROOT%{libdir}/systeminstaller INSTALLMAN1DIR=$RPM_BUILD_ROOT%{_mandir}/man1 INSTALLMAN3DIR=$RPM_BUILD_ROOT%{_mandir}/man3
-make
-#make test
-make install
-rm -rf $RPM_BUILD_ROOT%{libdir}/systeminstaller/auto*
-rm -f $RPM_BUILD_ROOT%{_sharedstatedir}/sis/*
+#perl Makefile.PL PREFIX=$RPM_BUILD_ROOT%{prefix} INSTALLSITELIB=$RPM_BUILD_ROOT%{libdir}/systeminstaller INSTALLMAN1DIR=$RPM_BUILD_ROOT%{_mandir}/man1 INSTALLMAN3DIR=$RPM_BUILD_ROOT%{_mandir}/man3
+#perl Makefile.PL 
+#make
+
+%check
+#{__make} test
+
+%install
+%{__make} install DESTDIR=$RPM_BUILD_ROOT
+
+# Remove garbage.
+rm -f ${RPM_BUILD_ROOT}%perl_archlib/perllocal.pod
+rm -rf ${RPM_BUILD_ROOT}%perl_vendorarch/auto
+#rm -rf $RPM_BUILD_ROOT%{libdir}/systeminstaller/auto*
+#rm -f $RPM_BUILD_ROOT%{_sharedstatedir}/sis/*
 
 %clean
 #rm -fr $RPM_BUILD_DIR/%{name}-%{version}
@@ -69,28 +82,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc README 
-%doc CHANGELOG
-%doc COPYING
-%doc INSTALL
-%doc samples/systeminstaller.conf
-%doc samples/disktable
+%doc README CHANGELOG COPYING INSTALL samples/systeminstaller.conf samples/disktable
+%{_mandir}/man1/mk*
+%{_mandir}/man1/SIS*
+%{_mandir}/man5/systeminstaller*
+%{_mandir}/man3/SIS*
+%{_mandir}/man3/SystemInstaller::*
 %{prefix}/bin/mk*
 %{prefix}/bin/scconf*
-%doc %{_mandir}/man1/mk*
-%doc %{_mandir}/man1/SIS*
-%doc %{_mandir}/man5/systeminstaller*
-%doc %{_mandir}/man3/SIS*
-%doc %{_mandir}/man3/SystemInstaller::*
-%{libdir}/systeminstaller/SIS
-%{libdir}/systeminstaller/Util
-%{libdir}/systeminstaller/SystemInstaller/*pm
-%{libdir}/systeminstaller/SystemInstaller/Package
-%{libdir}/systeminstaller/SystemInstaller/PackageBest
-%{libdir}/systeminstaller/SystemInstaller/Image
-%{libdir}/systeminstaller/SystemInstaller/Partition
-%dir %{libdir}/systeminstaller
-%dir %{libdir}/systeminstaller/SystemInstaller
+%{perl_vendorlib}/SIS
+%dir %{perl_vendorlib}/SystemInstaller
+%{perl_vendorlib}/SystemInstaller/Util
+%{perl_vendorlib}/SystemInstaller/*pm
+%{perl_vendorlib}/SystemInstaller/Package
+%{perl_vendorlib}/SystemInstaller/PackageBest
+%{perl_vendorlib}/SystemInstaller/Image
+%{perl_vendorlib}/SystemInstaller/Partition
 %dir /etc/systeminstaller
 %dir /var/lib/sis/
 %config /etc/systeminstaller/*
@@ -98,12 +105,10 @@ rm -rf $RPM_BUILD_ROOT
 %files x11
 %defattr(-,root,root)
 %{prefix}/bin/tksis
-%dir %{libdir}/systeminstaller/SystemInstaller/Tk
-%dir %{libdir}/systeminstaller/Tk
+%{perl_vendorlib}/SystemInstaller/Tk
 %dir /usr/share/systeminstaller/images
 /usr/share/systeminstaller/images/*
 %doc %{_mandir}/man1/tksis*
-%{libdir}/systeminstaller/SystemInstaller/Tk/*
 
 %post
 for i in client image adapter; do
