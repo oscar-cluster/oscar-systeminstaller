@@ -1,0 +1,6 @@
+etc/systeminstaller/tksis.conf
+usr/bin/tksis
+usr/share/man/man1/tksis.1*
+usr/share/perl5/SystemInstaller/Tk
+usr/share/systeminstaller/images/image.xpm
+usr/share/systeminstaller/images/monitor.xpm
