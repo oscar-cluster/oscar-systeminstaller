@@ -80,3 +80,5 @@ debian/compat
 debian/control
 debian/copyright
 debian/rules
+debian/systeminstaller-oscar.install
+debian/systeminstaller-oscar-x11.install
