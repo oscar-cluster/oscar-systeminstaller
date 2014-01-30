@@ -2,11 +2,12 @@ CHANGELOG
 COPYING
 CREDITS
 README
-MANIFEST
 MANIFEST.stub
+MANIFEST.SKIP
 INSTALL
+TODO
 Makefile.PL
-sin-oscar.spec
+sin-oscar.spec.in
 tksis/tksis
 tksis/images/monitor.xpm
 tksis/images/image.xpm
@@ -64,6 +65,7 @@ lib/SIS/Adapter.pm
 lib/SIS/Image.pm
 lib/SIS/DB.pm
 lib/SIS/NewDB.pm
+lib/SIS/ODB.pm
 t/package_packmansmart.t
 t/package.t
 t/env.t
@@ -73,8 +75,10 @@ t/commands.t
 samples/systeminstaller.conf
 samples/tksis.conf
 samples/disktable
-doc/systeminstaller.conf.pod
+doc/Makefile
 doc/SIS.pod
+doc/systeminstaller.conf.pod
+doc/systeminstaller-oscar_manual.sgml
 debian/changelog
 debian/compat
 debian/control
