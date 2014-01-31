@@ -7,6 +7,7 @@ MANIFEST.SKIP
 INSTALL
 TODO
 Makefile.PL
+sin-oscar.spec
 sin-oscar.spec.in
 tksis/tksis
 tksis/images/monitor.xpm

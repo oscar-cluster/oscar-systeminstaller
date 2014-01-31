@@ -70,7 +70,6 @@ img_install ::
 \tinstall tksis/images/image.xpm \$(DESTDIR)\$(PREFIX)/share/systeminstaller/images
 
 manifest :
-
 \t if [[ -f MANIFEST ]]; then \\
 \t\t mv MANIFEST MANIFEST.bak; \\
 \t fi
