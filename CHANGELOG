@@ -1,6 +1,11 @@
 ------------------------------------------------------------
 System Installer v2.4.12
 ------------------------------------------------------------
+    - Bugfix release due to API change in prepare_pools
+
+------------------------------------------------------------
+System Installer v2.4.12
+------------------------------------------------------------
     - Add missing nodes infos required by oscar and add GPU support.
     - Make some error messages more explicit.
     - Fix issues with newer version of DHCP (patch from Olivier

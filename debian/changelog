@@ -1,9 +1,16 @@
+systeminstaller-oscar (2.4.13-1) lucid; urgency=low
+
+  * Bugfix release
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Sthu, 13 Jan 2014 17:22:47 +0100
+
 systeminstaller-oscar (2.4.12-1) lucid; urgency=low
 
   * New upstream version.
   * New packaging.
 
  -- Olivier Lahaye <olivier.lahaye1@free.fr>  Sat, 14 Dec 2013 20:51:36 +0100
+
 systeminstaller-oscar (2.4.11-1) lucid; urgency=low
 
   * New upstream version.
