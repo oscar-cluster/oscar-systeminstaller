@@ -135,7 +135,7 @@ sub files_install {
 
     my @pools = split(",",$pkgpath);
 
-    my $pm = OSCAR::PackageSmart::prepare_pools($verbose,@pools);
+    my $pm = OSCAR::PackageSmart::prepare_pools(@pools);
     if (!$pm) {
     	croak "\nERROR: Could not create PackMan instance!\n";
     }
