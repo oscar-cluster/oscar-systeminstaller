@@ -127,6 +127,8 @@ fi
 
 
 %changelog
+* Fri Feb 14 2014 Olivier Lahaye <olivier.lahaye@cea.fr>
+- bugfix release
 * Wed Nov 28 2012 Olivier Lahaye <olivier.lahaye@cea.fr>
 - New upstream release.
 * Wed Oct 07 2009 Geoffroy Vallee <valleegr@ornl.gov> 

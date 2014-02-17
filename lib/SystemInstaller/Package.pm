@@ -33,6 +33,7 @@ use SystemInstaller::Package::PackManSmart;
 use OSCAR::RepositoryManager;
 use OSCAR::Opkg;
 use OSCAR::Utils;
+use OSCAR::PackManDefs;
 use Carp;
 use Cwd;
 
@@ -105,7 +106,7 @@ sub pkg_install ($$$$@) {
     # the installation of all packages.
     foreach my $p (@pkglist) {
         my ($err, $output) = $rm->install_pkg ($imgpath, $p);
-        if ($err != OSCAR::PackManDefs::SUCCESS()) {
+        if ($err != OSCAR::PackManDefs::PM_SUCCESS()) {
             print STDERR "WARNING: Impossible to install $p ($err, $output)\n";
             # The error handling from ORM is not yet perfect, we display
             # messages if we think there is an error during package installation
