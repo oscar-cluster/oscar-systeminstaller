@@ -118,15 +118,15 @@ my $alist = SIS::NewDB::list_adapter(undef);
 foreach my $aobj (@$alist) {
     $defip{$aobj->{ip}}=1;
 }
-my $cnum=$config->start;
+my $pad = "%0d";
 if ($config->pad) {
-        my $pad=$config->pad;
-        $cnum=sprintf("%0$pad.d",$cnum);
+        $pad="%0".$config->pad."d";
 }
 
+my $cnum=$config->start;
 &verbose("Checking for existing machine conflicts.");
 foreach my $ipaddr (@IPLIST) {
-    my $fullname=$config->basename.$cnum;
+    my $fullname=sprintf($config->basename.$pad, $cnum);
     if ($defclients{$fullname}) {
         carp("Machine exists: $fullname\n");
         $machfail++;
@@ -142,20 +142,16 @@ foreach my $ipaddr (@IPLIST) {
 if ($machfail) {
         croak("New machines conflict with existing machines, exitting.\n");
 }
-my $cnum=$config->start;
-if ($config->pad) {
-        my $pad=$config->pad;
-        $cnum=sprintf("%0$pad.d",$cnum);
-}
 
+my $cnum=$config->start;
 &verbose("Adding machines.");
 my @ALIST;
 my $nb_errors = 0;
 foreach my $ipaddr (@IPLIST) {
-    my $node_name = $config->basename.$cnum;
+    my $node_name = sprintf($config->basename.$pad, $cnum);
     print ("Defining objects for $node_name\n");
-    my $clientdef = new SIS::Client($config->basename.$cnum);
-    $clientdef->{hostname} = ($config->basename.$cnum.".".$config->domain);
+    my $clientdef = new SIS::Client($node_name);
+    $clientdef->{hostname} = ($node_name.".".$config->domain);
     $clientdef->{domainname} = $config->domain;
     $clientdef->{imagename} = $config->image;
     $clientdef->{route} = $config->gateway;
@@ -165,12 +161,12 @@ foreach my $ipaddr (@IPLIST) {
             die "ERROR: Impossible to set clients";
         }
         my $adapdef = new SIS::Adapter("eth0");
-        $adapdef->client($config->basename.$cnum);
+        $adapdef->client($node_name);
         $adapdef->ip($ipaddr);
         $adapdef->netmask($config->netmask);
         push(@ALIST,$adapdef);
     } else {
-        carp("ERROR: Client " . $config->basename.$cnum . 
+        carp("ERROR: Client " . $node_name . 
                 " definition failed.\n");
         $nb_errors++;
     }
