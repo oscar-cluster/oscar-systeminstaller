@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.4.15-1) lucid; urgency=low
+
+  * Bugfix release
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 19 Feb 2014 16:06:16 +0100
+
 systeminstaller-oscar (2.4.14-1) lucid; urgency=low
 
   * Bugfix release

@@ -127,9 +127,11 @@ fi
 
 
 %changelog
-* Fri Feb 14 2014 Olivier Lahaye <olivier.lahaye@cea.fr>
+* Wed Feb 19 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.15-1
 - bugfix release
-* Wed Nov 28 2012 Olivier Lahaye <olivier.lahaye@cea.fr>
+* Fri Feb 14 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.14-1
+- bugfix release
+* Wed Nov 28 2012 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.13-1
 - New upstream release.
 * Wed Oct 07 2009 Geoffroy Vallee <valleegr@ornl.gov> 
 - Force the installation of Perl modules in /usr/lib on x86_64 platforms rather
