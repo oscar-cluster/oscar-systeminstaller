@@ -270,7 +270,7 @@ sub write_appl_entry {
 
 sub write_entry {
 	my ($mach, $adapter) = @_;
-	print OUTFILE "\t\thost ".$adapter->{client}."{\n";
+	print OUTFILE "\t\thost ".$adapter->{client}." {\n";
 	print OUTFILE "\t\t\thardware ethernet ".$adapter->{mac}.";\n";
 	print OUTFILE "\t\t\tfixed-address ".$adapter->{ip}.";\n";
         # print OUTFILE "\t\t\tfilename \"".$config->bootfile."\";\n";    
