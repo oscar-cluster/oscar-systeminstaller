@@ -127,8 +127,10 @@ fi
 
 
 %changelog
+* Wed Feb 21 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.16-1
+- bugfix release (mkdhcpconf: need "use-host-decl-names on;")
 * Wed Feb 19 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.15-1
-- bugfix release
+- bugfix release (mksirange padding option)
 * Fri Feb 14 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.14-1
 - bugfix release
 * Wed Nov 28 2012 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.13-1

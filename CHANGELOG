@@ -1,4 +1,11 @@
 ------------------------------------------------------------
+System Installer v2.4.16
+------------------------------------------------------------
+    - Fix missing option in dhcpd.conf
+      need to add: "use-host-decl-names on;" otherwise
+      hostname is not seen by dhclient.
+
+------------------------------------------------------------
 System Installer v2.4.15
 ------------------------------------------------------------
     - Fix padding bug.
