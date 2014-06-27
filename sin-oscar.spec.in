@@ -127,7 +127,10 @@ fi
 
 
 %changelog
-* Wed Feb 21 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.16-1
+* Fri Jun 27 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.17-1
+- New version that adds support for options:
+  --imageserver, --logserverport, --sshdownloadurl
+* Fri Feb 21 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.16-1
 - bugfix release (mkdhcpconf: need "use-host-decl-names on;")
 * Wed Feb 19 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.15-1
 - bugfix release (mksirange padding option)

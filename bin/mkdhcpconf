@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 #   $Id$
 
 #   Copyright (c) 2001 International Business Machines
@@ -55,6 +58,10 @@ $config->define(
         nameservers=>{ARGCOUNT=> ARGCOUNT_ONE},
         outfile=> {ARGCOUNT=> ARGCOUNT_ONE},
         multicast=>{ARGCOUNT=> ARGCOUNT_ONE},
+        imageserver=>{ARGCOUNT=> ARGCOUNT_ONE,
+                DEFAULT=> "oscar_server"},
+        logserverport=>{ARGCOUNT=> ARGCOUNT_ONE},
+        sshdownloadurl=>{ARGCOUNT=> ARGCOUNT_ONE},
 );
 
 unless ($config->getopt()){
@@ -208,6 +215,18 @@ PREAMBLE
     if ($config->nameservers) {
         print OUTFILE "option domain-name-servers ".$config->nameservers.";\n";
     }
+    if ($config->imageserver) {
+        print OUTFILE "option option-140 code 140 = string; # For image server\n";
+        print OUTFILE "option option-140 $config->imageserver"; # Also for image server\n";
+    }
+    if ($config->logserverport) {
+        print OUTFILE "option option-141 code 14& = string; # For log server port\n";
+        print OUTFILE "option option-141 $config->logserverport"; # Also for log server port\n";
+    }
+    if ($config->sshdownloadurl) {
+        print OUTFILE "option option-142 code 142 = string; # For SSH download URL\n";
+        print OUTFILE "option option-142 $config->sshdownloadurl"; # Also for SSH Download URL\n";
+    }
     if ($config->multicast) {
         print OUTFILE "option option-143 code 143 = string; # For flamethrower\n";
         print OUTFILE "option option-143 \"9000\"; # Also for flamethrower\n";
@@ -330,6 +349,10 @@ usage: $progname <options>
     --domain <domain>       the domain of the machines (default, server domain)
     --multicast <yes>       to enable multicastng
     --nameservers <servers> a comma delimited list of nameservers.
+    --imageserver <server>  the SystemImager server. (default, oscar_server)
+    --logserverport         port for the SystemImager log.
+    --sshdownloadurl        URL for ssh deployment.
+
     -v, --verbose           massive verbose output
 
 
@@ -391,6 +414,18 @@ To enable multicastng invoke with --mutlticast=yes. Defaults to no multicasting.
 
 A comma delimited list of nameserver addresses to 
 assign to the remote nodes.
+
+=item    --imageserver <server>
+
+The SystemImager server. (default, oscar_server)
+
+=item    --logserverport
+
+Port for the SystemImager log.
+
+=item    --sshdownloadurl
+
+URL for ssh deployment.
 
 =item -v, --verbose
 
