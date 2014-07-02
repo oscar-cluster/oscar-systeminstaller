@@ -201,7 +201,14 @@ sub preamble {
 # File generated at $hour:$min:$sec on $mon/$mday/$year
 ####################################################################
 
+# Special options definition for SystemImager
 PREAMBLE
+    print OUTFILE "option option-140 code 140 = ip-address;          # Image server.\n";
+    print OUTFILE "option option-141 code 141 = unsigned integer 16; # Log server port.\n";
+    print OUTFILE "option option-142 code 142 = string;              # SSH download URL.\n";
+    print OUTFILE "option option-143 code 143 = unsigned integer 16; # Flamethrower port base.\n";
+
+    print OUTFILE "\n# Configuration starts here.\n";
     print OUTFILE "use-host-decl-names on;\n";
     print OUTFILE "deny unknown-clients;\n";
     print OUTFILE "option subnet-mask $HINFO{mask};\n";
@@ -216,24 +223,19 @@ PREAMBLE
         print OUTFILE "option domain-name-servers ".$config->nameservers.";\n";
     }
     if ($config->imageserver) {
-        print OUTFILE "option option-140 code 140 = string; # For image server\n";
-        print OUTFILE "option option-140 $config->imageserver"; # Also for image server\n";
+        print OUTFILE "option option-140 ".$config->imageserver.";    # Image server.\n";
     }
     if ($config->logserverport) {
-        print OUTFILE "option option-141 code 14& = string; # For log server port\n";
-        print OUTFILE "option option-141 $config->logserverport"; # Also for log server port\n";
+        print OUTFILE "option option-141 ".$config->logserverport.";    # Log server port.\n";
     }
     if ($config->sshdownloadurl) {
-        print OUTFILE "option option-142 code 142 = string; # For SSH download URL\n";
-        print OUTFILE "option option-142 $config->sshdownloadurl"; # Also for SSH Download URL\n";
+        print OUTFILE "option option-142 ".$config->sshdownloadurl.";    # SSH Download URL.\n";
     }
     if ($config->multicast) {
-        print OUTFILE "option option-143 code 143 = string; # For flamethrower\n";
         print OUTFILE "option option-143 \"9000\"; # Also for flamethrower\n";
     }
     if ($dhcpdver >= 3) {
-        print OUTFILE  "ddns-update-style none; ".
-                       "# For dhpcd version 3 and higher\n";
+        print OUTFILE  "ddns-update-style none;    # For dhpcd version 3 and higher\n";
     }
     print OUTFILE "\n";
 
