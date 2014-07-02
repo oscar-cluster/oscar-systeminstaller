@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+System Installer v2.4.18
+------------------------------------------------------------
+- Bugfix (badly generated config file (HASH instead of value)
+
+------------------------------------------------------------
+System Installer v2.4.17
+------------------------------------------------------------
+- New version that adds support for options:
+  --imageserver, --logserverport, --sshdownloadurl
+
+------------------------------------------------------------
 System Installer v2.4.16
 ------------------------------------------------------------
     - Fix missing option in dhcpd.conf
