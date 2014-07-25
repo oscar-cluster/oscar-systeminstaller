@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.5.0
+------------------------------------------------------------
+- Add support for choosing root filesystem for client in the GUI.
+
+------------------------------------------------------------
 System Installer v2.4.18
 ------------------------------------------------------------
 - Bugfix (badly generated config file (HASH instead of value)

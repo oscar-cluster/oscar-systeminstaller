@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.5.0-1) lucid; urgency=low
+
+  * Add support for choosing root filesystem for client in the GUI.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Fri, 25 Jul 2014 19:37:02 +0200
+
 systeminstaller-oscar (2.4.17-1) lucid; urgency=low
 
   * Add support for options: --imageserver, --logserverport, --sshdownloadurl
