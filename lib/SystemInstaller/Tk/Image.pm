@@ -49,6 +49,7 @@ use SystemImager::Config;
 # OSCAR specific stuff
 use OSCAR::PackagePath;
 use OSCAR::Database;
+use OSCAR::OCA::OS_Settings;
 
 use strict;
 
@@ -192,6 +193,44 @@ sub createimage_basic_window ($%) {
     my @morewidgets2 = helpbutton($image_window,
                       "Target Distribution");
     $label2->grid($distrooption, "x", @morewidgets2, -sticky => "nesw");
+
+    #
+    #  Fith line:  diskfilesystem
+    #
+
+    # Get suitable filesystem(s) for root parttition for our running distro.
+    # FIXME: Should be for selected distro. need a specific getitem with distro_compat option.
+    my $os_available_filesystems = OSCAR::OCA::OS_Settings::getitem("vailable_filesystems");
+
+    my @available_filesystems = ( "ext2", "ext3" ); # Minimal list
+    @available_filesystems = split(',',$os_available_filesystems)
+        if (defined($os_available_filesystems));
+
+    # Get the default filesystem for /boot and use ext3 as a fallback value.
+    $vars{boot_filesystem} = OSCAR::OCA::OS_Settings::getitem("boot_filesystem");
+    $vars{boot_filesystem} = "ext3" if (! defined($vars{boot_filesystem})); # Safe value
+
+    # Get the default filesystem for / and use ext3 as a fallback value.
+    $vars{root_filesystem} = OSCAR::OCA::OS_Settings::getitem("root_filesystem");
+    $vars{root_filesystem} = "ext3" if (! defined($vars{root_filesystem})); # Safe value
+
+    my $label3 = $image_window->Label(-text => "Target Filesystem",
+                      -anchor => "w");
+
+    my $filesystemoption = $image_window->Optionmenu(
+        -options => \@available_filesystems,
+        -command => sub {
+            my $fs = shift;
+            print "Selection: $fs\n";
+           $vars{'root_filesystem'} = $fs;
+        },
+        -variable => \$vars{'fs'});
+     $filesystemoption->setOption($vars{root_filesystem});
+
+    my @morewidgets3 = helpbutton($image_window,
+                      "Target Filesystem");
+    $label3->grid($filesystemoption, "x", @morewidgets3, -sticky => "nesw");
+
 
     #
     #  Fourth line:  disktable
