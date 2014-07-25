@@ -200,7 +200,7 @@ sub createimage_basic_window ($%) {
 
     # Get suitable filesystem(s) for root parttition for our running distro.
     # FIXME: Should be for selected distro. need a specific getitem with distro_compat option.
-    my $os_available_filesystems = OSCAR::OCA::OS_Settings::getitem("vailable_filesystems");
+    my $os_available_filesystems = OSCAR::OCA::OS_Settings::getitem("available_filesystems");
 
     my @available_filesystems = ( "ext2", "ext3" ); # Minimal list
     @available_filesystems = split(',',$os_available_filesystems)
