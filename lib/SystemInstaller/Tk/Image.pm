@@ -211,7 +211,8 @@ sub createimage_basic_window ($%) {
     $vars{boot_filesystem} = "ext3" if (! defined($vars{boot_filesystem})); # Safe value
 
     # Get the default filesystem for / and use ext3 as a fallback value.
-    $vars{root_filesystem} = OSCAR::OCA::OS_Settings::getitem("root_filesystem");
+    my $root_fs = OSCAR::OCA::OS_Settings::getitem("root_filesystem");
+    $vars{root_filesystem} = $root_fs;
     $vars{root_filesystem} = "ext3" if (! defined($vars{root_filesystem})); # Safe value
 
     my $label3 = $image_window->Label(-text => "Target Filesystem",
@@ -225,7 +226,7 @@ sub createimage_basic_window ($%) {
            $vars{'root_filesystem'} = $fs;
         },
         -variable => \$vars{'fs'});
-     $filesystemoption->setOption($vars{root_filesystem});
+     $filesystemoption->setOption($root_fs);
 
     my @morewidgets3 = helpbutton($image_window,
                       "Target Filesystem");
