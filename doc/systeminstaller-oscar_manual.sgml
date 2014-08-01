@@ -45,21 +45,21 @@
     For the creation of an image, users can for instance do the following:
 <programlisting>
   <![CDATA[
-mksiimage -A --name oscarimage --distro ubuntu-7-i386 --filename /usr/share/oscar/oscarsamples/debian-4-i386.rpmlist --arch i386 --path /var/libsystemimager/images/oscarimage
+mksiimage -A --name oscarimage --distro ubuntu-7-i386 --filename /usr/share/oscar/oscarsamples/pkglists/debian-4-i386.pkglist --arch i386 --path /var/libsystemimager/images/oscarimage
            ]]>
 </programlisting>
     This command will automatically create an image for ubuntu-7 (a.k.a. ubuntu
     7.10) in /var/libsystemimager/images/oscarimage) with the list of default
-    binary packages from the list /usr/share/oscar/oscarsamples/debian-4-i386.rpmlist
+    binary packages from the list /usr/share/oscar/oscarsamples/pkglists/debian-4-i386.pkglist
   </para>
   <para>
     For that, systeminstaller actually creates a ORM object for the usage of
     OSCAR repositories. This object is created with the Linux distribution
     identifier (i.e., ubuntu-7-i386) and then used to install binary packages
-    listed in /usr/share/oscar/oscarsamples/debian-4-i386.rpmlist. For the
+    listed in /usr/share/oscar/oscarsamples/pkglists/debian-4-i386.pkglist. For the
     installation of binary packages, ORM actually calls PackMan, which also
     means that the image is automatically bootstrapped by PackMan and then
-    binary packages from /usr/share/oscar/oscarsamples/debian-4-i386.rpmlist
+    binary packages from /usr/share/oscar/oscarsamples/pkglists/debian-4-i386.pkglist
     installed.
   </para>
   <para>

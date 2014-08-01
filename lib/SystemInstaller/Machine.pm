@@ -47,7 +47,7 @@ sub get_machine_listing {
     my %results = ();
     
     foreach my $machine (@machines) {
-        my %h = (client=>$machine->{name}, devname=>"eth0");
+        my %h = (client=>$machine->{name}, devname=>"eth0"); # FIXME: eth0 should not be hardcodded.
         my $adapter = SIS::NewDB::list_adapter(\%h);
         if (!defined $adapter) {
             carp "ERROR: Impossible to get adapter data (".
