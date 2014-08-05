@@ -825,17 +825,19 @@ sub add_image_build ($$) {
     my $window = shift;
     my $verbose = &get_verbose();
 
-    my $groupfile;
-    if ($$vars{selected_group}) {
-        my $path;
-        for my $a (@{$$vars{package_group}}) {
-            if ($a->{label} eq $$vars{selected_group}) {
-                $path = $a->{path};
-                last;
-            }
-        }
-        $groupfile = "--filename $path";
-    }
+# OL: What is the purpose of these 10 lines of code?????
+# OL: $groupfile is unused after being computed.
+#    my $groupfile;
+#    if ($$vars{selected_group}) {
+#        my $path;
+#        for my $a (@{$$vars{package_group}}) {
+#            if ($a->{label} eq $$vars{selected_group}) {
+#                $path = $a->{path};
+#                last;
+#            }
+#        }
+#        $groupfile = "--filename $path";
+#    }
 
     # GV: i am sure we can find a better way to do that, we currently go back
     # and forth between OSCAR base Perl modules and SystemInstaller. We should
