@@ -127,6 +127,13 @@ fi
 
 
 %changelog
+* Mon Aug 05 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.5.2-1
+- Optimized mksiimage
+- Moved mount/unmount code to OSCAR::PackMan. 
+* Mon Jul 28 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.5.1-1
+- Bugfix release.
+* Fri Jul 25 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.5.0-1
+- Add support for choosing root filesystem for client in the GUI.
 * Wed Jul 02 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.18-1
 - Bugfix (badly generated config file (HASH instead of value)
 * Fri Jun 27 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.4.17-1

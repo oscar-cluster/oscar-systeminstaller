@@ -1,3 +1,10 @@
+systeminstaller-oscar (2.5.2-1) lucid; urgency=low
+
+  * Optimized mksiimage
+  * Moved mount/unmount code to OSCAR::PackMan.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Mon, 05 Aug 2014 18:01:57 +0200
+
 systeminstaller-oscar (2.5.1-1) lucid; urgency=low
 
   * Bugfix release.
