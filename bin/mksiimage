@@ -523,24 +523,22 @@ sub SigHandler {
         my $signal=@_;
         carp("Caught signal $signal");
         if ($config->Add) {
-#            my $procpath = $config->path."/proc";
-#            oscar_system("umount $procpath");
-
-            # Try to unmount mounted stuffs in image path.
-            chdir("/tmp"); # Try to move outside the image path (just in case).
-            my $cmd = "";
-            my $img_path = $config->path;
-            if(defined($img_path) && ($img_path ne "/")) {
-                open(MOUNTS, "< /proc/mounts")
-                     or die "cannot open /proc/mounts: $!";
-                while (my $line = <MOUNTS>) {
-                    if ($line =~ /^\S+\s+(\Q$img_path\E)\s+.*$/) {
-                        print "Unmounting $1\n";
-                        $cmd = "umount $1";
-                        oscar_system($cmd);
-                    }
-                }
-            }
+#            OL: Code moved into OSCAR::PackMan.
+#            # Try to unmount mounted stuffs in image path.
+#            chdir("/tmp"); # Try to move outside the image path (just in case).
+#            my $cmd = "";
+#            my $img_path = $config->path;
+#            if(defined($img_path) && ($img_path ne "/")) {
+#                open(MOUNTS, "< /proc/mounts")
+#                     or die "cannot open /proc/mounts: $!";
+#                while (my $line = <MOUNTS>) {
+#                    if ($line =~ /^\S+\s+(\Q$img_path\E)\s+.*$/) {
+#                        print "Unmounting $1\n";
+#                        $cmd = "umount $1";
+#                        oscar_system($cmd);
+#                    }
+#                }
+#            }
             &del_image($config->name);
         }
         if ($config->Get) {
