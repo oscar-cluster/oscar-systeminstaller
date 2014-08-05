@@ -139,7 +139,7 @@ if ($config->Get) {
 
     &verbose("Getting image from $config->client.");
     &verbose("$CMD");
-    if (system($CMD)) {
+    if (oscar_system($CMD)) {
             croak("Image get failed");
     }
 
@@ -524,7 +524,7 @@ sub SigHandler {
         carp("Caught signal $signal");
         if ($config->Add) {
                 my $procpath = $config->path."/proc";
-                system("umount $procpath");
+                oscar_system("umount $procpath");
 	        &del_image($config->name);
         }
         if ($config->Get) {
