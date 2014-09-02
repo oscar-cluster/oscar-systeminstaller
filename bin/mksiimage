@@ -27,10 +27,6 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 #   Greg Geiselhart <geiselha@us.ibm.com>
 #   Erich Focht <efocht@hpce.nec.com>
 
-$SIG{INT}       = 'SigHandler';         # Catch signals
-$SIG{QUIT}      = 'SigHandler';
-$SIG{TERM}      = 'SigHandler';
-$SIG{KILL}      = 'SigHandler';
 
 use strict;
 use vars qw($config $VERSION);
@@ -38,7 +34,11 @@ use vars qw($config $VERSION);
 $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 #use lib "/usr/lib/systeminstaller","/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl";
 use File::Basename;
+use File::Temp qw(tempfile);
+use IO::Handle;
 use OSCAR::Utils;
+use OSCAR::Opkg;
+use OSCAR::Database;
 use SIS::NewDB;
 use SIS::Image;
 use SIS::Client;
@@ -50,6 +50,10 @@ use SystemImager::Server;
 use Data::Dumper;
 use POSIX;
 use Carp;
+use v5.10.1;
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+
 use AppConfig qw(:argcount);
 
 # Restore systeminstaller configuration, systemimager overwrites it.
@@ -90,6 +94,8 @@ $config->define(
         user=>{ARGCOUNT=> ARGCOUNT_ONE},
         parse=>{ARGCOUNT=>ARGCOUNT_NONE},
         force=>{ARGCOUNT=>ARGCOUNT_NONE},
+        coreopkgs=>{ARGCOUNT=>ARGCOUNT_NONE},
+        selectedopkgs=>{ARGCOUNT=>ARGCOUNT_NONE},
 );
 
 
@@ -134,6 +140,12 @@ if ($config->Get) {
     if ($config->user) {
             $user="-ssh-user ". $config->user;
     }
+
+    $SIG{INT}       = 'SigHandler';         # Catch signals
+    $SIG{QUIT}      = 'SigHandler';
+    $SIG{TERM}      = 'SigHandler';
+    $SIG{KILL}      = 'SigHandler';
+
     my $CMD="/usr/sbin/si_getimage -quiet -golden-client " .
         $config->client." -image ".$config->name." $user -update-script YES";
 
@@ -172,9 +184,9 @@ if ($config->Add) {
         my $iname = $config->name;
         croak("Image $iname exists -- not added.\n");
     }
-    verbose "---> Distro: " . $config->distro . "\n";
-    verbose "---> Path: " . $config->path . "\n";
-    verbose "---> Name: " . $config->name . "\n";
+    verbose "---> Distro: " . $config->distro;
+    verbose "---> Path: " . $config->path;
+    verbose "---> Name: " . $config->name;
     verbose "---> Rsync stub directory: " . $config->rsync_stub_dir . "\n";
 
     if ($config->build) {
@@ -186,7 +198,7 @@ if ($config->Add) {
             }
         }
     
-        &verbose("Building image");
+        #&verbose("Building image");
         # Actually build the image
         &verbose("Updating Rsyncd.conf");
 
@@ -226,21 +238,52 @@ if ($config->Add) {
 #     	        carp("Unable to mount /proc into the image.");
 #         }
 
+        # Add core only or core+selected opkgs if --coreopkgs or --selectedopkgs is used.
+
+        my @opkgs = get_list_core_opkgs(); # Start with all core packages.
+
+        if ($config->selectedopkgs) {
+            my @selected = OSCAR::Database::list_selected_packages();
+            &verbose("Adding selected opkgs (including all core).");
+            for my $p (@selected) {
+               push (@opkgs, $p) if (not $p ~~ @opkgs); # Add missing selected packages.
+            }
+        }
+
+        if ($config->coreopkgs) {
+            &verbose("Adding core opkgs."); # Packages are already in @opkgs.
+        }
+
+        my ($fh, $filename);
+        if($config->coreopkgs || $config->selectedopkgs) {
+            ($fh, $filename) = tempfile( "/tmp/opkgsXXXX", SUFFIX => '.pkglist' );
+            for my $p (@opkgs) {
+                print $fh "opkg-".$p."-client\n";
+                &verbose("   + opkg-".$p."-client");
+            }
+            $fh->flush;
+            close $fh;
+            push (@{$config->filename}, $filename); # Add this file to the list of pkglist files to be installed.
+        }
+
+
         &verbose("Building image.");
         my $loc = $config->location;
         $loc =~ s/ //g; # compress spaces, separation is by ","
         $config->location($loc);
-        unless (&pkg_install(
+        unless (&SystemInstaller::Package::pkg_install(
             $config->distro,
             $config->location,
             $config->path,
             $config->arch,
             @{$config->filename})) {
 #     	        &verbose("Unmounting /proc.");
-# 	        &umount_recursive("$procpath");
-	        &del_image($config->name);
-	        croak("Package install failed\n");
-        }
+# 	            &umount_recursive("$procpath");
+	            &del_image($config->name);
+                croak("Package install failed\n");
+            }
+
+        unlink $filename;
 
         &verbose("Adding SIS files.");
         if (&SystemInstaller::Image::init_image($config->path) == 1) {
@@ -514,6 +557,9 @@ usage: $progname [ operation ] <options>
     -v, --verbose           massive verbose output
     --parse                 print colon-delimited output (valid with --List)
     --force                 force operation even if image exists (valid with --Add)
+    --coreopkgs             also install OSCAR core opkgs when creating the image.
+    --selectedopkgs         also install OSCAR selected opkgs when creating the image.
+                            (this includes all core opkgs as well. --coreopkgs not needed).
 
 
 USAGE
@@ -662,6 +708,15 @@ Lots of trace and debug output.
 
 Print output in a colon-delimited format for parsing. Only valid
 with the --List option.
+
+=item --coreopkgs
+
+Also install OSCAR core opkgs when creating the image.
+
+=item --selectedopkgs
+
+Also install OSCAR selected opkgs when creating the image.
+This includes all core opkgs.
 
 =back
 

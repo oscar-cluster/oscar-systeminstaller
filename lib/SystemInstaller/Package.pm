@@ -93,8 +93,8 @@ sub pkg_install ($$$$@) {
     }
 
     # We add the list of core OPKGs, client side.
-    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs ();
-    verbose "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
+#    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs ();
+#    verbose "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
 
     push (@pkglist, map { "opkg-".$_."-client" } @core_opkgs);
     verbose "---> Package list: ".join(" ", @pkglist)."\n";

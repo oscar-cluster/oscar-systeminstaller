@@ -1,3 +1,11 @@
+systeminstaller-oscar (2.6.0-1) lucid; urgency=low
+
+  * Now mksiimage can create non-oscarimage
+  * Added --coreopkgs to add core opkgs to the image
+  * Added --selectedopkgs to add selected + core opkgs to the image.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Tue, 02 Sep 2014 16:57:19 +0200
+
 systeminstaller-oscar (2.5.2-1) lucid; urgency=low
 
   * Optimized mksiimage

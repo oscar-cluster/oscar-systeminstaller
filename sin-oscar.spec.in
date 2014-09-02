@@ -127,6 +127,10 @@ fi
 
 
 %changelog
+* Tue Sep 02 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.0-1
+- Now mksiimage can create non-oscarimage
+- Added --coreopkgs to add core opkgs to the image
+- Added --selectedopkgs to add selected + core opkgs to the image.
 * Mon Aug 05 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.5.2-1
 - Optimized mksiimage
 - Moved mount/unmount code to OSCAR::PackMan. 

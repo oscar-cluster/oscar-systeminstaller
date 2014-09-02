@@ -21,6 +21,7 @@ package SystemInstaller::Log;
 #   Sean Dague <japh@us.ibm.com>
 
 use strict;
+use OSCAR::Env;
 
 require Exporter;
 use vars qw(@ISA @EXPORT_OK @EXPORT %EXPORT_TAGS $VERSION $DEBUG $VERBOSE $FH);
@@ -65,6 +66,8 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
     
     sub start_verbose {
         $VERBOSE = 1;
+        $ENV{OSCAR_VERBOSE} = 5;
+        $OSCAR::Env::oscar_verbose = 5;
     }
     
     sub stop_verbose {

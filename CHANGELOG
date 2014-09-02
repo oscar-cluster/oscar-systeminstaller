@@ -1,4 +1,11 @@
 ------------------------------------------------------------
+System Installer v2.6.0
+------------------------------------------------------------
+- Now mksiimage can create non-oscarimage
+- Added --coreopkgs to add core opkgs to the image
+- Added --selectedopkgs to add selected + core opkgs to the image.
+
+------------------------------------------------------------
 System Installer v2.5.2
 ------------------------------------------------------------
 - Optimized mksiimage
