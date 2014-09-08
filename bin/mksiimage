@@ -277,9 +277,9 @@ if ($config->Add) {
             $config->path,
             $config->arch,
             @{$config->filename})) {
-#     	        &verbose("Unmounting /proc.");
-# 	            &umount_recursive("$procpath");
 	            &del_image($config->name);
+                unlink $filename;
+                # Filesystem umount is handeled by OSCAR::PackMan::END
                 croak("Package install failed\n");
             }
 

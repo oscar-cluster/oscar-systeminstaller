@@ -96,7 +96,7 @@ sub pkg_install ($$$$@) {
 #    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs ();
 #    verbose "---> Core OPKGs: ".join(" ", @core_opkgs)."\n";
 
-    push (@pkglist, map { "opkg-".$_."-client" } @core_opkgs);
+#    push (@pkglist, map { "opkg-".$_."-client" } @core_opkgs);
     verbose "---> Package list: ".join(" ", @pkglist)."\n";
 
     use OSCAR::PackManDefs;
