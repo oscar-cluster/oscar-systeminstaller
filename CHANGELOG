@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.6.1
+------------------------------------------------------------
+- Disabled si_mkautoinstallscript as it's already done by
+  OSCAR::ImageMgt::create_image().
+
+------------------------------------------------------------
 System Installer v2.6.0
 ------------------------------------------------------------
 - Now mksiimage can create non-oscarimage

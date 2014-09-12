@@ -1,3 +1,10 @@
+systeminstaller-oscar (2.6.1-1) lucid; urgency=low
+
+  * Disabled si_mkautoinstallscript as it's already done by
+    OSCAR::ImageMgt::create_image().
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Tue, 08 Sep 2014 12:36:48 +0200
+
 systeminstaller-oscar (2.6.0-1) lucid; urgency=low
 
   * Now mksiimage can create non-oscarimage

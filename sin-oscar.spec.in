@@ -127,6 +127,9 @@ fi
 
 
 %changelog
+* Mon Sep 08 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.1-1
+- Disabled si_mkautoinstallscript as it's already done by
+  OSCAR::ImageMgt::create_image().
 * Tue Sep 02 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.0-1
 - Now mksiimage can create non-oscarimage
 - Added --coreopkgs to add core opkgs to the image
