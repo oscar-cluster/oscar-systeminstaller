@@ -103,10 +103,7 @@ sub pkg_install ($$$$@) {
     my ($err, $output) = $rm->install_pkg ($imgpath, @pkglist);
     if ($err != OSCAR::PackManDefs::PM_SUCCESS()) {
         print STDERR "WARNING: Impossible to install ".join(', ',@pkglist)." ($err, $output)\n";
-        # The error handling from ORM is not yet perfect, we display
-        # messages if we think there is an error during package installation
-        # but we do not stop.
-        # return 0;
+        return 0;
     }
 
     return 1;
