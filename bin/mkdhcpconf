@@ -59,7 +59,7 @@ $config->define(
         outfile=> {ARGCOUNT=> ARGCOUNT_ONE},
         multicast=>{ARGCOUNT=> ARGCOUNT_ONE},
         imageserver=>{ARGCOUNT=> ARGCOUNT_ONE,
-                DEFAULT=> "oscar_server"},
+                DEFAULT=> "oscar-server"},
         logserverport=>{ARGCOUNT=> ARGCOUNT_ONE},
         sshdownloadurl=>{ARGCOUNT=> ARGCOUNT_ONE},
 );
@@ -304,7 +304,7 @@ sub write_entry {
     if ($mach->{domainname}) {
         print OUTFILE "\t\t\toption domain-name \"".$mach->{domainname}."\";\n";
     }
-    print OUTFILE "\t\t\tnext-server oscar_server;\n";
+    print OUTFILE "\t\t\tnext-server oscar-server;\n";
         print OUTFILE "\t\t}\n";
 } #write_entry
 
@@ -351,7 +351,7 @@ usage: $progname <options>
     --domain <domain>       the domain of the machines (default, server domain)
     --multicast <yes>       to enable multicastng
     --nameservers <servers> a comma delimited list of nameservers.
-    --imageserver <server>  the SystemImager server. (default, oscar_server)
+    --imageserver <server>  the SystemImager server. (default, oscar-server)
     --logserverport         port for the SystemImager log.
     --sshdownloadurl        URL for ssh deployment.
 
@@ -419,7 +419,7 @@ assign to the remote nodes.
 
 =item    --imageserver <server>
 
-The SystemImager server. (default, oscar_server)
+The SystemImager server. (default, oscar-server)
 
 =item    --logserverport
 
