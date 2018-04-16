@@ -314,18 +314,18 @@ sub partition_setup {
 
 	verbose("Determining which routine to call based on architecture (".$image[0]->{arch}.")");
 	if ($image[0]->{arch} =~ /^(i.86|ia64|x86_64|ppc|ppc64)$/) {
-        if (SystemInstaller::Partition::IA::create_partition_file($image[0]->{location}, %DISKS)) {
+        if (SystemInstaller::Partition::IA::create_partition_file($image[0]->{name}, %DISKS)) {
 			return 1;
 		}
 	} elsif ( ($image[0]->{arch} =~ /^(ppc.*)$/) && ( -d '/proc/iSeries' ))  {
-		if (&SystemInstaller::Partition::IA::create_partition_file($image[0]->{location}, %DISKS)) {
+		if (&SystemInstaller::Partition::IA::create_partition_file($image[0]->{name}, %DISKS)) {
 			return 1;
 		}
 	} else {
 		print STDERR "ERROR: ".$image[0]->arch." is not a recognized architecture\n";
 		return 1;
 	}
-        &verbose("Writing updateclient exclude file");
+        &verbose("Writing updateclient exclude file");a # OL: OBSOLETE
         unless (&write_exclude_file($image[0]->{location},%DISKS)) {
 		carp("Failed to write exclude file to image");
 		return 1;
@@ -334,6 +334,7 @@ sub partition_setup {
 
 } #partition_setup
 
+# OL: OBSOLETE
 sub write_exclude_file {
 # Writes the remote (nfs) filesystems to the update client exclude file
 # Input:        Image path, %DISKS structure
@@ -396,6 +397,7 @@ sub write_exclude_file {
         return 1;
 } # write_exclude_file
 
+# OL: OBSOLETE
 sub get_id {
 # Determine the filesystem id from the filesystem type.
 # Input:        filesystem type 

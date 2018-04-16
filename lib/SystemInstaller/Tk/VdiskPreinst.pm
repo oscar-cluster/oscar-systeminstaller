@@ -111,7 +111,7 @@ sub run_vdiskpreinst {
                    );
    my $scriptdir="/var/lib/systemimager/scripts";
 
-    my $cmd = "sh $scriptdir/$$vars{imgname}.master.preinst";
+    my $cmd = "sh $scriptdir/main-install/$$vars{imgname}.master.preinst";
 
     open(OUTPUT, $cmd |") or (carp("Couldn't run virtual disk preinstall script: $!"),
                       error_window($window,"Couldn't run vdiskpreinstall: $!"),

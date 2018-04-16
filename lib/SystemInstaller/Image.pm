@@ -156,6 +156,7 @@ sub find_initrd ($$) {
 #
 # Input: imagedir, root device, boot device
 # Return: 1 if success, 0 else.
+# OL: OBSOLETE
 sub write_scconf ($$$) {
     my $imagedir=shift;
     my $root=shift;
