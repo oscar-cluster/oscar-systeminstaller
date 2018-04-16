@@ -127,6 +127,8 @@ fi
 
 
 %changelog
+* Mon Apr 16 2018 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.2-1
+- New version (SystemImager v4.9.0 support)
 * Mon Sep 08 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.1-1
 - Disabled si_mkautoinstallscript as it's already done by
   OSCAR::ImageMgt::create_image().

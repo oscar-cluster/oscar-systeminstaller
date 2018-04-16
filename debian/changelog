@@ -1,3 +1,9 @@
+systeminstaller-oscar (2.6.2-1) lucid; urgency=low
+
+  * Migrated to new SystemImager v4.9.0
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Mon, 16 Apr 2018 09:41:55 +0200
+
 systeminstaller-oscar (2.6.1-1) lucid; urgency=low
 
   * Disabled si_mkautoinstallscript as it's already done by
