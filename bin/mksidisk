@@ -36,10 +36,13 @@ use SIS::NewDB;
 use SystemInstaller::Partition;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose verbose logger_file); 
+use SystemInstaller::Utils;
 use Carp;
 use AppConfig qw(:argcount);
 use XML::Simple;
 use Data::Dumper;
+
+my %si_config = get_si_config();
 
 #Set the path
 $ENV{PATH}=$config->binpath .":" . $ENV{PATH};
@@ -137,9 +140,11 @@ if ($config->List) {
         carp("name is a required parameter\n");
         &usage;
     }
-    my $aiconffile;
-    my $aiconffile=$image_data->{'location'}
-                   ."/etc/systemimager/autoinstallscript.conf";
+    my $aiconffile = $si_config{'autoinstall_script_dir'} . "/disks-layouts/" . $image_data->{'name'} . ".xml";
+    unless(-e $aiconffile) {
+        carp("The disk layout for image [$image_data->{'name'}] does not exist ($aiconffile).");
+        return 0;
+    }
 
     my $aiconf = XMLin($aiconffile,  forcearray => 1 );
     unless ($aiconf) {

@@ -27,7 +27,6 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 use strict;
 use vars qw($config $VERSION);
 $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
-use lib "/usr/local/lib/systemimager/perl", "/usr/lib/systemimager/perl","/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;
@@ -202,7 +201,7 @@ sub check_args () {
 			carp("Image ". $config->image . " does not exist.");
 			return 0;
 		}
-        my $aiscript=$si_config{'autoinstall_script_dir'} . "/". $config->image .".master";
+        my $aiscript=$si_config{'autoinstall_script_dir'} . "/main-install/". $config->image .".master";
         unless(-e $aiscript) {
             carp("The autoinstall script for image does not exist ($aiscript).");
 			return 0;

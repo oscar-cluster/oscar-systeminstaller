@@ -223,14 +223,14 @@ sub linkscript ($) {
     my %si_config = SystemInstaller::Utils::get_si_config ();
     my $script_dir = $si_config{'autoinstall_script_dir'};
     my $orig_file = $client->{imagename} . ".master";
-    my $dest_file = "$script_dir/" . $client->{name} . ".sh";
+    my $dest_file = "$script_dir/main-install/" . $client->{name} . ".sh";
 
-    if (! -f "$script_dir/$orig_file") {
+    if (! -f "$script_dir/main-install/$orig_file") {
         carp "ERROR: Impossible to create the symlink, $orig_file does not exist";
         return 0;
     }
 
-    if (! -d $script_dir) {
+    if (! -d $script_dir/main-install/) {
         carp "ERROR: Destination directory does not exist";
         return 0;
     }
@@ -246,7 +246,7 @@ sub linkscript ($) {
         }
     }
 
-#        chdir($script_dir);
+#        chdir($script_dir/main-install/);
     if (! symlink($orig_file, $dest_file)) {
          carp("Unable to create new script link for machine ".
               $client->{name} . "(orig: $orig_file, dest: $dest_file)");
