@@ -1,4 +1,2 @@
-node1.csm.ornl.gov:eth0:"00:01:02:AB:CD:EF":192.168.98.1:255.255.255.0:test
-node2.csm.ornl.gov:eth0:"00:01:02:AB:EF:00"::255.255.255.0:test
-node3.csm.ornl.gov:eth0:"00:01:02:AB:EF:10"::255.255.255.0:test
-node4.csm.ornl.gov:eth0:"00:01:02:AB:CD:11":192.168.98.2:255.255.255.0:test
+node1:eth0:"00:00:11:11:22:22":192.168.1.128:255.255.255.0:manual
+node2:eth0:"11:11:22:22:33:33"::255.255.255.0:dhcp
