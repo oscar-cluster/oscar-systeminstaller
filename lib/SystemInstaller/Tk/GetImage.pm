@@ -24,18 +24,19 @@ use Tk;
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Tk::Image;
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
+use SystemImager::JConfig;
 use Carp;
 use strict;
 
 @EXPORT = qw(creategetimage_window);
 
 sub creategetimage_window {
-    my $config = SystemInstaller::Utils::init_si_config();
+	#my $config = SystemInstaller::Utils::init_si_config();
 
     my $window = shift;
     my %vars = (
-                imgpath => $config->default_image_dir,
+                imgpath => $jconfig->get('imager','images_dir'),
                 imgname => "",
                 ipmeth => "",
                 client => "",

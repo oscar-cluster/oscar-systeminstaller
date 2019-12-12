@@ -28,7 +28,8 @@ use SIS::Adapter;
 use SIS::Image;
 use SIS::NewDB;
 use SystemInstaller::Log qw (verbose);
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
+use SystemImager::JConfig;
 use File::Copy;
 use Carp;
 
@@ -220,8 +221,8 @@ sub synchosts {
 # Return: 1 if success, 0 else.
 sub linkscript ($) {
     my $client = shift;
-    my %si_config = SystemInstaller::Utils::get_si_config ();
-    my $script_dir = $si_config{'autoinstall_script_dir'};
+    #    my %si_config = SystemInstaller::Utils::get_si_config ();
+    my $script_dir = $jconfig->get('imager','scripts_dir');
     my $orig_file = $client->{imagename} . ".master";
     my $dest_file = "$script_dir/main-install/" . $client->{name} . ".sh";
 

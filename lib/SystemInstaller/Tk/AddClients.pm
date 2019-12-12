@@ -30,7 +30,7 @@ use Tk;
 use Tk::FileSelect;
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
 use SIS::Image;
 use SIS::NewDB;
 use strict;
@@ -40,7 +40,7 @@ use strict;
 my $log_file = "/var/log/oscar/oscar_wizard.log";
 
 sub addclients_window {
-    my $config = SystemInstaller::Utils::init_si_config();
+	#my $config = SystemInstaller::Utils::init_si_config();
 
     my $window = shift;
     my %vars = (

@@ -18,13 +18,13 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use Tk;
 use Carp;
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
 use SystemInstaller::Tk::Image qw(createimage_window add2rsyncd delfromrsyncd);
 use SystemInstaller::Tk::GetImage qw(creategetimage_window);
 use SystemInstaller::Tk::AddClients qw(addclients_window);
 use SystemInstaller::Tk::UpdateClient qw(updateclient_window);
 use SystemInstaller::Tk::SISTree; # My fun SIS Tree Widget
-use SystemInstaller::Env qw(get_version);
+use SystemInstaller::Env qw(get_version $config);
 use SIS::Image;
 use SIS::Client;
 use SIS::Adapter;
@@ -38,7 +38,7 @@ use POSIX;
 sub img_window {
     my $imgdir = shift;
     my $vars = shift;
-    my $config = SystemInstaller::Utils::init_si_config();
+#    my $config = SystemInstaller::Utils::init_si_config();
     my $tree;
     
     my $window = new MainWindow();

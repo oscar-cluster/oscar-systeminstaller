@@ -17,7 +17,7 @@ Source: 	%{name}-%{version}.tar.gz
 
 BuildArchitectures: 	noarch
 BuildRequires: 		/usr/bin/perl, perl(AppConfig), perl(MLDBM)
-Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0, systemconfigurator, perl(MLDBM), packman, oscar-base-lib > 6.0.4, oda > 1.4.2
+Requires: 		/usr/bin/perl, perl(AppConfig), systemimager-server >= 3.9.0-0.20191211git, systemconfigurator, perl(MLDBM), packman, oscar-base-lib > 6.0.4, oda > 1.4.2
 Vendor: 		http://oscar.openclustergroup.org
 Packager: 		OSCAR developer team
 Prefix: 		%{prefix}
@@ -127,6 +127,8 @@ fi
 
 
 %changelog
+* Mon Apr 16 2018 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.3-1
+- New version (Ported to new SystemImager::JConfig)
 * Mon Apr 16 2018 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.2-1
 - New version (SystemImager v4.9.0 support)
 * Mon Sep 08 2014 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.1-1

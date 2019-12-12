@@ -18,6 +18,7 @@ package SystemInstaller::Utils;
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.
 
+# OL: This file is deprecated => TO BE REMOVED (BUG)
 use strict;
 use AppConfig;
 use vars qw($VERSION @EXPORT);

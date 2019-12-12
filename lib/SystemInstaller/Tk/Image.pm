@@ -40,11 +40,11 @@ use SystemInstaller::Log qw (verbose get_verbose);
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Passwd qw(update_user);
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
 use Carp;
 use SystemImager::Server;
 use SystemImager::Common;
-use SystemImager::Config;
+use SystemImager::JConfig;
 
 # OSCAR specific stuff
 use OSCAR::PackagePath;
@@ -66,7 +66,7 @@ use vars qw ($image_params);
 
 # Return: 0 if success, 1 else.
 sub createimage_basic_window ($%) {
-    my $config = SystemInstaller::Utils::init_si_config();
+	#    my $config = SystemInstaller::Utils::init_si_config();
 
     my ($window, %vars) = @_;
     $vars{'title'} = "Create an SIS Image";
@@ -363,7 +363,7 @@ sub createimage_basic_window ($%) {
 # !!!! WARNING: This function is not anymore adapted to OSCAR, the OSCAR GUI
 # should not use it anymore. Prefer createimage_basic_window instead. !!!!
 sub createimage_window ($%) {
-    my $config = SystemInstaller::Utils::init_si_config();
+	#    my $config = SystemInstaller::Utils::init_si_config();
 
     my ($window, %vars) = @_;
     $vars{'title'} = "Create an SIS Image";
@@ -753,9 +753,9 @@ sub add_image ($$) {
     my ($vars, $window) = @_;
 
     print "[add_image] Starting... \n";
-    my $config = SystemInstaller::Utils::init_si_config();
-    my $rsyncd_conf = $config->rsyncd_conf();
-    my $rsync_stub_dir = $config->rsync_stub_dir();
+    #    my $config = SystemInstaller::Utils::init_si_config();
+    my $rsyncd_conf = $jconfig->get('xmit_rsync','config_file');
+    my $rsync_stub_dir = $jconfig->get('xmit_rsync','stubs_dir');
     my $verbose = &get_verbose();
 
     $window->Busy(-recurse => 1);
@@ -764,7 +764,7 @@ sub add_image ($$) {
     my $iexists = grep /^($$vars{imgname})$/, @imgs;
     print "Image $$vars{imgname} : ".($iexists?"found":"not found")."\n" 
         if $verbose;
-    if( imageexists("/etc/systemimager/rsyncd.conf", $$vars{imgname}) 
+    if( imageexists($rsyncd_conf, $$vars{imgname}) 
         || $iexists ) {
         unless( yn_window( $window, "\"$$vars{imgname}\" exists.\n".
                                     "Do you want to replace it?" ) ) {

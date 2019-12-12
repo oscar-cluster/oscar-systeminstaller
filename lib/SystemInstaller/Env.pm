@@ -25,6 +25,7 @@ package SystemInstaller::Env;
 use strict;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT $config);
+use SystemImager::JConfig;
 
 @EXPORT = qw(print_version get_version);
 
@@ -49,7 +50,7 @@ $config = AppConfig->new(
         cpimage =>      { ARGCOUNT => 1, DEFAULT => 'si_cpimage'},
         distinfo =>     { ARGCOUNT => 1, 
                 DEFAULT => '/usr/share/systeminstaller/distinfo'},
-        pkgpath =>      { ARGCOUNT => 1, DEFAULT => '/tftpboot/rpms'},
+        pkgpath =>      { ARGCOUNT => 1, DEFAULT => '/var/lib//tftpboot/rpms'},
         ipmeth =>       { ARGCOUNT => 1, DEFAULT => 'dynamic_dhcp'},
         piaction =>     { ARGCOUNT => 1, DEFAULT => 'beep'},
         disktype =>     { ARGCOUNT => 1, DEFAULT => 'scsi'},
@@ -63,24 +64,46 @@ $config = AppConfig->new(
         diskversion =>  {ARGCOUNT => 1, DEFAULT => "2"},
         # The next are variables that we expect from the SystemImager
         # systemimager.conf file.
-        'default_image_dir'         => { ARGCOUNT => 1 },
-        'default_override_dir'      => { ARGCOUNT => 1 },
-        'autoinstall_script_dir'    => { ARGCOUNT => 1 },
-        'autoinstall_boot_dir'      => { ARGCOUNT => 1 },
-        'autoinstall_tarball_dir'   => { ARGCOUNT => 1 },
-        'autoinstall_torrent_dir'   => { ARGCOUNT => 1 },
-        'rsyncd_conf'               => { ARGCOUNT => 1 },
-        'rsync_stub_dir'            => { ARGCOUNT => 1 },
-        'tftp_dir'                  => { ARGCOUNT => 1 },
-        'net_boot_default'          => { ARGCOUNT => 1 },
-
+        default_image_dir         => { ARGCOUNT => 1 },
+        default_override_dir      => { ARGCOUNT => 1 },
+        autoinstall_script_dir    => { ARGCOUNT => 1 },
+        autoinstall_boot_dir      => { ARGCOUNT => 1 },
+        autoinstall_tarball_dir   => { ARGCOUNT => 1 },
+        autoinstall_torrent_dir   => { ARGCOUNT => 1 },
+        rsyncd_conf               => { ARGCOUNT => 1 },
+        rsync_stub_dir            => { ARGCOUNT => 1 },
+        tftp_dir                  => { ARGCOUNT => 1 },
+        net_boot_default          => { ARGCOUNT => 1 },
+        # The next are variables that we expect from tksis.conf
+        icon_dir => { ARGCOUNT => 1, DEFAULT => "/usr/share/systeminstaller/images"},
+        xterm_cmd => { ARGCOUNT => 1,
+            DEFAULT => "xterm -bg black -fg magenta",
+        },
 );
+
 if (-e $config->cfgfile ) {
         $config->file($config->cfgfile);
 }
-if (-e '/etc/systemimager/systemimager.conf') {
-    $config->file('/etc/systemimager/systemimager.conf');
+
+if (-e '/etc/systeminstaller/tksis.conf') {
+    $config->file('/etc/systeminstaller/tksis.conf');
 }
+
+#if (-e '/etc/systemimager/systemimager.conf') {
+#    $config->file('/etc/systemimager/systemimager.conf');
+#}
+# systemimager.conf is deprecated. use $jconfig to inster needed values in $config.
+$config->set('default_image_dir', $jconfig->get('imager','images_dir'));
+$config->set('default_override_dir', $jconfig->get('imager','overrides_dir'));
+$config->set('autoinstall_script_dir', $jconfig->get('imager','scripts_dir'));
+$config->set('autoinstall_boot_dir', $jconfig->get('pxe','boot_files'));
+$config->set('autoinstall_tarball_dir', $jconfig->get('xmit_torrent','tarballs_dir'));
+$config->set('autoinstall_torrent_dir', $jconfig->get('xmit_torrent','torrents_dir'));
+$config->set('rsyncd_conf', $jconfig->get('xmit_rsync','config_file'));
+$config->set('rsync_stub_dir', $jconfig->get('xmit_rsync','stubs_dir'));
+$config->set('tftp_dir', $jconfig->get('pxe','tftp_dir'));
+$config->set('net_boot_default', $jconfig->get('pxe','boot_mode'));
+
 
 # Push it up to main
 $::main::config = $config;
@@ -107,7 +130,7 @@ sub get_version {
         # This just returns the version number, looks silly,
         # but the string below is replaced during the build
         # process with the proper version.
-        my $SIVERSION="2.4.2svn20090612";
+        my $SIVERSION="2.6.3";
         return $SIVERSION;
 }
 

@@ -34,18 +34,19 @@ use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use SystemInstaller::Machine qw(linkscript synchosts);
-use SystemInstaller::Utils;
+#use SystemInstaller::Utils;
 use SystemInstaller::Util::IP;
+use SystemImager::JConfig;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);
 use File::Copy;
 use Data::Dumper;
 
-my %si_config = get_si_config();
+#my %si_config = get_si_config();
 
-#Set the path
-$ENV{PATH}=$si_config{'binpath'} .":" . $ENV{PATH};
+#Set the path OL:BUG: binpath is not a parameter of systemimager.conf file
+#$ENV{PATH}=$si_config{'binpath'} .":" . $ENV{PATH};
 
 my $clientdef;
 
@@ -201,7 +202,7 @@ sub check_args () {
 			carp("Image ". $config->image . " does not exist.");
 			return 0;
 		}
-        my $aiscript=$si_config{'autoinstall_script_dir'} . "/main-install/". $config->image .".master";
+        my $aiscript=$jconfig->get('imager','scripts_dir') . "/main-install/". $config->image .".master";
         unless(-e $aiscript) {
             carp("The autoinstall script for image does not exist ($aiscript).");
 			return 0;

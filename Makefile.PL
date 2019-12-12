@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 # The global version is stored here so that it can be used by 
 # the man page string in rewriting POD2MAN_EXE
 
-my $version = "2.6.2";
+my $version = "2.6.3";
 my $release = "1";
 my $releasex = "1";
 
