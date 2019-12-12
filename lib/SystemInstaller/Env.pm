@@ -1,9 +1,5 @@
 package SystemInstaller::Env;
 
-#   $Id$
-
-#   Copyright (c) 2001 International Business Machines
- 
 #   Copyright (c) 2007 Erich Focht <efocht@hpce.nec.com>
 #                      All rights reserved.
  
@@ -23,15 +19,23 @@ package SystemInstaller::Env;
  
 #   Michael Chase-Salerno <salernom@us.ibm.com>
 use strict;
-use base qw(Exporter);
-use vars qw($VERSION @EXPORT $config);
+use warnings;
+use 5.010;
+
+BEGIN {
+    use Exporter();
+
+    @SystemInstaller::Env::ISA       = qw(Exporter);
+    @SystemInstaller::Env::EXPORT    = qw(print_version get_version);
+    @SystemInstaller::Env::EXPORT_OK = qw($config);
+
+}
+
+use vars qw(@EXPORT $config);
+use AppConfig;
 use SystemImager::JConfig;
 
-@EXPORT = qw(print_version get_version);
-
-use AppConfig;
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+#$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 # Globally needed variables
 $config = AppConfig->new(
@@ -92,17 +96,17 @@ if (-e '/etc/systeminstaller/tksis.conf') {
 #if (-e '/etc/systemimager/systemimager.conf') {
 #    $config->file('/etc/systemimager/systemimager.conf');
 #}
-# systemimager.conf is deprecated. use $jconfig to inster needed values in $config.
-$config->set('default_image_dir', $jconfig->get('imager','images_dir'));
-$config->set('default_override_dir', $jconfig->get('imager','overrides_dir'));
-$config->set('autoinstall_script_dir', $jconfig->get('imager','scripts_dir'));
-$config->set('autoinstall_boot_dir', $jconfig->get('pxe','boot_files'));
-$config->set('autoinstall_tarball_dir', $jconfig->get('xmit_torrent','tarballs_dir'));
-$config->set('autoinstall_torrent_dir', $jconfig->get('xmit_torrent','torrents_dir'));
-$config->set('rsyncd_conf', $jconfig->get('xmit_rsync','config_file'));
-$config->set('rsync_stub_dir', $jconfig->get('xmit_rsync','stubs_dir'));
-$config->set('tftp_dir', $jconfig->get('pxe','tftp_dir'));
-$config->set('net_boot_default', $jconfig->get('pxe','boot_mode'));
+# systemimager.conf is deprecated. use $jconfig to insert needed values in $config.
+$config->set('default_image_dir', $main::jconfig->get('imager','images_dir'));
+$config->set('default_override_dir', $main::jconfig->get('imager','overrides_dir'));
+$config->set('autoinstall_script_dir', $main::jconfig->get('imager','scripts_dir'));
+$config->set('autoinstall_boot_dir', $main::jconfig->get('pxe','boot_files'));
+$config->set('autoinstall_tarball_dir', $main::jconfig->get('xmit_torrent','tarballs_dir'));
+$config->set('autoinstall_torrent_dir', $main::jconfig->get('xmit_torrent','torrents_dir'));
+$config->set('rsyncd_conf', $main::jconfig->get('xmit_rsync','config_file'));
+$config->set('rsync_stub_dir', $main::jconfig->get('xmit_rsync','stubs_dir'));
+$config->set('tftp_dir', $main::jconfig->get('pxe','tftp_dir'));
+$config->set('net_boot_default', $main::jconfig->get('pxe','boot_mode'));
 
 
 # Push it up to main
