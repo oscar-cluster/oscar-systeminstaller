@@ -240,7 +240,8 @@ sub clients_for_image {
 
 sub adapters_for_client {
     my ($client, $config) = @_;
-    my @adapters = list_adapter(client => $client);
+    my %h = (client=>$client);
+    my @adapters = list_adapter(\%h);
     return @adapters;
 }
 
