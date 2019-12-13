@@ -29,7 +29,7 @@ use SIS::Image;
 use SIS::NewDB;
 use SystemInstaller::Log qw (verbose);
 #use SystemInstaller::Utils;
-use SystemImager::JConfig;
+use SystemImager::JConfig qw($jconfig);
 use File::Copy;
 use Carp;
 
@@ -231,7 +231,7 @@ sub linkscript ($) {
         return 0;
     }
 
-    if (! -d $script_dir/main-install/) {
+    if (! -d "$script_dir/main-install/") {
         carp "ERROR: Destination directory does not exist";
         return 0;
     }

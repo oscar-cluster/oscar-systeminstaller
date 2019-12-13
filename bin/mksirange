@@ -36,7 +36,7 @@ use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use SystemInstaller::Machine qw(linkscript synchosts);
 #use SystemInstaller::Utils;
 use SystemInstaller::Util::IP;
-use SystemImager::JConfig;
+use SystemImager::JConfig qw($jconfig);
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);

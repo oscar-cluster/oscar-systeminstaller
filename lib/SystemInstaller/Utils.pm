@@ -21,7 +21,7 @@ package SystemInstaller::Utils;
 # OL: This file is deprecated => TO BE REMOVED (BUG)
 use strict;
 use AppConfig;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 

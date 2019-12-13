@@ -30,7 +30,7 @@ use strict;
 #use lib "/usr/lib/systeminstaller";
 
 use base qw(Exporter);
-use vars qw($VERSION @EXPORT @EXPORT_OK);
+use vars qw(@EXPORT @EXPORT_OK);
 use File::Path;
 use Carp;
 
@@ -50,8 +50,6 @@ use Carp;
             umount_recursive
             write_scconf
             );
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
 # OL: Kernel detection is using OS_Detect on $imagepath/bin/ach file in

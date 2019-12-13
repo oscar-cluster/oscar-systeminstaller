@@ -26,8 +26,7 @@ package SystemInstaller::Partition;
 #
 
 use strict;
-use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use vars qw(@EXPORT @EXPORT_OK);
 
 use base qw(Exporter);
 @EXPORT=qw(read_partition_info partition_setup change_disk_type);

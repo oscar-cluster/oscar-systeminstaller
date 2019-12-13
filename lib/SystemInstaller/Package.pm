@@ -27,7 +27,7 @@ package SystemInstaller::Package;
 #       <valleegr@ornl.gov>
 
 use base qw(Exporter);
-use vars qw($VERSION @EXPORT @EXPORT_OK);
+use vars qw(@EXPORT @EXPORT_OK);
 use SystemInstaller::Log qw (verbose);
 use SystemInstaller::Package::PackManSmart;
 use OSCAR::RepositoryManager;
@@ -39,8 +39,6 @@ use Cwd;
 
 @EXPORT = qw(pkg_install);
 @EXPORT_OK = qw(pkglist_read files_find files_install);
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 ################################################################################
 # Basic function that creates the basic image, including OSCAR packages. This  #

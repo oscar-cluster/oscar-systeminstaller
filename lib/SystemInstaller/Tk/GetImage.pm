@@ -25,7 +25,7 @@ use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Tk::Image;
 #use SystemInstaller::Utils;
-use SystemImager::JConfig;
+use SystemImager::JConfig qw($jconfig);
 use Carp;
 use strict;
 

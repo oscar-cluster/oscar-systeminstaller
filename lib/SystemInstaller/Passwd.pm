@@ -23,9 +23,7 @@ use Carp;
 use Data::Dumper;
 use strict;
 use base qw(Exporter);
-use vars qw($VERSION @EXPORT @EXPORT_OK  %EXPORT_TAGS);
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use vars qw(@EXPORT @EXPORT_OK  %EXPORT_TAGS);
 
 @EXPORT_OK = qw(update_user);
 

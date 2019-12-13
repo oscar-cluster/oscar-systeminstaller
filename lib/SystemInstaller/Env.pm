@@ -33,9 +33,7 @@ BEGIN {
 
 use vars qw(@EXPORT $config);
 use AppConfig;
-use SystemImager::JConfig;
-
-#$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
+use SystemImager::JConfig qw($jconfig);
 
 # Globally needed variables
 $config = AppConfig->new(

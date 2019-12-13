@@ -44,7 +44,7 @@ use SystemInstaller::Passwd qw(update_user);
 use Carp;
 use SystemImager::Server;
 use SystemImager::Common;
-use SystemImager::JConfig;
+use SystemImager::JConfig qw($jconfig);
 
 # OSCAR specific stuff
 use OSCAR::PackagePath;

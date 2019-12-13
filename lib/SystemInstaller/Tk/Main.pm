@@ -234,13 +234,13 @@ sub updateclient {
 
 sub clients_for_image {
     my ($image, $config) = @_;
-    my @clients = list_client(imagename=>$image);
+    my @clients = list_client(imagename => $image);
     return @clients;
 }
 
 sub adapters_for_client {
     my ($client, $config) = @_;
-    my @adapters = list_adapter(client=>$client);
+    my @adapters = list_adapter(client => $client);
     return @adapters;
 }
 

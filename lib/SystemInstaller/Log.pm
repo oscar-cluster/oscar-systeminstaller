@@ -24,7 +24,7 @@ use strict;
 use OSCAR::Env;
 
 require Exporter;
-use vars qw(@ISA @EXPORT_OK @EXPORT %EXPORT_TAGS $VERSION $DEBUG $VERBOSE $FH);
+use vars qw(@ISA @EXPORT_OK @EXPORT %EXPORT_TAGS $DEBUG $VERBOSE $FH);
 
 push @ISA, qw(Exporter);
 
@@ -41,8 +41,6 @@ push @ISA, qw(Exporter);
                );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 # The following are encapsulated so that we can change the internals without having to change
 # code that uses it
