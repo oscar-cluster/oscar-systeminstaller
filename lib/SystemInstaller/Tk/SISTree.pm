@@ -119,7 +119,7 @@ sub render {
                 $self->close("|$imgstring|$clientstring|Properties");
                 $self->add_sistree_entry("|$imgstring|$clientstring",'','Adapters','ADAPTOP');
                 foreach my $adapter ($self->LsadapCmd($clientstring)) {
-                    my $adapterstring = $adapter->devname;
+                    my $adapterstring = $adapter->{devname};
                     $self->add_sistree_entry("|$imgstring|$clientstring|Adapters",'',$adapterstring,'ADAP');
                     foreach my $key (keys %$adapter) {
                         if ($$adapter{$key}) {
