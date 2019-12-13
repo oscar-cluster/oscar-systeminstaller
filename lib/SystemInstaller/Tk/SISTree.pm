@@ -91,7 +91,7 @@ sub render {
     $self->add("|",-text => "All Images on Server",-itemtype => "text", -data => 'ROOT');
     $self->setmode("|","close");
     foreach my $image ($self->LsimageCmd()) {
-        my $imgstring = $image->name;
+        my $imgstring = $image->{name};
         $self->add_sistree_entry("", '-imageicon', $imgstring, 'IMG');
         # Deal with Images nicely
         $self->add_sistree_entry("|$imgstring",'','Properties','PROPTOP');
@@ -105,7 +105,7 @@ sub render {
         $self->setmode("|$imgstring|Properties","close");
         $self->close("|$imgstring|Properties");
         foreach my $client ($self->LsclientCmd($imgstring)) {
-            my $clientstring = $client->name;
+            my $clientstring = $client->{name};
             $self->add_sistree_entry("|$imgstring", '-clienticon', $clientstring, 'CLI');
                 $self->add_sistree_entry("|$imgstring|$clientstring",'','Properties','PROPTOP');
                 foreach my $key (keys %$client) {
