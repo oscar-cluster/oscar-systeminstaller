@@ -143,10 +143,10 @@ my %key_fields = (
 
 sub list_image { return list_common("image",@_)}
 
-sub list_adapter ($) {
-    my $optref = shift;
+sub list_adapter {
+    my %opt = @_;
 
-    my $res = OSCAR::Network::get_network_adapter ($optref);
+    my $res = OSCAR::Network::get_network_adapter (\%opt);
     if (!defined ($res)) {
         print "[INFO] Impossible to get the adapters\n";
         return undef;

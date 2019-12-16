@@ -15,6 +15,7 @@ package SystemInstaller::Tk::Main;
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 use strict;
+use warnings;
 use vars qw($VERSION @EXPORT);
 use Tk;
 use Carp;
@@ -240,9 +241,8 @@ sub clients_for_image {
 
 sub adapters_for_client {
     my ($client, $config) = @_;
-    my %h = (client=>$client);
-    my @adapters = list_adapter(\%h);
-    return @adapters;
+    my $adapters = list_adapter(client => $client);
+    return @{$adapters};
 }
 
 sub delete_items {
