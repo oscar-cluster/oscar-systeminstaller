@@ -1,3 +1,15 @@
+systeminstaller-oscar (2.6.4-1) lucid; urgency=low
+
+  * includes a working tksis
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Mon, 16 Dec 2019 18:55:29 +0200
+
+systeminstaller-oscar (2.6.3-1) lucid; urgency=low
+
+  * Ported to new SystemImager::JConfig
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 12 Dec 2019 15:17:22 +0200
+
 systeminstaller-oscar (2.6.2-1) lucid; urgency=low
 
   * Migrated to new SystemImager v4.9.0

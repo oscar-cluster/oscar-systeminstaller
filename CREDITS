@@ -35,6 +35,8 @@ Contributors to the OSCAR specific version:
 * Olivier Lahaye <olivier.lahaye@cea.fr>
   - Add GPU support
   - Migration to INSTALLDIRS=vendor
+  - Fix for tksis
+  - Migrated to new SystemImager::JConfig
 * many others from the OSCAR Team
 
 ========================================================================
