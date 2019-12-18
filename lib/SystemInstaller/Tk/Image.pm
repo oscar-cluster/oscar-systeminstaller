@@ -36,6 +36,7 @@ use POSIX;
 use Tk;
 use Tk::ProgressBar;
 use Tk::FileSelect;
+use SystemInstaller::Env qw($config);
 use SystemInstaller::Log qw (verbose get_verbose);
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
@@ -44,7 +45,7 @@ use SystemInstaller::Passwd qw(update_user);
 use Carp;
 use SystemImager::Server;
 use SystemImager::Common;
-use SystemImager::JConfig qw($jconfig);
+#use SystemImager::JConfig qw($jconfig);
 
 # OSCAR specific stuff
 use OSCAR::PackagePath;
@@ -754,8 +755,8 @@ sub add_image ($$) {
 
     print "[add_image] Starting... \n";
     #    my $config = SystemInstaller::Utils::init_si_config();
-    my $rsyncd_conf = $jconfig->get('xmit_rsync','config_file');
-    my $rsync_stub_dir = $jconfig->get('xmit_rsync','stubs_dir');
+    my $rsyncd_conf = $config->rsyncd_conf;
+    my $rsync_stub_dir = $config->rsync_stub_dir;
     my $verbose = &get_verbose();
 
     $window->Busy(-recurse => 1);

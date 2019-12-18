@@ -2,8 +2,6 @@
 
 use Tk;
 use Tk::Tree;
-#use lib '../lib','/usr/lib/systeminstaller','/usr/lib/systemimager/perl';
-use lib '../lib','/usr/lib/systemimager/perl';
 use strict;
 use SystemInstaller::Tk::Main;
 use SystemInstaller::Env;

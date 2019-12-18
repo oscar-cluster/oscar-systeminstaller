@@ -21,11 +21,10 @@ use AppConfig;
 use File::Copy;
 use POSIX;
 use Tk;
+use SystemInstaller::Env qw($config);
 use SystemInstaller::Tk::Common;
 use SystemInstaller::Tk::Help;
 use SystemInstaller::Tk::Image;
-#use SystemInstaller::Utils;
-use SystemImager::JConfig qw($jconfig);
 use Carp;
 use strict;
 
@@ -36,7 +35,7 @@ sub creategetimage_window {
 
     my $window = shift;
     my %vars = (
-                imgpath => $jconfig->get('imager','images_dir'),
+                imgpath => $config->default_image_dir,
                 imgname => "",
                 ipmeth => "",
                 client => "",
