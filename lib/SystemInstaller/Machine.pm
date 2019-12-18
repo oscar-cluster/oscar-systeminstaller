@@ -21,7 +21,7 @@ package SystemInstaller::Machine;
 
 
 use strict;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use base qw(Exporter);
 use SIS::Client;
 use SIS::Adapter;

@@ -25,15 +25,13 @@ use SystemInstaller::Log qw(verbose get_verbose);
 use OSCAR::PackMan;
 use Carp;
 
-use vars qw($VERSION $config);
+use vars qw($config);
 
 # The following two env var is needed by mandrake. It should not affect
 # anyone else in a negative way
 
 $ENV{SECURE_LEVEL} = 1;
  
-$VERSION = sprintf("r%d", q$Revision: 1111$ =~ /(\d+)/);
-
 #
 ## API FUNCTIONS
 #

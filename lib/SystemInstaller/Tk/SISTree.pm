@@ -1,8 +1,5 @@
 package SystemInstaller::Tk::SISTree;
 
-use vars qw($VERSION);
-$VERSION = '3.019'; # $Id$
-
 use Tk ();
 use Tk::Derived;
 use Tk::Tree;

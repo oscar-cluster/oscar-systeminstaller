@@ -29,7 +29,7 @@ SIS::Component;
 use strict;
 use Carp;
 use Data::Dumper;
-use vars qw($VERSION $AUTOLOAD @ATTR);
+use vars qw($AUTOLOAD @ATTR);
 
 # If this ever shows up, something is wrong.
 @ATTR = qw(I hate you kenny);

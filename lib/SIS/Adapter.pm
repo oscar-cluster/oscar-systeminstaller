@@ -21,11 +21,9 @@ package SIS::Adapter;
 #   Sean Dague <sean@dague.net>
 
 use strict;
-use vars qw($VERSION @ATTR); 
+use vars qw(@ATTR); 
 use base qw(SIS::Component);
 use SIS::NewDB;
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 @ATTR = qw(client mac ip netmask devname);
 

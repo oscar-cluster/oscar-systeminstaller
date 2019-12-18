@@ -24,11 +24,9 @@ package SIS::Client;
 #                       All rights reserved.
 
 use strict;
-use vars qw($VERSION @ATTR); 
+use vars qw(@ATTR); 
 use base qw(SIS::Component);
 use SIS::NewDB;
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 @ATTR = qw(route hostname domainname arch imagename name proccount);
 

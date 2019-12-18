@@ -33,9 +33,6 @@ package SystemInstaller::Partition::IA;
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #                       All rights reserved.
 
-use vars qw($VERSION);
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
-
 use strict;
 use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
 use Exporter;

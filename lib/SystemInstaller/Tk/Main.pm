@@ -16,7 +16,7 @@ package SystemInstaller::Tk::Main;
 
 use strict;
 use warnings;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use Tk;
 use Carp;
 #use SystemInstaller::Utils;

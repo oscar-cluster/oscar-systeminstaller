@@ -26,9 +26,6 @@ use strict;
 use File::Path;
 use Data::Dumper;
 use SystemInstaller::Log qw(:all);
-use vars qw($VERSION);
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 
 #
 ## API FUNCTIONS

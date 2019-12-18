@@ -25,10 +25,6 @@ use  File::Basename;
 use SystemInstaller::Log qw(verbose get_verbose);
 use Carp;
 
-use vars qw($VERSION);
-
-$VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
-
 #
 ## API FUNCTIONS
 #
