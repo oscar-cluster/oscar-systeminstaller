@@ -1,4 +1,9 @@
 ------------------------------------------------------------
+System Installer v2.6.5
+------------------------------------------------------------
+- Fix for mksiimage that was broken (systemimager.json changes)
+
+------------------------------------------------------------
 System Installer v2.6.4
 ------------------------------------------------------------
 - Fix for tksis that was broken long long ago (SIS DB change)
