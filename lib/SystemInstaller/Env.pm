@@ -95,16 +95,16 @@ if (-e '/etc/systeminstaller/tksis.conf') {
 #    $config->file('/etc/systemimager/systemimager.conf');
 #}
 # systemimager.conf is deprecated. use $jconfig to insert needed values in $config.
-$config->set('default_image_dir', $main::jconfig->get('Imager','images_dir'));
-$config->set('default_override_dir', $main::jconfig->get('Imager','overrides_dir'));
-$config->set('autoinstall_script_dir', $main::jconfig->get('Imager','scripts_dir'));
-$config->set('autoinstall_boot_dir', $main::jconfig->get('PXE','boot_files'));
+$config->set('default_image_dir', $main::jconfig->get('imager','images_dir'));
+$config->set('default_override_dir', $main::jconfig->get('imager','overrides_dir'));
+$config->set('autoinstall_script_dir', $main::jconfig->get('imager','scripts_dir'));
+$config->set('autoinstall_boot_dir', $main::jconfig->get('pxe','boot_files'));
 $config->set('autoinstall_tarball_dir', $main::jconfig->get('xmit_torrent','tarballs_dir'));
 $config->set('autoinstall_torrent_dir', $main::jconfig->get('xmit_torrent','torrents_dir'));
 $config->set('rsyncd_conf', $main::jconfig->get('xmit_rsync','config_file'));
 $config->set('rsync_stub_dir', $main::jconfig->get('xmit_rsync','stubs_dir'));
-$config->set('tftp_dir', $main::jconfig->get('PXE','tftp_dir'));
-$config->set('net_boot_default', $main::jconfig->get('PXE','boot_mode'));
+$config->set('tftp_dir', $main::jconfig->get('pxe','tftp_dir'));
+$config->set('net_boot_default', $main::jconfig->get('pxe','boot_mode'));
 
 
 # Push it up to main
