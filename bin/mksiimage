@@ -189,6 +189,10 @@ if ($config->Add) {
     verbose "---> Name: " . $config->name;
     verbose "---> Rsync stub directory: " . $config->rsync_stub_dir . "\n";
 
+    #
+    # BUG: Check $config->path: refuse "" and "/"
+    #
+
     if ($config->build) {
         # Some more sanity check
         my $list = $config->filename;
@@ -277,6 +281,10 @@ if ($config->Add) {
             $config->path,
             $config->arch,
             @{$config->filename})) {
+                    # On failure, the pkg_install will umount binded filesystems.
+		    # If for some unknown reasons this si not done, the si_rmimage
+		    # called by del_image is protected against recursive delete if
+		    # it finds a mounted filesystem beneath imager tree.
 	            &del_image($config->name);
                 unlink $filename;
                 # Filesystem umount is handeled by OSCAR::PackMan::END
