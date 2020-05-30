@@ -127,6 +127,8 @@ fi
 
 
 %changelog
+* Sat May 30 2020 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.6-1
+- New version (includes an important bug fix for mksiimage)
 * Tue May 19 2020 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.5-1
 - New version (includes a working mksiimage)
 * Mon Dec 16 2019 Olivier Lahaye <olivier.lahaye@cea.fr> 2.6.4-1

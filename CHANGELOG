@@ -1,4 +1,10 @@
 ------------------------------------------------------------
+System Installer v2.6.6
+------------------------------------------------------------
+- Fix for mksiimage so it won't destroy host binded filesystems
+  if bootstrap fails.
+
+------------------------------------------------------------
 System Installer v2.6.5
 ------------------------------------------------------------
 - Fix for mksiimage that was broken (systemimager.json changes)
