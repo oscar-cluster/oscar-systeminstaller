@@ -173,7 +173,7 @@ if ($config->Add) {
         die "ERROR: Invalid image path ($dir)";
     }
     if (! -d $config->rsync_stub_dir) {
-        die "ERROR: Invalid rsunc stub dir (".$config->rsync_stub_dir.")";
+        die "ERROR: Invalid rsync stub dir (".$config->rsync_stub_dir.")";
     }
     if (! OSCAR::Distro::is_a_valid_distro_id ($config->distro)) {
         die "ERROR: Invalid distro ID (".$config->distro.")";
