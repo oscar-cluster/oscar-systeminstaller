@@ -1,5 +1,5 @@
 Source: systeminstaller-oscar
-Section: oscar
+Section: science
 Priority: optional
 Maintainer: Geoffroy Vallee <valleegr@ornl.gov>
 Build-Depends: debhelper (>= 4.0.0), perl, libappconfig-perl, libdbd-csv-perl, libsql-statement-perl, libtext-csv-perl, libmldbm-sync-perl, libmldbm-perl 
@@ -20,7 +20,7 @@ Description: System Installer Tk Gui
 
 Package: systeminstaller-oscar
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, systemimager-server, orm, libmldbm-perl, liboscar (> 6.0.4), oda (> 1.4.2)
+Depends: ${shlibs:Depends}, ${misc:Depends}, systemimager-server, orm, libmldbm-perl, liboscar-server (> 6.2.1), oda (> 1.4.2)
 Description: System Installer for the OSCAR cluster stack
  System Installer provides a unified image building tool.
  It is intended to be distribution and architecture
