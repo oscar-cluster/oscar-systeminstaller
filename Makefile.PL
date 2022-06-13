@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 # the man page string in rewriting POD2MAN_EXE
 
 my $version = "2.6.6";
-my $release = "1";
+my $release = "2";
 my $releasex = "1";
 
 sub MY::postamble {
