@@ -32,6 +32,7 @@ sub init_si_config {
         DEFAULT_IMAGE_DIR => { ARGCOUNT => 1},
         DEFAULT_OVERRIDE_DIR => { ARGCOUNT => 1},
         AUTOINSTALL_SCRIPT_DIR => { ARGCOUNT => 1},
+        AUTOINSTALL_CONFIG_DIR => { ARGCOUNT => 1},
         AUTOINSTALL_BOOT_DIR => { ARGCOUNT => 1},
         RSYNCD_CONF => { ARGCOUNT => 1},
         RSYNC_STUB_DIR => { ARGCOUNT => 1},
