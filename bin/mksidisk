@@ -33,6 +33,7 @@ $VERSION = sprintf("%d", q$Revision$ =~ /(\d+)/);
 #use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::NewDB;
+
 use SystemInstaller::Partition;
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose verbose logger_file); 
@@ -140,7 +141,7 @@ if ($config->List) {
         carp("name is a required parameter\n");
         &usage;
     }
-    my $aiconffile = $jconfig->get('imager','scripts_dir') . "/disks-layouts/" . $image_data->{'name'} . ".xml";
+    my $aiconffile = $config->get('autoinstall_script_dir') . "/disks-layouts/" . $image_data->{'name'} . ".xml";
     unless(-e $aiconffile) {
         carp("The disk layout for image [$image_data->{'name'}] does not exist ($aiconffile).");
         return 0;

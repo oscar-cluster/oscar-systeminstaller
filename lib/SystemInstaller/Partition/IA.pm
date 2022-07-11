@@ -33,18 +33,19 @@ package SystemInstaller::Partition::IA;
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #                       All rights reserved.
 
+use SystemInstaller::Env qw($config);
 use strict;
-use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
-use Exporter;
 #use lib "/usr/lib/systemconfig";
 #use lib "/usr/lib/systeminstaller";
+use vars qw(@EXPORT @ISA $drive_prefix $systemimager_path $udev_dir);
+use Exporter;
 use SystemInstaller::Log qw(verbose); 
 use SystemInstaller::Image;
 use SIS::NewDB;
 use SystemConfig::Initrd::Generic;
 use Data::Dumper;
 use Carp;
- 
+
 $systemimager_path = "/etc/systemimager";
 
 sub create_partition_file {
@@ -54,7 +55,7 @@ sub create_partition_file {
 # Returns:      1 if failure, 0 if ok
 #
 	my $iname = shift;
-    my %DISKS = @_;
+	my %DISKS = @_;
 	my @found_devices;
 	my %disk_devices;
 	my $device;
@@ -217,12 +218,16 @@ sub check_partitioning ($%) {
 # Returns: 0 if success, 1 else.
 sub build_aiconf_file {
     my ($image_name,%DISKS) = @_;
+    my $image_dir = $config->get('default_image_dir');
+    carp("ERROR: Path to imagedir not found. Pleas check /etc/systemimager/systemimager.json") if (! -d "$image_dir");
+    my $disks_layouts_dir = $config->get('autoinstall_script_dir') . "/disks-layouts";
+    carp("ERROR: Path to disks layouts not found. Pleas check scripts_dir in /etc/systemimager/systemimager.json") if (! -d "$disks_layouts_dir");
     local *AICONF;
 
     # Can we get the filename from the systemimager.conf file?
-    my $file = "/var/lib/systemimager/scripts/disks-layouts/$image_name.xml"
+    my $file = "$disks_layouts_dir/$image_name.xml";
     unless (open (AICONF,">$file")) { 
-        carp("ERROR: Can't open $image_name.xml in /var/lib/systemimager/scripts/disks-layouts/.");
+        carp("ERROR: Can't open $image_name.xml in $disks_layouts_dir/.");
         return 1;
     }
 

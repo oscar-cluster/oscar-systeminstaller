@@ -158,7 +158,7 @@ sub mount_order {
         }
         # Now smush them all into 1 list
         foreach (1..(scalar(@FS)-1)) {
-    	   if ( defined (@{$FS[$_]} ) ) {
+    	   if ( scalar (@{$FS[$_]} ) ) {
 		push @{$FS[0]},@{$FS[$_]};
            }
         }
@@ -324,7 +324,7 @@ sub partition_setup {
 		print STDERR "ERROR: ".$image[0]->arch." is not a recognized architecture\n";
 		return 1;
 	}
-        &verbose("Writing updateclient exclude file");a # OL: OBSOLETE
+        &verbose("Writing updateclient exclude file"); # OL: OBSOLETE
         unless (&write_exclude_file($image[0]->{location},%DISKS)) {
 		carp("Failed to write exclude file to image");
 		return 1;
