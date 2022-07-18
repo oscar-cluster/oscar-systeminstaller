@@ -212,7 +212,7 @@ sub check_partitioning ($%) {
     return (0, $extended_part_num);
 }
 
-# Create an disk-layout.conf file to be used
+# Create an disks-layout.conf file to be used
 # by SystemImager's during client imaging.
 # Input:  partition table created from input partition_file
 # Returns: 0 if success, 1 else.
@@ -221,6 +221,7 @@ sub build_aiconf_file {
     my ($image_name,%DISKS) = @_;
     my $image_dir = $config->get('default_image_dir');
     carp("ERROR: Path to imagedir not found. Pleas check /etc/systemimager/systemimager.json") if (! -d "$image_dir");
+    $image_dir .= "/${image_name}";
     my $disks_layouts_dir = $config->get('autoinstall_script_dir') . "/disks-layouts";
     carp("ERROR: Path to disks layouts not found. Pleas check scripts_dir in /etc/systemimager/systemimager.json") if (! -d "$disks_layouts_dir");
     local *AICONF;
