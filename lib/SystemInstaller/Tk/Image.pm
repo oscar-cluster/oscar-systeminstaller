@@ -317,7 +317,7 @@ sub createimage_basic_window ($%) {
     #  What is the post install action?
     #
 
-    my @postinstall = qw(beep reboot shutdown kexec);
+    my @postinstall = qw(shell reboot kexec shutdown poweroff directboot);
 
     my $postoption = label_option_line($image_window, "Post Install Action",
                        \$vars{piaction},\@postinstall, "x",
