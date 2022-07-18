@@ -226,9 +226,9 @@ sub build_aiconf_file {
     local *AICONF;
 
     # Can we get the filename from the systemimager.conf file?
-    my $file = "$disks_layouts_dir/$image_name.xml";
+    my $file = "$disks_layouts_dir/${image_name}.xml";
     unless (open (AICONF,">$file")) { 
-        carp("ERROR: Can't open $image_name.xml in $disks_layouts_dir/.");
+        carp("ERROR: Can't open ${image_name}.xml in $disks_layouts_dir/.");
         return 1;
     }
 
