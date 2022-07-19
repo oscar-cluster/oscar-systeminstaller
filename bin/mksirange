@@ -25,7 +25,7 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 use strict;
-use vars qw($config $VERSION);
+use vars qw($jconfig $config $VERSION);
 $VERSION = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 use SIS::Client;
 use SIS::Adapter;
@@ -36,7 +36,7 @@ use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use SystemInstaller::Machine qw(linkscript synchosts);
 #use SystemInstaller::Utils;
 use SystemInstaller::Util::IP;
-use SystemImager::JConfig qw($jconfig);
+use SystemImager::JConfig;
 use POSIX;
 use Carp;
 use AppConfig qw(:argcount);
@@ -203,10 +203,9 @@ sub check_args () {
 			return 0;
 		}
         my $aiscript=$jconfig->get('imager','scripts_dir') . "/main-install/". $config->image .".master";
-        unless(-e $aiscript) {
-            carp("The autoinstall script for image does not exist ($aiscript).");
-			return 0;
-		}
+        if( ! -e $aiscript) {
+		print("INFO: Optional main-install script does not exists.\n");
+		print("INFO: Looked for [$aiscript]\n");
 	}
 	foreach my $opt ( qw(basename ipstart count image) ) {
 		if (! $config->$opt){
