@@ -293,12 +293,12 @@ if ($config->Add) {
 
         unlink $filename;
 
-        &verbose("Adding SIS files.");
-        if (&SystemInstaller::Image::init_image($config->path) == 1) {
-            &del_image($config->name);
-            croak("Image initialization failed\n");
-        }
-
+	#        &verbose("Adding SIS files.");
+	#        if (&SystemInstaller::Image::init_image($config->path) == 1) {
+	#            &del_image($config->name);
+	#            croak("Image initialization failed\n");
+	#        }
+	#
 #         &verbose("Unmounting /proc.");
 #         if (system("umount $procpath")){
 # 	    	carp("Unable to unmount /proc in the image.");

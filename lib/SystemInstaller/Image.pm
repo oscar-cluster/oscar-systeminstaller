@@ -37,18 +37,14 @@ use Carp;
 @EXPORT = qw(
             cp_image
             del_image
-            init_image
             split_version
             umount_recursive
-            write_scconf
             );
 @EXPORT_OK = qw(
             cp_image
             del_image
-            init_image
             split_version
             umount_recursive
-            write_scconf
             );
 
 my @MODS=qw(Kernel_ia64 Kernel_iseries Kernel_x86);
@@ -62,22 +58,22 @@ use SystemInstaller::Image::Kernel_iseries; # Should be Kernel_ppc64;
 
 use SystemInstaller::Log qw(verbose get_verbose);
 
-sub init_image {
-# Creates the image directories 
+#sub init_image {
+## Creates the image directories 
+##
+## Input: 	Image root directory
+## Returns:	1 if failure, 0 if ok
 #
-# Input: 	Image root directory
-# Returns:	1 if failure, 0 if ok
-
-	my $root = shift;
-# 	mkpath(["$root/usr/lib","$root/var","$root/home","$root/tmp","$root/boot","$root/proc","$root/root"]);
-	mkpath(["$root/etc/systemimager/partitionschemes"]);
-	mkpath(["$root/etc/systemconfig"]);
-	# Check that something worked.
-	unless (-d "$root/etc/systemconfig" ){
-		return 1;
-	}
-	return 0;
-} #init_image
+#	my $root = shift;
+## 	mkpath(["$root/usr/lib","$root/var","$root/home","$root/tmp","$root/boot","$root/proc","$root/root"]);
+#	mkpath(["$root/etc/systemimager/partitionschemes"]);
+#	#mkpath(["$root/etc/systemconfig"]);
+#	# Check that something worked.
+#	unless (-d "$root/etc/systemimager/partitionschemes" ){
+#		return 1;
+#	}
+#	return 0;
+#} #init_image
 
 
 sub del_image {
@@ -155,69 +151,69 @@ sub find_initrd ($$) {
 # Input: imagedir, root device, boot device
 # Return: 1 if success, 0 else.
 # OL: OBSOLETE
-sub write_scconf ($$$) {
-    my $imagedir=shift;
-    my $root=shift;
-    my $boot=shift;
-    my $scfile="$imagedir/etc/systemconfig/systemconfig.conf";
-
-    # Make sure we have all input
-    if (! -d $imagedir) {
-        carp "ERROR: $imagedir does not exist";
-        return 0;
-    }
-    if (-f $scfile) {
-        print "[INFO] $scfile already exists, we exist successfully.\n";
-        return 1;
-    }
-    use OSCAR::Utils;
-    if (!OSCAR::Utils::is_a_valid_string ($root)) {
-        carp "ERROR: Invalid root device";
-        return 0;
-    }
-    if (!OSCAR::Utils::is_a_valid_string ($boot)) {
-        carp "ERROR: Invalid boot parameter";
-        return 0;
-    }
-
-    unless (open(SCFILE,">$scfile")) {
-        carp("Cannot open System Configurator conf file $scfile!");
-        return 0;
-    }
-    # Print the first part of the file, the static data and the boot 
-    # devices.
-    print SCFILE "# systemconfig.conf written by systeminstaller.\n";
-    print SCFILE "CONFIGBOOT = YES\nCONFIGRD = YES\n\n[BOOT]\n";
-    print SCFILE "\tROOTDEV = $root\n\tBOOTDEV = $boot\n";
-
-    # Now find the kernels.
-    my @kernels = find_kernels($imagedir);
-    if (scalar (@kernels) == 0) {
-        carp "ERROR: Impossible to find kernels";
-        return 0;
-    }
-    my $i=0;
-    my $default=0;
-
-    foreach (@kernels){
-        my ($path,$label)=split;
-        if (!$default) {
-            print SCFILE "\tDEFAULTBOOT = $label\n\n";
-            $default++;
-        }
-        print SCFILE "[KERNEL$i]\n";
-        print SCFILE "\tPATH = $path\n";
-        my $initrd = find_initrd ($imagedir, $label);
-        if (defined $initrd) {
-            print SCFILE "\tINITRD = $initrd\n";
-        }
-        print SCFILE "\tLABEL = $label\n\n";
-        $i++;
-    }
-    close SCFILE;
-
-    return 1;
-} #write_scconf
+#sub write_scconf ($$$) {
+#    my $imagedir=shift;
+#    my $root=shift;
+#    my $boot=shift;
+#    my $scfile="$imagedir/etc/systemconfig/systemconfig.conf";
+#
+#    # Make sure we have all input
+#    if (! -d $imagedir) {
+#        carp "ERROR: $imagedir does not exist";
+#        return 0;
+#    }
+#    if (-f $scfile) {
+#        print "[INFO] $scfile already exists, we exist successfully.\n";
+#        return 1;
+#    }
+#    use OSCAR::Utils;
+#    if (!OSCAR::Utils::is_a_valid_string ($root)) {
+#        carp "ERROR: Invalid root device";
+#        return 0;
+#    }
+#    if (!OSCAR::Utils::is_a_valid_string ($boot)) {
+#        carp "ERROR: Invalid boot parameter";
+#        return 0;
+#    }
+#
+#    unless (open(SCFILE,">$scfile")) {
+#        carp("Cannot open System Configurator conf file $scfile!");
+#        return 0;
+#    }
+#    # Print the first part of the file, the static data and the boot 
+#    # devices.
+#    print SCFILE "# systemconfig.conf written by systeminstaller.\n";
+#    print SCFILE "CONFIGBOOT = YES\nCONFIGRD = YES\n\n[BOOT]\n";
+#    print SCFILE "\tROOTDEV = $root\n\tBOOTDEV = $boot\n";
+#
+#    # Now find the kernels.
+#    my @kernels = find_kernels($imagedir);
+#    if (scalar (@kernels) == 0) {
+#        carp "ERROR: Impossible to find kernels";
+#        return 0;
+#    }
+#    my $i=0;
+#    my $default=0;
+#
+#    foreach (@kernels){
+#        my ($path,$label)=split;
+#        if (!$default) {
+#            print SCFILE "\tDEFAULTBOOT = $label\n\n";
+#            $default++;
+#        }
+#        print SCFILE "[KERNEL$i]\n";
+#        print SCFILE "\tPATH = $path\n";
+#        my $initrd = find_initrd ($imagedir, $label);
+#        if (defined $initrd) {
+#            print SCFILE "\tINITRD = $initrd\n";
+#        }
+#        print SCFILE "\tLABEL = $label\n\n";
+#        $i++;
+#    }
+#    close SCFILE;
+#
+#    return 1;
+#} #write_scconf
 
 # Builds the systemconfig.conf
 #
@@ -276,14 +272,18 @@ SystemInstaller::Image - Interface to Images for SystemInstaller
 
  use SystemInstaller::Image;
 
- if (&SystemInstaller::Image::init_image("/var/images/image1") {
-	printf "Image initialization failed\n";
+ if (&SystemInstaller::Image::del_image("/var/images/image1") {
+	printf "Image deletion failed\n";
+ }
+
+ if (&SystemInstaller::Image::cp_image("/var/images/image1", /var/images/image2) {
+	printf "Image copy failed\n";
  }
 
 =head1 DESCRIPTION
 
-SystemInstaller::Image provides an interface to creating images
-for SystemInstaller.
+SystemInstaller::Image provides an interface to copying and
+deleting images for SystemInstaller.
 
 =head1 AUTHOR
  

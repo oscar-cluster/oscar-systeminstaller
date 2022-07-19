@@ -428,99 +428,99 @@ sub build_aiconf_file {
 } # build_aiconf_file
 
 # OL: OBSOLETE
-sub build_sfdisk_file {
-# Create a file that resembles the output of "sfdisk -l -uM <dev>" which will 
-# be used by SystemImager getimage to build a sfdisk command.  
-# Input:  partition table created from input partition_file
-# Returns:
-	my ($image_dir,%DISKS) = @_;
-        my @opendevs;
-        my %DISKPARS=();
-
-	# remove existing device files
-	system("/bin/rm -f $image_dir/$systemimager_path/partitionschemes/*");
-
-	&verbose("Mapping partitions to disks.");
-        foreach my $dev (keys(%{$DISKS{PARTITIONS}})) {
-                # Figure out the diskname
-                my $diskname=$dev;
-                if ($dev=~/c[0-9]+d[0-9]+p[0-9]*$/) {
-                    $diskname=~s/p[0-9]*$//;
-                } else {
-                    $diskname=~s/[0-9]*$//;
-                }
-                $diskname=~s/^\/dev\///;
-                my $parnum=$dev;
-                $parnum=~s/\/dev\/$diskname//;
-                $DISKPARS{$diskname}[$parnum]=$dev;
-        }
-        foreach my $disk (keys(%DISKPARS)) {
-                my $extended_par_created = 1;
-                # Start the file for this disk
-                &verbose("Initializing file for $disk");
-                unless (open(SFDISK_FILE,">$image_dir/$systemimager_path/partitionschemes/$disk")) {
-                        carp("Unable to create disk partition file $image_dir/$systemimager_path/partitionschemes/$disk");
-                        return 1;
-                }
-                print SFDISK_FILE "\n##File created by SystemInstaller for input to SystemImager##\n";
-                print SFDISK_FILE "Units = megabytes\n\n";
-                print SFDISK_FILE "Device\tBoot\tStart\tEnd\tMB\t#blocks\tId\n";
-
-                # Now put the partitions in there.
-                foreach my $parnum (1..4) {
-                        my $dev=$DISKPARS{$disk}[$parnum];
-                        if ($dev=~/.*dev*/ ) {
-                                print SFDISK_FILE "$dev  $DISKS{PARTITIONS}{$dev}{BOOTABLE} \t0 \txx \t$DISKS{PARTITIONS}{$dev}{SIZE} \txx \t$DISKS{PARTITIONS}{$dev}{TYPE}\n";
-                        } elsif ($extended_par_created && (scalar(@{$DISKPARS{$disk}})-1) > 4 ) {
-                                print SFDISK_FILE "/dev/$disk$parnum \t0 \txx \t99 \txx \t5\n";
-                                $extended_par_created = 0;
-                        } else {
-                                print SFDISK_FILE "/dev/$disk$parnum \t0 \txx \t0 \txx \t0\n";
-                        }
-
-                }
-                foreach my $parnum (5..(scalar(@{$DISKPARS{$disk}})-1)) {
-                        my $dev=$DISKPARS{$disk}[$parnum];
-                        print SFDISK_FILE "$dev  $DISKS{PARTITIONS}{$dev}{BOOTABLE} \t0 \txx \t$DISKS{PARTITIONS}{$dev}{SIZE} \txx \t$DISKS{PARTITIONS}{$dev}{TYPE}\n";
-                }
-        }
-
-        return 0;
-
-} # build_sfdisk_file
-
+#sub build_sfdisk_file {
+## Create a file that resembles the output of "sfdisk -l -uM <dev>" which will 
+## be used by SystemImager getimage to build a sfdisk command.  
+## Input:  partition table created from input partition_file
+## Returns:
+#	my ($image_dir,%DISKS) = @_;
+#        my @opendevs;
+#        my %DISKPARS=();
+#
+#	# remove existing device files
+#	system("/bin/rm -f $image_dir/$systemimager_path/partitionschemes/*");
+#
+#	&verbose("Mapping partitions to disks.");
+#        foreach my $dev (keys(%{$DISKS{PARTITIONS}})) {
+#                # Figure out the diskname
+#                my $diskname=$dev;
+#                if ($dev=~/c[0-9]+d[0-9]+p[0-9]*$/) {
+#                    $diskname=~s/p[0-9]*$//;
+#                } else {
+#                    $diskname=~s/[0-9]*$//;
+#                }
+#                $diskname=~s/^\/dev\///;
+#                my $parnum=$dev;
+#                $parnum=~s/\/dev\/$diskname//;
+#                $DISKPARS{$diskname}[$parnum]=$dev;
+#        }
+#        foreach my $disk (keys(%DISKPARS)) {
+#                my $extended_par_created = 1;
+#                # Start the file for this disk
+#                &verbose("Initializing file for $disk");
+#                unless (open(SFDISK_FILE,">$image_dir/$systemimager_path/partitionschemes/$disk")) {
+#                        carp("Unable to create disk partition file $image_dir/$systemimager_path/partitionschemes/$disk");
+#                        return 1;
+#                }
+#                print SFDISK_FILE "\n##File created by SystemInstaller for input to SystemImager##\n";
+#                print SFDISK_FILE "Units = megabytes\n\n";
+#                print SFDISK_FILE "Device\tBoot\tStart\tEnd\tMB\t#blocks\tId\n";
+#
+#                # Now put the partitions in there.
+#                foreach my $parnum (1..4) {
+#                        my $dev=$DISKPARS{$disk}[$parnum];
+#                        if ($dev=~/.*dev*/ ) {
+#                                print SFDISK_FILE "$dev  $DISKS{PARTITIONS}{$dev}{BOOTABLE} \t0 \txx \t$DISKS{PARTITIONS}{$dev}{SIZE} \txx \t$DISKS{PARTITIONS}{$dev}{TYPE}\n";
+#                        } elsif ($extended_par_created && (scalar(@{$DISKPARS{$disk}})-1) > 4 ) {
+#                                print SFDISK_FILE "/dev/$disk$parnum \t0 \txx \t99 \txx \t5\n";
+#                                $extended_par_created = 0;
+#                        } else {
+#                                print SFDISK_FILE "/dev/$disk$parnum \t0 \txx \t0 \txx \t0\n";
+#                        }
+#
+#                }
+#                foreach my $parnum (5..(scalar(@{$DISKPARS{$disk}})-1)) {
+#                        my $dev=$DISKPARS{$disk}[$parnum];
+#                        print SFDISK_FILE "$dev  $DISKS{PARTITIONS}{$dev}{BOOTABLE} \t0 \txx \t$DISKS{PARTITIONS}{$dev}{SIZE} \txx \t$DISKS{PARTITIONS}{$dev}{TYPE}\n";
+#                }
+#        }
+#
+#        return 0;
+#
+#} # build_sfdisk_file
+#
 # OL: OBSOLETE
-sub create_systemconfig_conf {
-# Create the /etc/systemconfig/systemconfig.conf file for the image
-# Input:        image path, %DISKS structure
-# Returns:      1 if failure, 0 if ok
-	my ($ipath,%DISKS) = @_;
-
-	&verbose("Modifying systemconfig.conf file for image."); 
-	my ($rootdev, $bootdev);
-        foreach my $dev (keys %{$DISKS{FILESYSTEMS}}) {
-                if ($DISKS{FILESYSTEMS}{$dev}{MOUNT} eq "/") {
-                        $rootdev=$dev;
-                }
-		if ($DISKS{FILESYSTEMS}{$dev}{MOUNT} =~ m/\/boot/) {
-			$bootdev=$dev;
-		}
-	}
-	if (!$rootdev) {
-		return 1;
-	}
-	if (!$bootdev) {
-		$bootdev=$rootdev;
-	}
-	if (!($bootdev =~ m:/dev/md:)) {
-        if ($bootdev =~ /c[0-9]+d[0-9]+p[0-9]*$/) {
-            $bootdev =~ s/p[0-9]*$//;
-        } else {
-    		$bootdev =~ s/[0-9]*$//;
-        }
-	}
-	return SystemInstaller::Image::write_scconf($ipath, $rootdev, $bootdev);
-} # create_systemconfig_conf
+#sub create_systemconfig_conf {
+## Create the /etc/systemconfig/systemconfig.conf file for the image
+## Input:        image path, %DISKS structure
+## Returns:      1 if failure, 0 if ok
+#	my ($ipath,%DISKS) = @_;
+#
+#	&verbose("Modifying systemconfig.conf file for image."); 
+#	my ($rootdev, $bootdev);
+#        foreach my $dev (keys %{$DISKS{FILESYSTEMS}}) {
+#                if ($DISKS{FILESYSTEMS}{$dev}{MOUNT} eq "/") {
+#                        $rootdev=$dev;
+#                }
+#		if ($DISKS{FILESYSTEMS}{$dev}{MOUNT} =~ m/\/boot/) {
+#			$bootdev=$dev;
+#		}
+#	}
+#	if (!$rootdev) {
+#		return 1;
+#	}
+#	if (!$bootdev) {
+#		$bootdev=$rootdev;
+#	}
+#	if (!($bootdev =~ m:/dev/md:)) {
+#        if ($bootdev =~ /c[0-9]+d[0-9]+p[0-9]*$/) {
+#            $bootdev =~ s/p[0-9]*$//;
+#        } else {
+#    		$bootdev =~ s/[0-9]*$//;
+#        }
+#	}
+#	return SystemInstaller::Image::write_scconf($ipath, $rootdev, $bootdev);
+#} # create_systemconfig_conf
 
 =head1 NAME
 
