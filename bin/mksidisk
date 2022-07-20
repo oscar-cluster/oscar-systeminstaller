@@ -146,6 +146,15 @@ if ($config->List) {
         carp("The disk layout for image [$image_data->{'name'}] does not exist ($aiconffile).");
         return 0;
     }
+    # Validate file before trying to parse it
+     my $cmd = 'xmlstarlet val --err --xsd /usr/lib/dracut/modules.d/51systemimager/disks-layout.xsd ';
+    $cmd .= $aiconffile;
+    my $output = `$cmd`;
+
+    if ( $output !~ m/ - valid/) {
+        carp("The disk layout for image [$image_data->{'name'}] is not valid!\nCheck $aiconffile\nMore info in systemimager.disks-layout(7) manual.\n");
+	return 0;
+    }
 
     my $aiconf = XMLin($aiconffile,  forcearray => 1 );
     unless ($aiconf) {
@@ -154,52 +163,79 @@ if ($config->List) {
     }
 
     if ($config->parse) {
-            print "#Partition/Disk information\n";
+        print "#Partition/Disk information\n";
     } else {
-            print "\nDisk and Partition information\n";
+        print "\nDisk and Partition information\n";
     }
     foreach my $disk (@{$aiconf->{disk}}) {
-            if ($config->parse) {
-                    print "#Device:Units:LabelType\n";
-                    print "$disk->{dev}:$disk->{unit_of_measurement}:$disk->{label_type}\n";
-                    print "#PartNum:Size:PartType\n";
-            } else {
-                    print "-------------------------------------------------------------\n";
-                    printf "Disk: %-15.15s Units: %-5.5s Label type: %-10.10s\n",$disk->{dev}, $disk->{unit_of_measurement},$disk->{label_type};
-                    print "-------------------------------------------------------------\n";
-                    print "Part Num   Size            Part Type\n";
-                    print "-------------------------------------------------------------\n";
-            }
-            foreach my $part (@{$disk->{part}}) {
-                    if ($config->parse) {
-                            print "$part->{num}:$part->{size}:$part->{p_type}\n";
-                    } else {
-                            printf "%-10.10s %-15.15s %-15.15s\n",$part->{num},$part->{size},$part->{p_type};
-                    }
-            }
-        }
         if ($config->parse) {
-                print "#Filesystem information\n";
-                print "#Device:MountPoint:Type:Options:D:P\n";
+            print "#Device:Units:LabelType\n";
+            print "$disk->{dev}:$disk->{unit_of_measurement}:$disk->{label_type}\n";
+            print "#PartNum:Size:PartType\n";
         } else {
-                print "-------------------------------------------------------------\n";
-                print "Filesystem information\n";
-                print "-------------------------------------------------------------\n";
-                print "Device               Mount Point      Type   Options      D P\n";
-                print "-------------------------------------------------------------\n";
-
+            print "-------------------------------------------------------------\n";
+            printf "Disk: %-15.15s Units: %-5.5s Label type: %-10.10s\n",$disk->{dev}, $disk->{unit_of_measurement},$disk->{label_type};
+            print "-------------------------------------------------------------\n";
+            print "Part Num   Size            Part Type\n";
+            print "-------------------------------------------------------------\n";
         }
-        foreach my $mount (@{$aiconf->{fsinfo}}) {
-                if ($config->parse) {
-                        my $mntdev=$mount->{real_dev};
-                        $mntdev=~s/:/#/;
-                        print "$mntdev:$mount->{mp}:$mount->{fs}:$mount->{options}:$mount->{dump}:$mount->{pass}\n";
-                } else {
-                        printf "%-20.20s %-16.16s %-6.6s %-12.12s %-1.1s %-1.1s\n",$mount->{real_dev},$mount->{mp},$mount->{fs},$mount->{options},$mount->{dump},$mount->{pass};
-                }
+        foreach my $part (@{$disk->{part}}) {
+            if ($config->parse) {
+                print "$part->{num}:$part->{size}:$part->{p_type}\n";
+            } else {
+                printf "%-10.10s %-15.15s %-15.15s\n",$part->{num},$part->{size},$part->{p_type};
+            }
         }
+    }
+    if ($config->parse) {
+        print "#Filesystem information\n";
+        print "#Device:MountPoint:Type:Options:D:P\n";
+    } else {
+        print "-------------------------------------------------------------\n";
+        print "Filesystem information\n";
+        print "-------------------------------------------------------------\n";
+        print "Device               Mount Point      Type   Options      D P\n";
+        print "-------------------------------------------------------------\n";
+    }
 
-        exit 0;
+    foreach my $mount (@{$aiconf->{fsinfo}}) {
+        if ($config->parse) {
+            my $mntdev=$mount->{real_dev};
+            $mntdev=~s/:/#/;
+            print "$mntdev:$mount->{mp}:$mount->{fs}:$mount->{options}:$mount->{dump}:$mount->{pass}\n";
+        } else {
+            printf "%-20.20s %-16.16s %-6.6s %-12.12s %-1.1s %-1.1s\n",$mount->{real_dev},$mount->{mp},$mount->{fs},$mount->{options},$mount->{dump},$mount->{pass};
+        }
+    }
+
+    if ($config->parse) {
+        print "#Bootloader information\n";
+	print "#Flavor:Install Type:Default Entry:Timeout:Target(s)\n"
+    } else {
+        print "-------------------------------------------------------------\n";
+        print "Bootloader information\n";
+	print "-------------------------------------------------------------\n";
+        print "Flavor    Install Type  Default Entry  Timeout   Target(s)\n";
+	print "-------------------------------------------------------------\n";
+    }
+
+    foreach my $bootloader (@{$aiconf->{bootloader}}) {
+        if ($config->parse) {
+            print "$bootloader->{flavor}:$bootloader->{install_type}:$bootloader->{default_entry}:$bootloader->{timeout}";
+        } else {
+            printf "%-9.9s %-13.13s %-14.14s %-10.10s",$bootloader->{flavor},$bootloader->{install_type},$bootloader->{default_entry},$bootloader->{timeout};
+        }
+        foreach my $target (@{$bootloader->{target}}) {
+            if ($config->parse) {
+                print "$target->{dev} ";
+            } else {
+                printf "%-10.10s", $target->{dev};
+            }
+        }
+	print "\n";
+    }	
+
+    exit 0;
 }
 
 sub check_args{ 
