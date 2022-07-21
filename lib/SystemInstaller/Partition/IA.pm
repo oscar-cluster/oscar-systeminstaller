@@ -354,7 +354,9 @@ sub build_aiconf_file {
     # Now do the filesystems
     my $lcount=100;
     foreach my $dev (@{$DISKS{MOUNTORDER}}) {
-        if ( ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "nfs") &&             ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "extended") &&
+        if ( ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "nfs") && 
+             ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "nfs4") &&
+             ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "extended") &&
              ($DISKS{FILESYSTEMS}{$dev}{TYPE} ne "PReP" )) {
             print AICONF "\t<fsinfo line=\"$lcount\" ";
             if ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "swap") {
@@ -389,7 +391,7 @@ sub build_aiconf_file {
     # Now do the nfs filesystems
     &verbose("Finding nfs filesystems");
     foreach my $dev (@{$DISKS{MOUNTORDER}}) {
-        if ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "nfs") {
+        if ( $DISKS{FILESYSTEMS}{$dev}{TYPE} =~ /^nfs$|^nfs4$/ ) { # Handle nfs and nfs4 keywords
             print AICONF "\t<fsinfo line=\"$lcount\" ";
             print AICONF "real_dev=\"$DISKS{FILESYSTEMS}{$dev}{DEVICE}\" ";
             print AICONF "mp=\"$DISKS{FILESYSTEMS}{$dev}{MOUNT}\" ";
