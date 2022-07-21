@@ -212,9 +212,9 @@ sub check_partitioning ($%) {
     return (0, $extended_part_num);
 }
 
-# Create an disks-layout.conf file to be used
+# Create a disks-layout.xml conf file to be used
 # by SystemImager's during client imaging.
-# Input:  partition table created from input partition_file
+# Input:  partition table created from input partition_file (.disk format (man mksidisk))
 # Returns: 0 if success, 1 else.
 # TODO: On error, remove incomplete file.
 sub build_aiconf_file {
@@ -320,6 +320,12 @@ sub build_aiconf_file {
     }
 
     # Write RAID structures - EF -
+    # 1st create a raid block if we have some raid_disk to delcare.
+
+    print AICONF "\t<raid>\n" if(exists($DISKS{RAID0}) ||
+                                 exists($DISKS{RAID1}) ||
+                                 exists($DISKS{RAID5}) ||
+                                 exists($DISKS{RAID6}));
     for my $rlevel ("0", "1", "5", "6") {
         my $rraid = "RAID$rlevel";
         foreach my $rdev (sort(keys %{$DISKS{$rraid}})) {
@@ -328,18 +334,22 @@ sub build_aiconf_file {
             my @parts = (@active, @spares);
             my $nactive = scalar(@active);
             my $nspares = scalar(@spares);
-            print AICONF "\t<raid name=\"$rdev\"\n";
-            print AICONF "\t    raid_level=\"raid$rlevel\"\n";
-            print AICONF "\t    raid_devices=\"$nactive\"\n";
-            print AICONF "\t    spare_devices=\"$nspares\"\n";
-            print AICONF "\t    persistence=\"yes\"\n";
+            print AICONF "\t\t<raid_disk name=\"$rdev\"\n";
+            print AICONF "\t\t\traid_level=\"raid$rlevel\"\n";
+            print AICONF "\t\t\traid_devices=\"$nactive\"\n";
+            print AICONF "\t\t\tspare_devices=\"$nspares\"\n";
+            print AICONF "\t\t\tpersistence=\"yes\"\n"; # yes => mdadm --create / no => mdadm --build
             if ($rlevel eq "5" || $rlevel eq "6") {
-                print AICONF "\t    layout=\"left-asymmetric\"\n";
+                print AICONF "\t\t\tlayout=\"left-asymmetric\"\n";
             }
-            print AICONF "\t    devices=\"".join(" ",@parts)."\"\n";
-            print AICONF "\t/>\n";
+            print AICONF "\t\t\tdevices=\"".join(" ",@parts)."\"\n";
+            print AICONF "\t\t/>\n";
         }
     }
+    print AICONF "\t</raid>\n" if(exists($DISKS{RAID0}) ||
+                                  exists($DISKS{RAID1}) ||
+                                  exists($DISKS{RAID5}) ||
+                                  exists($DISKS{RAID6}));
 
     # Now do the filesystems
     my $lcount=100;
@@ -351,20 +361,19 @@ sub build_aiconf_file {
                 print AICONF "real_dev=\"$DISKS{FILESYSTEMS}{$dev}{DEVICE}\" ";
                 print AICONF "mp=\"swap\" fs=\"swap\" options=\"defaults\" dump=\"0\" pass=\"0\" ";
             } elsif ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "proc") {
-                print AICONF "real_dev=\"none\" ";
-                print AICONF "mp=\"/proc\" ".
-                             "fs=\"$DISKS{FILESYSTEMS}{$dev}{TYPE}\" ";
-                print AICONF "options=\"defaults\" dump=\"0\" pass=\"0\" ";
+                print AICONF "comment=\"#proc\t/proc\tproc\tdefaults\t0 0\" ";
             } elsif ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "devpts") {
-                print AICONF "real_dev=\"none\" ";
-                print AICONF "mp=\"/dev/pts\" fs=\"$DISKS{FILESYSTEMS}{$dev}{TYPE}\" ";
-                print AICONF "options=\"defaults\" dump=\"0\" pass=\"0\" ";
+                print AICONF "comment=\"#devpts\t/dev/pts\tdevpts\tmode=0620,gid=5\t0 0\" ";
+            } elsif ($DISKS{FILESYSTEMS}{$dev}{TYPE} eq "tmpfs") {
+                print AICONF "comment=\"#$DISKS{FILESYSTEMS}{$dev}{DEVICE}\t";
+                print AICONF "$DISKS{FILESYSTEMS}{$dev}{MOUNT}\t";
+		print AICONF "tmpfs\tdefaults\t0 0\" ";
             } elsif ($DISKS{FILESYSTEMS}{$dev}{DEVICE} =~ /^\/dev\/fd[0-9]*$/) {
-                print AICONF "real_dev=\"$DISKS{FILESYSTEMS}{$dev}{DEVICE}\" ";
-                print AICONF "mp=\"$DISKS{FILESYSTEMS}{$dev}{MOUNT}\" ";
-                print AICONF "fs=\"$DISKS{FILESYSTEMS}{$dev}{TYPE}\" ";
-                print AICONF "options=\"$DISKS{FILESYSTEMS}{$dev}{OPTIONS}\" ";
-                print AICONF "dump=\"0\" pass=\"0\" ";
+                print AICONF "comment=\"#$DISKS{FILESYSTEMS}{$dev}{DEVICE}\t";
+                print AICONF "$DISKS{FILESYSTEMS}{$dev}{MOUNT}\t";
+                print AICONF "$DISKS{FILESYSTEMS}{$dev}{TYPE}\t";
+                print AICONF "$DISKS{FILESYSTEMS}{$dev}{OPTIONS}\t";
+                print AICONF "0 0\" ";
             } else {
                 print AICONF "real_dev=\"$DISKS{FILESYSTEMS}{$dev}{DEVICE}\" ";
                 print AICONF "mp=\"$DISKS{FILESYSTEMS}{$dev}{MOUNT}\" ";
@@ -396,32 +405,32 @@ sub build_aiconf_file {
     # so let's use devfs install style.
     # (triggers /dev to be mounted during node installation)
     # - detect architecture of install image
-    my @images = list_image(location => $image_dir);
-    if (scalar (@images) != 1) {
-        carp "ERROR: We did not get exactly one image for $image_dir, this ".
-             "is not normal";
-        return 1;
-    }
-    my $instarch = $images[0]->{arch};
-    if (!OSCAR::Utils::is_a_valid_string ($instarch)) {
-        carp "ERROR: Impossible to detect the arch of the $images[0] image";
-        return 1;
-    }
-    $instarch =~ s/i.86/i386/;
-    # added to support ppc64-ps3
-    $instarch = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");
-    # detect version of install kernel
-    my $instkdir = "/usr/share/systemimager/boot/$instarch/standard";
-    if (! -d $instkdir) {
-        carp "ERROR: Kernels are not installed ($instkdir)";
-        return 1;
-    }
-
-    my $kvers = kernel_version($instkdir . "/kernel");
-    if ($kvers =~ /^2\.6\./) {
-        print AICONF "\t<boel devstyle=\"udev\" />\n";
-    }
-
+    #    my @images = list_image(location => $image_dir);
+    #    if (scalar (@images) != 1) {
+    #        carp "ERROR: We did not get exactly one image for $image_dir, this ".
+    #             "is not normal";
+    #        return 1;
+    #    }
+    #    my $instarch = $images[0]->{arch};
+    #    if (!OSCAR::Utils::is_a_valid_string ($instarch)) {
+    #        carp "ERROR: Impossible to detect the arch of the $images[0] image";
+    #        return 1;
+    #    }
+    #    $instarch =~ s/i.86/i386/;
+    #    # added to support ppc64-ps3
+    #    $instarch = "ppc64-ps3" if (-d "/usr/share/systemimager/boot/ppc64-ps3");
+    #    # detect version of install kernel
+    #    my $instkdir = "/usr/share/systemimager/boot/$instarch/standard";
+    #    if (! -d $instkdir) {
+    #        carp "ERROR: Kernels are not installed ($instkdir)";
+    #        return 1;
+    #    }
+    #
+    #    my $kvers = kernel_version($instkdir . "/kernel");
+    #    if ($kvers =~ /^2\.6\./) {
+    #        print AICONF "\t<boel devstyle=\"udev\" />\n";
+    #    }
+    #
     print AICONF "</config>\n";
     close AICONF;
     return 0;
