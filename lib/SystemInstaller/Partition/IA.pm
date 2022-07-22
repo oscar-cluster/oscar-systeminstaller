@@ -322,10 +322,10 @@ sub build_aiconf_file {
     # Write RAID structures - EF -
     # 1st create a raid block if we have some raid_disk to delcare.
 
-    print AICONF "\t<raid>\n" if(exists($DISKS{RAID0}) ||
-                                 exists($DISKS{RAID1}) ||
-                                 exists($DISKS{RAID5}) ||
-                                 exists($DISKS{RAID6}));
+    print AICONF "\t<raid>\n" if( keys %{$DISKS{RAID0}} ||
+                                  keys %{$DISKS{RAID1}} ||
+                                  keys %{$DISKS{RAID5}} ||
+                                  keys %{$DISKS{RAID6}} );
     for my $rlevel ("0", "1", "5", "6") {
         my $rraid = "RAID$rlevel";
         foreach my $rdev (sort(keys %{$DISKS{$rraid}})) {
@@ -346,10 +346,10 @@ sub build_aiconf_file {
             print AICONF "\t\t/>\n";
         }
     }
-    print AICONF "\t</raid>\n" if(exists($DISKS{RAID0}) ||
-                                  exists($DISKS{RAID1}) ||
-                                  exists($DISKS{RAID5}) ||
-                                  exists($DISKS{RAID6}));
+    print AICONF "\t</raid>\n" if( keys %{$DISKS{RAID0}} ||
+                                   keys %{$DISKS{RAID1}} ||
+                                   keys %{$DISKS{RAID5}} ||
+                                   keys %{$DISKS{RAID6}} );
 
     # Now do the filesystems
     my $lcount=100;
