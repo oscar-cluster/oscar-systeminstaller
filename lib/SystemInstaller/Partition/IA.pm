@@ -316,7 +316,7 @@ sub build_aiconf_file {
                 return 1;
             }
         } 
-        print AICONF "\t</disk>\n";
+        print AICONF "\t</disk>\n\n";
     }
 
     # Write RAID structures - EF -
@@ -346,11 +346,51 @@ sub build_aiconf_file {
             print AICONF "\t\t/>\n";
         }
     }
-    print AICONF "\t</raid>\n" if( keys %{$DISKS{RAID0}} ||
+    print AICONF "\t</raid>\n\n" if( keys %{$DISKS{RAID0}} ||
                                    keys %{$DISKS{RAID1}} ||
                                    keys %{$DISKS{RAID5}} ||
                                    keys %{$DISKS{RAID6}} );
 
+    # Now the bootloader
+
+    my $bootloader_flavor = $DISKS{BOOT_LOADER} || 'grub2'; # defaults to grub2 if not defined
+    my $bootloader_target = $DISKS{BOOT_DEVICE}; # /dev/sda for legacy or /dev/sda1 efi partition for efi
+    my $bootloader_type   = $DISKS{BOOT_TYPE}; # legacy or efi
+
+    # Do some verifications and guess values if needed.
+    if ( ! grep /^$bootloader_type$/, ('efi', 'legacy')) {
+	carp "Invalid bootloader type [boot_type=$bootloader_type] in diskfile. Trying to guess...";
+        $bootloader_type = undef; # Wrong value, trying to guess later.
+    }
+    if ( ! defined($bootloader_type) ) {
+        # Is there an EFI partition?
+        my @efi_partitions = map { $_->{MOUNT} eq '/boot/efi' ? ($_->{DEVICE}) : () } %{$DISKS{FILESYSTEMS}};
+	if (@efi_partitions) { # We choose EFI
+            $bootloader_type = "efi";
+	    if (defined($bootloader_target) && ! grep /^$bootloader_target$/ @efi_partitions) { # If defined but not in EFI partition list: problem
+		carp "ERROR: boot_device [$bootloader_target]does not math an EFI mount point\n while there is a defined EFI partition.\nUsing that defined EFI partition as EFI bootloader target.";
+                $bootloader_target = undef;
+	    }
+	    # if target is not defined, use the EFI partition as target.
+	    $bootloader_target = $efi_partitions[0] if (! defined ($bootloader_target)); # Should be only one EFI partition.
+        } else { # No efi partition => legacy
+            $bootloader_type = "legacy";
+	    if( defined ($bootloader_target) && ! map { $_->{DRIVE} eq $bootloader_target ? ($_->{DRIVE}) : () } %{$DISKS{PARTITIONS}} ) { # target disk found in PARTITIONS
+                carp "ERROR: bootloader target boot_device=$bootloader_target not found in partitions. Trying to guess.";
+		$bootloader_target = undef;
+            }
+	    # We assume that boot disk hosts the root partition.
+	    if( ! defined ($bootloader_target) ) {
+                my @possible_root_partition=map { $_->{MOUNT} eq '/' ? ($_->{DEVICE}) : () } %{$DISKS{FILESYSTEMS}}; # Should be only one defined root (/)
+                $bootloader_target = $DISKS{PARTITIONS}->{$possible_root_partition[0]}->{DRIVE};
+            }
+        }
+    }
+
+    # Print something that should be ok.
+    print AICONF "\t<bootloader flavor=\"$bootloader_flavor\" install_type=\"$bootloader_type\" default_entry=\"0\" timeout=\"2\">";
+    print AICONF "\t\t<target dev=\"$bootloader_target\" />";
+    print AICONF "\t</bootloader>\n\n";
     # Now do the filesystems
     my $lcount=100;
     foreach my $dev (@{$DISKS{MOUNTORDER}}) {
