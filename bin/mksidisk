@@ -365,8 +365,11 @@ Sample file:
   #These are optional, global parameters
   # units=MB # this is the default, megabytes
   # units=%  # Sizes are percent of disk
-  # label_type=msdos # this is the default
-  # label_type=gpt   # For Itanium
+  # label_type=msdos # this is the default if no EFI partition is defined
+  # label_type=gpt   # this is the default when EFI partition is found
+  # boot_type=efi    # to use an EFI bootloader
+  # boot_type=legacy # To use legacy booloader
+  # boot_device=</dev/xxx> # Expect a partition for EFI and a disk for legacy
   #Device      size   fs_type mount  options
   /dev/sda1   30      ext2   /boot   defaults bootable
   /dev/sda5   30      swap 

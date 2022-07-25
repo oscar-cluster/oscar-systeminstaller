@@ -367,13 +367,13 @@ sub build_aiconf_file {
         my @efi_partitions = map { $_->{MOUNT} eq '/boot/efi' ? ($_->{DEVICE}) : () } %{$DISKS{FILESYSTEMS}};
 	if (@efi_partitions) { # We choose EFI
             $bootloader_type = "efi";
-	    if (defined($bootloader_target) && ! grep /^$bootloader_target$/ @efi_partitions) { # If defined but not in EFI partition list: problem
+	    if (defined($bootloader_target) && ! grep /^$bootloader_target$/, @efi_partitions) { # If defined but not in EFI partition list: problem
 		carp "ERROR: boot_device [$bootloader_target] does not match an EFI mount point\n while there is a defined EFI partition.\nUsing that defined EFI partition as EFI bootloader target.";
                 $bootloader_target = undef;
 	    }
 	    # if target is not defined, use the EFI partition as target.
 	    $bootloader_target = $efi_partitions[0] if (! defined ($bootloader_target)); # Should be only one EFI partition.
-        } else { # No efi partition => legacy
+        } else { # No efi partition => legacy
             $bootloader_type = "legacy";
 	    if( defined ($bootloader_target) && ! map { $_->{DRIVE} eq $bootloader_target ? ($_->{DRIVE}) : () } %{$DISKS{PARTITIONS}} ) { # target disk found in PARTITIONS
                 carp "ERROR: bootloader target boot_device [$bootloader_target] not found in partitions. Trying to guess.";
@@ -388,8 +388,8 @@ sub build_aiconf_file {
     }
 
     # Print something that should be ok.
-    print AICONF "\t<bootloader flavor=\"$bootloader_flavor\" install_type=\"$bootloader_type\" default_entry=\"0\" timeout=\"2\">";
-    print AICONF "\t\t<target dev=\"$bootloader_target\" />";
+    print AICONF "\t<bootloader flavor=\"$bootloader_flavor\" install_type=\"$bootloader_type\" default_entry=\"0\" timeout=\"2\">\n";
+    print AICONF "\t\t<target dev=\"$bootloader_target\" />\n";
     print AICONF "\t</bootloader>\n\n";
     # Now do the filesystems
     my $lcount=100;
