@@ -358,7 +358,7 @@ sub build_aiconf_file {
     my $bootloader_type   = $DISKS{BOOT_TYPE}; # legacy or efi
 
     # Do some verifications and guess values if needed.
-    if ( ! grep /^$bootloader_type$/, ('efi', 'legacy')) {
+    if ( defined($bootloader_type) && ! grep /^$bootloader_type$/, ('efi', 'legacy')) {
 	carp "Invalid bootloader type [boot_type=$bootloader_type] in diskfile. Trying to guess...";
         $bootloader_type = undef; # Wrong value, trying to guess later.
     }
