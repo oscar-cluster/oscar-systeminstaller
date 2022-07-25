@@ -364,7 +364,7 @@ sub build_aiconf_file {
     }
     if ( ! defined($bootloader_type) ) {
         # Is there an EFI partition?
-        my @efi_partitions = map { $_->{MOUNT} eq '/boot/efi' ? ($_->{DEVICE}) : () } %{$DISKS{FILESYSTEMS}};
+        my @efi_partitions = map { $_->{MOUNT} eq '/boot/efi' ? ($_->{DEVICE}) : () } values %{$DISKS{FILESYSTEMS}};
 	if (@efi_partitions) { # We choose EFI
             $bootloader_type = "efi";
 	    if (defined($bootloader_target) && ! grep /^$bootloader_target$/, @efi_partitions) { # If defined but not in EFI partition list: problem
@@ -381,7 +381,7 @@ sub build_aiconf_file {
             }
 	    # We assume that boot disk hosts the root partition.
 	    if( ! defined ($bootloader_target) ) {
-                my @possible_root_partition=map { $_->{MOUNT} eq '/' ? ($_->{DEVICE}) : () } %{$DISKS{FILESYSTEMS}}; # Should be only one defined root (/)
+                my @possible_root_partition=map { $_->{MOUNT} eq '/' ? ($_->{DEVICE}) : () } values %{$DISKS{FILESYSTEMS}}; # Should be only one defined root (/)
                 $bootloader_target = $DISKS{PARTITIONS}->{$possible_root_partition[0]}->{DRIVE};
             }
         }
