@@ -187,39 +187,40 @@ exit 0;
 # Return: 1 if success, 0 else.
 sub check_args () {
 
-	# Get verbose option
-	if ($config->verbose){
-		start_verbose;
-		logger_file(*STDOUT);
-	}
-	# Default to list
-	&verbose("Checking arguments.");
+    # Get verbose option
+    if ($config->verbose){
+        start_verbose;
+        logger_file(*STDOUT);
+    }
+    # Default to list
+    &verbose("Checking arguments.");
 
-	if ($config->image) {
+    if ($config->image) {
         require OSCAR::ImageMgt;
-		my $image = OSCAR::ImageMgt::image_exists($config->image);
-		unless ($image){
-			carp("Image ". $config->image . " does not exist.");
-			return 0;
-		}
+        my $image = OSCAR::ImageMgt::image_exists($config->image);
+        unless ($image) {
+            carp("Image ". $config->image . " does not exist.");
+            return 0;
+        }
         my $aiscript=$jconfig->get('imager','scripts_dir') . "/main-install/". $config->image .".master";
         if( ! -e $aiscript) {
-		print("INFO: Optional main-install script does not exists.\n");
-		print("INFO: Looked for [$aiscript]\n");
-	}
-	foreach my $opt ( qw(basename ipstart count image) ) {
-		if (! $config->$opt){
-			carp("$opt is a required parameter");
-			return 0;
-		}
-	}
+            print("INFO: Optional main-install script does not exists.\n");
+            print("INFO: Looked for [$aiscript]\n");
+        }
+    }
+    foreach my $opt ( qw(basename ipstart count image) ) {
+        if (! $config->$opt){
+            carp("$opt is a required parameter");
+            return 0;
+        }
+    }
     unless ($config->start >= 0) {
         carp("--start must be a positive integer.");
         return 0;
     }
-	return 1;
+    return 1;
 
-}# check_args
+} # end check_args
 
 sub usage {
     my $progname = $0;
