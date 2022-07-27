@@ -124,7 +124,8 @@ if ($config->Update) {
     foreach my $mach (@machinelist) {
 	if (($config->ipaddress) || ($config->netmask) || ($config->MACaddress)) {
 	    &verbose("Updating adapter database");
-	    my @adap=list_adapter(devname=>$devname, client=>$mach->name);
+	    my %adap={devname=>$devname, client=>$mach->name};
+	    my @adap=list_adapter(\%adap);
 	    if ($config->ipaddress) {
 		$adap[0]->ip($config->ipaddress);
 	    }
@@ -144,15 +145,18 @@ if ($config->Update) {
     my @delhosts;
     my @deladaps;
     my %ADAPTERS;
+    my %h;
 
     &verbose("Getting adapters");
     my @adaps;
     if ($config->devname) {
-	@adaps=list_adapter(devname=>$config->devname);
+        $h{devname} = $config->devname;
+	@adaps=list_adapter(\%h);
     } elsif ($config->all) {
-	@adaps=list_adapter();
+	@adaps=list_adapter(undef);
     } elsif ($config->name) {
-	@adaps=list_adapter(client=>$config->name);
+        $h{client} = $config->name;
+	@adaps=list_adapter(\%h);
     }
     # build array of adapters
     foreach my $a (@adaps) {
@@ -189,11 +193,13 @@ if ($config->Update) {
 	carp("Client name is malformed.\n");
 	exit 1;
     }
-    if (my @C=list_adapter(ip=>$config->ipaddress)) {
+    my %h = { ip => $config->ipaddress };
+    if (my @C=list_adapter(\%h)) {
 	carp("IP address " . $config->ipaddress ." is assigned to another client.\n");
 	exit 1;
     }
-    if (($config->MACaddress) && (my @C=list_adapter(mac=>$config->MACaddress)) ) {
+    my %h = { mac => $config->MACaddress }  if ($config->MACaddress);
+    if (($config->MACaddress) && (my @C=list_adapter(\%h)) ) {
 	carp("MAC address " . $config->MACaddress ." is assigned to another client.\n");
 	exit 1;
     }
@@ -214,13 +220,15 @@ if ($config->Update) {
     &verbose("Listing machine data.");
     my @adapters;
     if ($config->devname) {
-	@adapters = list_adapter(devname=>$config->devname);
+        my %h = {devname=>$config->devname };
+	@adapters = list_adapter(\%h);
     } elsif ($config->all) {
-	@adapters = list_adapter();
+	@adapters = list_adapter(undef);
     } elsif ($config->name) {
-	@adapters=list_adapter(client=>$config->name);
+        my %h = { client => $config->name };
+	@adapters=list_adapter(\%h);
     } else {
-	@adapters = list_adapter();
+	@adapters = list_adapter(undef);
     }
     if (@adapters) {
 	if ($config->parse){
